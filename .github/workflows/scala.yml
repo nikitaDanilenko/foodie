@@ -39,4 +39,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: "nikitadanilenko/foodie:${{GITHUB_SHA}}"
+          tags: "nikitadanilenko/foodie:${{ env.GITHUB_SHA }}"
