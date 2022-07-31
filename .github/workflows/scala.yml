@@ -30,6 +30,6 @@ jobs:
     - uses: docker/build-push-action@v3
       with:
         context: .
-        tags: nikitadanilenko/foodie:${{ env.GITHUB_SHA }
+        tags: nikitadanilenko/foodie:${{ env.GITHUB_SHA }}
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
