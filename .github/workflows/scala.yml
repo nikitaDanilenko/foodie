@@ -32,4 +32,4 @@ jobs:
         context: .
         tags: "nikitadanilenko/foodie:${{ env.GITHUB_SHA }}"
         secrets: |
-          "github_token=${{ secrets.DOCKER_HUB_TOKEN }}
+          "github_token=${{ secrets.DOCKER_HUB_TOKEN }}"
