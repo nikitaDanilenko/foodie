@@ -34,9 +34,17 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: Set metadata
+        id: metadata
+        uses: docker/metadata-action@v3
+        with:
+          images: nikitadanilenko/foodie
+          tags: |
+            type=sha
+            type=raw,value=latest
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
-          tags: "nikitadanilenko/foodie:${{ env.GITHUB_SHA }}"
+          tags: ${{ steps.metadata.outputs.tags }}
