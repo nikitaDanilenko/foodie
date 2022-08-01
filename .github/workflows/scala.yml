@@ -33,15 +33,16 @@ jobs:
           distribution: 'temurin'
           cache: 'sbt'
       - name: Prepare Dockerfile
-        run: sbt docker:stage
+        run: sbt Docker / Stage
       - name: Output Dockerfile
         run: mv target/docker/stage/Dockerfile .
       - name: Create docker image
-        run: sbt universal:packageZipTarball
+        run: sbt Universal / PackageZipTarball
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: docker-image
+          path: foodie.zip
   publish:
     needs: package
     runs-on: ubuntu-latest

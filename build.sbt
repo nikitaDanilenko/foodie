@@ -2,8 +2,9 @@ import com.typesafe.config.ConfigFactory
 
 name := """foodie"""
 organization := "io.danilenko"
+maintainer := "nikita.danilenko.is@gmail.com"
 
-version := "1.0-SNAPSHOT"
+version := "0.1"
 
 val circeVersion = "0.14.2"
 val slickVersion = "3.3.3"
@@ -63,6 +64,9 @@ lazy val elmGenerate = Command.command("elmGenerate") { state =>
 }
 
 commands += elmGenerate
+
+//Universal / packageName := s"${name.value}_${version.value}_${scalaVersion.value}_dist"
+Universal / packageName := "foodie"
 
 Docker / maintainer := "nikita.danilenko.is@gmail.com"
 Docker / packageName := "foodie"
