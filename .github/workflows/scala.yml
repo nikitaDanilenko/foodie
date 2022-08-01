@@ -35,10 +35,15 @@ jobs:
       - name: Prepare Dockerfile
         run: sbt docker:stage
       - name: Output Dockerfile
-        run: cat target/docker/stage/Dockerfile
+        run: mv target/docker/stage/Dockerfile .
       - name: Create docker image
         run: sbt universal:packageZipTarball
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-image
   publish:
+    needs: package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
