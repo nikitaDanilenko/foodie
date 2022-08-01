@@ -44,7 +44,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: docker-image
-          path: foodie.tar
+          path: target/universal/foodie.tar
   publish:
     needs: package
     runs-on: ubuntu-latest
