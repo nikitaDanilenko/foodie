@@ -33,11 +33,11 @@ jobs:
           distribution: 'temurin'
           cache: 'sbt'
       - name: Prepare Dockerfile
-        run: sbt Docker / Stage
+        run: sbt docker:stage
       - name: Output Dockerfile
         run: mv target/docker/stage/Dockerfile .
       - name: Create docker image
-        run: sbt Universal / PackageZipTarball
+        run: sbt universal:packageZipTarball
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
