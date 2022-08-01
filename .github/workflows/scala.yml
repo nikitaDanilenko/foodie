@@ -32,6 +32,10 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           cache: 'sbt'
+      - name: Prepare Dockerfile
+        run: sbt docker:stage
+      - name: Output Dockerfile
+        run: cat target/docker/stage/Dockerfile
       - name: Create docker image
         run: sbt universal:packageZipTarball
   publish:
