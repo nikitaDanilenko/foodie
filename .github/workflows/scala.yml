@@ -39,12 +39,13 @@ jobs:
       - name: Create docker image
         run: |
           sbt universal:packageZipTarball
+          cp target/universal/foodie.* .
           ls
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: docker-image
-          path: target/universal/foodie.tar
+          path: target/universal/
   publish:
     needs: package
     runs-on: ubuntu-latest
