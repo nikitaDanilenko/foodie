@@ -34,8 +34,10 @@ jobs:
           cache: 'sbt'
       - name: Prepare Dockerfile
         run: sbt docker:stage
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Scan result folder
+        run: |
+          cd target/docker
+          ls
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to DockerHub
