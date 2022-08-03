@@ -34,12 +34,6 @@ jobs:
           cache: 'sbt'
       - name: Prepare Dockerfile
         run: sbt docker:stage
-#      - name: Create universal package
-#        run: sbt universal:packageZipTarball
-#      - name: Move universal image to top level
-#        run: mv target/universal/* .
-#      - name: Output Dockerfile
-#        run: mv target/docker/stage/Dockerfile .
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set up Docker Buildx
