@@ -34,22 +34,10 @@ jobs:
           cache: 'sbt'
       - name: Prepare Dockerfile
         run: sbt docker:stage
-      - name: Output Dockerfile
-        run: mv target/docker/stage/Dockerfile .
       - name: Create docker image
-        run: |
-          sbt universal:packageZipTarball
-          cp target/universal/foodie.* .
-          ls
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: docker-image
-          path: target/universal/
-  publish:
-    needs: package
-    runs-on: ubuntu-latest
-    steps:
+        run: sbt universal:packageZipTarball
+      - name: Output Dockerfile
+        run: mv target/docker/stage/Dockerfile target/universal/
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set up Docker Buildx
@@ -70,6 +58,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ./target/universal
           push: true
           tags: ${{ steps.metadata.outputs.tags }}
