@@ -19,3 +19,7 @@
    and applies new ones.
    After a migration one should re-generate database related code:
     1. `sbt slickGenerate` generates the base queries, and types.
+
+### CI
+
+[![Scala CI](https://github.com/nikitaDanilenko/foodie/actions/workflows/scala.yml/badge.svg)](https://github.com/nikitaDanilenko/foodie/actions/workflows/scala.yml)
