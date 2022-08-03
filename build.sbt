@@ -65,9 +65,6 @@ lazy val elmGenerate = Command.command("elmGenerate") { state =>
 
 commands += elmGenerate
 
-//Universal / packageName := s"${name.value}_${version.value}_${scalaVersion.value}_dist"
-Universal / packageName := "foodie"
-
 Docker / maintainer := "nikita.danilenko.is@gmail.com"
 Docker / packageName := "foodie"
 Docker / version := sys.env.getOrElse("BUILD_NUMBER", "0")
