@@ -1,20 +1,25 @@
 version: '3'
 services:
-  backend:
-    build: target/docker/stage
-    ports:
-      - "9001:9001"
-    env_file:
-      - .env
-    depends_on:
-      - db
+#  backend:
+#    build: target/docker/stage
+#    ports:
+#      - "9001:9001"
+#    env_file:
+#      - .env
+#    depends_on:
+#      - db
   db:
     container_name: postgres
     restart: always
     image: postgres:12.11-alpine
+    env_file:
+      - db.env
+    # todo: Careful about the target folder. A wrong configuration
+    # leads to data loss after "docker compose down".
+    # The current setup seems to work fine.
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data/
     expose:
       - "5432"
-    ports:
-      - "5432:5432"
+volumes:
+  postgres-data:
