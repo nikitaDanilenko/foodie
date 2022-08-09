@@ -74,3 +74,12 @@ dockerExposedPorts := Seq(9001)
 dockerBaseImage := "adoptopenjdk/openjdk11:latest"
 //dockerRepository := sys.env.get("ecr_repo")
 dockerUpdateLatest := true
+
+Universal / javaOptions ++= Seq(
+  "-Dpidfile.path=/dev/null"
+)
+
+import com.typesafe.sbt.packager.docker.DockerChmodType
+import com.typesafe.sbt.packager.docker.DockerPermissionStrategy
+dockerChmodType := DockerChmodType.UserGroupWriteExecute
+dockerPermissionStrategy := DockerPermissionStrategy.CopyChown
