@@ -2,8 +2,9 @@ import com.typesafe.config.ConfigFactory
 
 name := """foodie"""
 organization := "io.danilenko"
+maintainer := "nikita.danilenko.is@gmail.com"
 
-version := "1.0-SNAPSHOT"
+version := "0.1"
 
 val circeVersion = "0.14.2"
 val slickVersion = "3.3.3"
@@ -16,8 +17,9 @@ val config = ConfigFactory
 lazy val root = (project in file("."))
   .enablePlugins(PlayScala)
   .enablePlugins(CodegenPlugin)
+  .enablePlugins(JavaServerAppPackaging)
   .settings(
-    scalaVersion := "2.13.2",
+    scalaVersion := "2.13.3",
     libraryDependencies ++= Seq(
       guice,
       "com.typesafe.slick"    %% "slick"            % slickVersion,
@@ -62,3 +64,13 @@ lazy val elmGenerate = Command.command("elmGenerate") { state =>
 }
 
 commands += elmGenerate
+
+Docker / maintainer := "nikita.danilenko.is@gmail.com"
+Docker / packageName := "foodie"
+Docker / version := sys.env.getOrElse("BUILD_NUMBER", "0")
+Docker / daemonUserUid := None
+Docker / daemonUser := "daemon"
+dockerExposedPorts := Seq(9001)
+dockerBaseImage := "adoptopenjdk/openjdk11:latest"
+//dockerRepository := sys.env.get("ecr_repo")
+dockerUpdateLatest := true
