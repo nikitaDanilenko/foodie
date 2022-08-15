@@ -11,12 +11,10 @@ services:
     # The current setup seems to work fine.
     volumes:
       - postgres-data:/var/lib/postgresql/data/
-    expose:
-      - "5432"
   backend:
     image: foodie:latest
     ports:
-      - "9001:9001"
+      - "9001:9000"
     env_file:
       - deployment.env
     depends_on:
