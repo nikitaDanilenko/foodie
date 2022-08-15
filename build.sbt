@@ -70,11 +70,17 @@ Docker / packageName := "foodie"
 Docker / version := sys.env.getOrElse("BUILD_NUMBER", "0")
 Docker / daemonUserUid := None
 Docker / daemonUser := "daemon"
+// Todo: It is likely that this setting is unnecessary if the deployment relies on the docker-compose.yml.
 dockerExposedPorts := Seq(9001)
 dockerBaseImage := "adoptopenjdk/openjdk11:latest"
 //dockerRepository := sys.env.get("ecr_repo")
 dockerUpdateLatest := true
 
+// Patches and workarounds
+
+// Docker has known issues with Play's PID file. The below command disables Play's PID file.
+// cf. https://www.playframework.com/documentation/2.8.x/Deploying#Play-PID-Configuration
+// The setting is a possible duplicate of the same setting in the application.conf.
 Universal / javaOptions ++= Seq(
   "-Dpidfile.path=/dev/null"
 )
