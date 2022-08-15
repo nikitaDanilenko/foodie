@@ -50,7 +50,8 @@
     - "<target-port>:9000"
     ```
     N.B.: The ports that are mapped to are actual system ports.
-    If multiple Play services run on the same system, the chosen ports need to be all different. 
+    If multiple Play services run on the same system, the chosen ports need to be all different.
+    After running `docker compose up` the service is reachable via `localhost:<target-port>`. 
   - The default port can be changed via the start parameter
     `-Dhttp.port=<application-port>`.
     This parameter can be passed to the application via the `Dockerfile`.
