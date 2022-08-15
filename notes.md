@@ -19,6 +19,22 @@
     - The default port is `5432`.
       It is likely that it's fine to use the default port,
       because every project runs on a different Docker network.
+  - There seems to be no need for
+    - exposing a port
+      ```yaml
+      expose:
+        - <port1>
+        ...
+        - <portN>
+      ```
+    - port mapping
+      ```yaml
+      ports:
+        - "<mapped-to-1>:<mapped-from-1>"
+        ...
+        - "<mapped-to-N>:<mapped-from-N>"
+      ```
+    because there is no need to connect to the database externally (at least in the current setup).
 * `sudo /home/nda/.sdkman/candidates/sbt/current/bin/sbt "Docker / publishLocal"`
   creates a correct local image, which can be fetched with `foodie:latest`
 * Docker configuration may need some adjustments in `build.sbt`
