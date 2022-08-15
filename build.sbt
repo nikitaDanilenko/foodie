@@ -70,10 +70,7 @@ Docker / packageName := "foodie"
 Docker / version := sys.env.getOrElse("BUILD_NUMBER", "0")
 Docker / daemonUserUid := None
 Docker / daemonUser := "daemon"
-// Todo: It is likely that this setting is unnecessary if the deployment relies on the docker-compose.yml.
-dockerExposedPorts := Seq(9001)
 dockerBaseImage := "adoptopenjdk/openjdk11:latest"
-//dockerRepository := sys.env.get("ecr_repo")
 dockerUpdateLatest := true
 
 // Patches and workarounds
@@ -84,8 +81,3 @@ dockerUpdateLatest := true
 Universal / javaOptions ++= Seq(
   "-Dpidfile.path=/dev/null"
 )
-
-import com.typesafe.sbt.packager.docker.DockerChmodType
-import com.typesafe.sbt.packager.docker.DockerPermissionStrategy
-dockerChmodType := DockerChmodType.UserGroupWriteExecute
-dockerPermissionStrategy := DockerPermissionStrategy.CopyChown
