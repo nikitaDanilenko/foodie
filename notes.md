@@ -41,3 +41,18 @@
   - Either set everything so the publishing pushes to DockerHub
   - or configure correct build steps, build, and publish manually
 * `deployment.env` should most likely not be committed
+* Working solution for application externalisation:
+  - The default port for the application is `9000` via Play
+  - Add a port mapping for the backend service in the `docker-compose.yml`, 
+    and map the port where necessary.
+    ```yaml
+    ports:
+    - "<target-port>:9000"
+    ```
+    N.B.: The ports that are mapped to are actual system ports.
+    If multiple Play services run on the same system, the chosen ports need to be all different. 
+  - The default port can be changed via the start parameter
+    `-Dhttp.port=<application-port>`.
+    This parameter can be passed to the application via the `Dockerfile`.
+    The value can be defined in `build.sbt` via `dockerCmd ++= Seq("-Dhttp.port=<application-port>")`.
+    However, this remapping should be unnecessary.
