@@ -57,3 +57,10 @@
     This parameter can be passed to the application via the `Dockerfile`.
     The value can be defined in `build.sbt` via `dockerCmd ++= Seq("-Dhttp.port=<application-port>")`.
     However, this remapping should be unnecessary.
+  - Exposing ports:
+    There seems to be no need to expose ports via Docker.
+    Without explicit exposure, the container does not listen to any *external* communication.
+    The `docker-compose.yml` maps the *internal* port to the desired target port,
+    and all external communication then proceeds via the target port.
+    Such a construction has the benefit of the port being configurable at application start time,
+    instead of relying on the correct setting while building the Docker image. 
