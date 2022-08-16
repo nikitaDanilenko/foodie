@@ -50,6 +50,8 @@ There needs to be a running Docker service running on the target machine.
 1. Make sure that all necessary environment variables are set in `deployment.env`,
    and these variables contain the desired deployment values.
 1. Run `docker compose up` (possibly with `sudo`).
+   If you want to deploy a specific version, update the image from `latest`
+   to the desired tag in the `docker-compose.yml`.
 1. If this is the first deployment,
    connect to a bash in the Docker `db` container,
    and perform the database setup steps described above.
