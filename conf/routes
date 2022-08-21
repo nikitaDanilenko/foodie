@@ -22,3 +22,5 @@ PATCH  /meal/update-meal-entry       controllers.meal.MealController.updateMealE
 PATCH  /meal/delete-meal-entry/:id   controllers.meal.MealController.deleteMealEntry(id: java.util.UUID)
 
 GET    /stats                        controllers.stats.StatsController.get
+
+GET    /                             controllers.home.HomeController.home
