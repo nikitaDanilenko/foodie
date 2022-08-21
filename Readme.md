@@ -40,19 +40,23 @@ For the moment the deployment is handled manually.
 There needs to be a running Docker service running on the target machine.
 
 1. Connect to the target machine.
-1. If this is the first deployment, clone Git project into a folder of your choosing.
-1. Change into the local Git repository of the project.
-1. Run `git pull`. It is possible that there will be a conflict with the `db.env`,
+2. If this is the first deployment, clone Git project into a folder of your choosing.
+3. Change into the local Git repository of the project.
+4. Run `git pull`. It is possible that there will be a conflict with the `db.env`,
    if the development password has changed.
-1. Make sure that `db.env` contains deployment values.
-1. If this is the first deployment, create a file `deployment.env` containing
+5. Make sure that `db.env` contains deployment values.
+6. If this is the first deployment, create a file `deployment.env` containing
    all necessary environment variables (cf. `application.conf`).
-1. Make sure that all necessary environment variables are set in `deployment.env`,
+7. Make sure that all necessary environment variables are set in `deployment.env`,
    and these variables contain the desired deployment values.
-1. Run `docker compose up` (possibly with `sudo`).
+   As a reference, one can use the `.env` file - every key present in the `.env` file
+   needs to be set in the `deployment.env` as well.
+   Caveat: Avoid `#` symbols, because these can behave differently between
+   `dotenv` and Docker.
+8. Run `docker compose up` (possibly with `sudo`).
    If you want to deploy a specific version, update the image from `latest`
    to the desired tag in the `docker-compose.yml`.
-1. If this is the first deployment,
+9. If this is the first deployment,
    connect to a bash in the Docker `db` container,
    and perform the database setup steps described above.
 
