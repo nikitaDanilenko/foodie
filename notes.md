@@ -63,4 +63,7 @@
     The `docker-compose.yml` maps the *internal* port to the desired target port,
     and all external communication then proceeds via the target port.
     Such a construction has the benefit of the port being configurable at application start time,
-    instead of relying on the correct setting while building the Docker image. 
+    instead of relying on the correct setting while building the Docker image.
+  - When starting the service via `docker-compose.yml` remove the `.env` file entries,
+    because both the `deployment.env` and the `.env` files are read (in that order).
+    This should be a workaround - a better solution is preferable! 
