@@ -11,6 +11,7 @@ services:
     # The current setup seems to work fine.
     volumes:
       - postgres-data:/var/lib/postgresql/data/
+      - ./scripts:/tmp/scripts
   backend:
     image: nikitadanilenko/foodie:latest
     ports:
@@ -21,4 +22,5 @@ services:
       - db
 volumes:
   postgres-data:
+  scripts:
 
