@@ -15,6 +15,14 @@
    3. It may be necessary to switch to the project folder in `psql` as well.
       This can be achieved with `psql> \cd <absolute path>;`.
    4. `psql> \ir scripts/populate_cnf_db.sql`
+   5. In case of Docker:
+      1. Copy the files to the container:
+         `docker cp scripts/ <container-id>:/tmp`,
+         where you can find the container id with `docker ps`.
+      2. Connect to container `docker exec -it postgres /bin/bash`.
+      3. Change into `tmp` via `/tmp`.
+      4. Run `psql -U <foodie-user> -d <foodie-database> -h db`, enter the password.
+      5. Run the script exactly as above.
 3. The system scans for migrations in the folder `conf/db/migrations/default`
    and applies new ones.
    After a migration one should re-generate database related code:
