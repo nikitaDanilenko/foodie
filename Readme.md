@@ -23,6 +23,13 @@
       3. Change into `tmp` via `/tmp`.
       4. Run `psql -U <foodie-user> -d <foodie-database> -h db`, enter the password.
       5. Run the script exactly as above.
+   6. Why not a migration?
+      There are several reasons for that:
+      1. To `copy from` via SQL the user needs to be a superuser, which may be problematic.
+      2. `copy from` does not handle relative paths, i.e. one needs an absolute path.
+         Absolute paths present an unnecessary constraint and impede development, and deployment.
+      3. In theory one may use a different population set or no population at all.
+         Both work fine with an external population, but not with a migration.
 3. The system scans for migrations in the folder `conf/db/migrations/default`
    and applies new ones.
    After a migration one should re-generate database related code:
