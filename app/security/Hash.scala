@@ -14,6 +14,8 @@ object Hash {
   private val signatureHashAlgorithm: String = "SHA-384"
   private val keyLength: Int                 = 512
 
+  val defaultIterations: Natural = Natural(120000)
+
   def fromPassword(password: String, salt: String, iterations: Natural): String = {
     SecretKeyFactory
       .getInstance(hashAlgorithm)
