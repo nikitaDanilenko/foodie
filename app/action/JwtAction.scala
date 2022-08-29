@@ -9,13 +9,13 @@ import play.api.mvc._
 import pureconfig.generic.ProductHint
 import pureconfig.generic.auto._
 import pureconfig.{ CamelCase, ConfigFieldMapping, ConfigSource }
-import security.jwt.JwtConfiguration
+import security.jwt.{ JwtConfiguration, JwtContent }
 import services.UserId
 import services.user.{ User, UserService }
 import utils.TransformerUtils.Implicits._
 import utils.jwt.JwtUtil
-
 import javax.inject.Inject
+
 import scala.concurrent.{ ExecutionContext, Future }
 
 class JwtAction @Inject() (
@@ -38,7 +38,8 @@ class JwtAction @Inject() (
         request.headers.get(RequestHeaders.userTokenHeader),
         ErrorContext.Authentication.Token.Missing.asServerError
       )
-      jwtContent <- EitherT.fromEither[Future](JwtUtil.validateJwt(token, jwtConfiguration.signaturePublicKey))
+      jwtContent <-
+        EitherT.fromEither[Future](JwtUtil.validateJwt[JwtContent](token, jwtConfiguration.signaturePublicKey))
       user <- EitherT.fromOptionF[Future, ServerError, User](
         userService
           .get(

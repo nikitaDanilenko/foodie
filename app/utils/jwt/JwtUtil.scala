@@ -8,14 +8,15 @@ import pdi.jwt.{ JwtAlgorithm, JwtCirce, JwtClaim, JwtHeader }
 import security.jwt.{ JwtContent, JwtExpiration }
 import services.UserId
 import utils.TransformerUtils.Implicits._
-
 import java.util.UUID
+
+import io.circe.Decoder
 
 object JwtUtil {
 
   val signatureAlgorithm: JwtAsymmetricAlgorithm = JwtAlgorithm.RS256
 
-  def validateJwt(token: String, publicKey: String): ServerError.Or[JwtContent] =
+  def validateJwt[A: Decoder](token: String, publicKey: String): ServerError.Or[A] =
     JwtCirce
       .decode(token, publicKey, Seq(signatureAlgorithm))
       .toEither
@@ -23,7 +24,7 @@ object JwtUtil {
       .map(_ => ErrorContext.Authentication.Token.Decoding.asServerError)
       .flatMap { jwtClaim =>
         io.circe.parser
-          .decode[JwtContent](jwtClaim.content)
+          .decode[A](jwtClaim.content)
           .left
           .map(_ => ErrorContext.Authentication.Token.Content.asServerError)
       }
