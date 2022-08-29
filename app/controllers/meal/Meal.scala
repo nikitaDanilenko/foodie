@@ -1,9 +1,9 @@
 package controllers.meal
 
 import io.circe.generic.JsonCodec
-import utils.SimpleDate
-
 import java.util.UUID
+
+import utils.date.SimpleDate
 
 @JsonCodec
 case class Meal(

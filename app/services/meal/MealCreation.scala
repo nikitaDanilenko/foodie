@@ -1,7 +1,7 @@
 package services.meal
 
 import services.{ MealId, RecipeId }
-import utils.SimpleDate
+import utils.date.SimpleDate
 
 case class MealCreation(
     date: SimpleDate,

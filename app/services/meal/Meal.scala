@@ -1,13 +1,15 @@
 package services.meal
 
+import java.time.{ LocalDate, LocalTime }
+
 import db.generated.Tables
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl.TransformerOps
 import services.{ MealId, UserId }
-import utils.SimpleDate
 import utils.TransformerUtils.Implicits._
-
 import java.util.UUID
+
+import utils.date.{ Date, SimpleDate, Time }
 
 case class Meal(
     id: MealId,
@@ -31,8 +33,8 @@ object Meal {
         _.date,
         r =>
           SimpleDate(
-            r.mealRow.consumedOnDate.toLocalDate,
-            r.mealRow.consumedOnTime.map(_.toLocalTime)
+            r.mealRow.consumedOnDate.toLocalDate.transformInto[Date],
+            r.mealRow.consumedOnTime.map(_.toLocalTime.transformInto[Time])
           )
       )
       .withFieldComputed(_.name, _.mealRow.name)
@@ -45,8 +47,8 @@ object Meal {
         mealRow = Tables.MealRow(
           id = meal.id.transformInto[UUID],
           userId = userId.transformInto[UUID],
-          consumedOnDate = meal.date.date.transformInto[java.sql.Date],
-          consumedOnTime = meal.date.time.map(_.transformInto[java.sql.Time]),
+          consumedOnDate = meal.date.date.transformInto[LocalDate].transformInto[java.sql.Date],
+          consumedOnTime = meal.date.time.map(_.transformInto[LocalTime].transformInto[java.sql.Time]),
           name = meal.name
         ),
         mealEntryRows = meal.entries.map(me => (me, meal.id).transformInto[Tables.MealEntryRow])
