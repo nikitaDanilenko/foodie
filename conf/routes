@@ -24,3 +24,4 @@ PATCH  /meal/delete-meal-entry/:id   controllers.meal.MealController.deleteMealE
 GET    /stats                        controllers.stats.StatsController.get
 
 GET    /                             controllers.home.HomeController.home
+GET    /login                        controllers.login.LoginController.login
