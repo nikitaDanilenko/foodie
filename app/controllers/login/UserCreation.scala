@@ -16,7 +16,7 @@ import scala.concurrent.Future
 case class UserCreation(
     nickname: String,
     password: String,
-    displayName: String,
+    displayName: Option[String],
     email: String
 )
 

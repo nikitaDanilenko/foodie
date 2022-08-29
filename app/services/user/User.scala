@@ -2,13 +2,13 @@ package services.user
 
 import db.generated.Tables
 import io.scalaland.chimney.Transformer
-import io.scalaland.chimney.dsl._
 import services.UserId
+import utils.TransformerUtils.Implicits._
 
 case class User(
     id: UserId,
     nickname: String,
-    displayName: String,
+    displayName: Option[String],
     email: String,
     salt: String,
     hash: String
@@ -16,14 +16,14 @@ case class User(
 
 object User {
 
-  implicit val toRow: Transformer[User, Tables.UserRow] = user =>
-    user
-      .into[Tables.UserRow]
-      .transform
+  implicit val toRow: Transformer[User, Tables.UserRow] =
+    Transformer
+      .define[User, Tables.UserRow]
+      .buildTransformer
 
-  implicit val fromRow: Transformer[Tables.UserRow, User] = user =>
-    user
-      .into[User]
-      .transform
+  implicit val fromRow: Transformer[Tables.UserRow, User] =
+    Transformer
+      .define[Tables.UserRow, User]
+      .buildTransformer
 
 }
