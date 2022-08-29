@@ -9,8 +9,6 @@ import controllers.login.Credentials
 import controllers.meal._
 import controllers.recipe._
 import controllers.stats.{ Amounts, NutrientInformation, NutrientUnit, Stats }
-import services.meal.MealEntryUpdate
-import services.recipe.AmountUnit
 import shapeless.Lazy
 import utils.date.{ Date, SimpleDate, Time }
 
@@ -36,7 +34,8 @@ object Bridge {
       )
     )
 
-    val encodeListMatch = """Encode.list \(List.map (.*) (.*)\)""".r
+    // Simplified assumption: the encoder and the value do not contain spaces or parentheses.
+    val encodeListMatch = """Encode.list \(List.map ([^)\s]*) ([^)\s]*)\)""".r
     val updatedContent  =
       /* The bridge library puts a no longer existing function call here,
          which is why we manually replace it with the correct function.*/
@@ -52,7 +51,10 @@ object Bridge {
       encodeListMatch
         .replaceAllIn(
           updatedContent,
-          _ match { case encodeListMatch(encoder, value) => s"Encode.list $encoder $value" }
+          _ match {
+            case encodeListMatch(encoder, value) =>
+              s"Encode.list $encoder $value"
+          }
         )
   }
 
