@@ -1,2 +1,2 @@
 alter table "user"
-    add unique nickname;
+    add unique (nickname);
