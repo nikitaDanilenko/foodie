@@ -1,6 +1,8 @@
 package controllers.login
 
-import cats.data.OptionT
+import cats.data.{ EitherT, OptionT }
+import cats.effect.unsafe.implicits.global
+import errors.ServerError
 import io.circe.syntax._
 import javax.inject.Inject
 import play.api.libs.circe.Circe
@@ -11,15 +13,16 @@ import services.user.{ PasswordParameters, User, UserService }
 import spire.math.Natural
 import utils.jwt.JwtUtil
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 class LoginController @Inject() (
     cc: ControllerComponents,
-    userService: UserService,
-    jwtConfiguration: JwtConfiguration
+    userService: UserService
 )(implicit executionContext: ExecutionContext)
     extends AbstractController(cc)
     with Circe {
+
+  private val jwtConfiguration = JwtConfiguration.default
 
   def login: Action[Credentials] =
     Action.async(circe.tolerantJson[Credentials]) { request =>
@@ -41,6 +44,31 @@ class LoginController @Inject() (
         .fold(
           BadRequest("Invalid credentials")
         )(jwt => Ok(jwt.asJson))
+    }
+
+  def createUser: Action[String] =
+    Action.async(circe.tolerantJson[String]) { request =>
+      val action = for {
+        userCreation <- EitherT.fromEither[Future](
+          JwtUtil.validateJwt[UserCreation](request.body, jwtConfiguration.signaturePublicKey)
+        )
+        user     <- EitherT.liftF[Future, ServerError, User](UserCreation.create(userCreation))
+        response <- EitherT.liftF[Future, ServerError, Boolean](userService.add(user))
+      } yield {
+        if (response)
+          Ok(s"Created user '${userCreation.nickname}'")
+        else
+          BadRequest(s"An error occurred while creating the user.")
+      }
+      action
+        .fold(
+          error => BadRequest(error.asJson),
+          identity
+        )
+        .recover {
+          case ex =>
+            BadRequest(s"An error occurred while creating the user: ${ex.getMessage}")
+        }
     }
 
 }

@@ -18,6 +18,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 trait UserService {
   def get(userId: UserId): Future[Option[User]]
   def getByNickname(nickname: String): Future[Option[User]]
+  def add(user: User): Future[Boolean]
 }
 
 object UserService {
@@ -25,6 +26,7 @@ object UserService {
   trait Companion {
     def get(userId: UserId)(implicit executionContext: ExecutionContext): DBIO[Option[User]]
     def getByNickname(nickname: String)(implicit executionContext: ExecutionContext): DBIO[Option[User]]
+    def add(user: User)(implicit executionContext: ExecutionContext): DBIO[Boolean]
   }
 
   class Live @Inject() (
@@ -36,6 +38,7 @@ object UserService {
       with HasDatabaseConfigProvider[PostgresProfile] {
     override def get(userId: UserId): Future[Option[User]]             = db.run(companion.get(userId))
     override def getByNickname(nickname: String): Future[Option[User]] = db.run(companion.getByNickname(nickname))
+    override def add(user: User): Future[Boolean]                      = db.run(companion.add(user))
   }
 
   object Live extends Companion {
@@ -59,6 +62,10 @@ object UserService {
       )
         .map(_.transformInto[User])
         .value
+
+    override def add(user: User)(implicit executionContext: ExecutionContext): DBIO[Boolean] =
+      (Tables.User += user.transformInto[Tables.UserRow])
+        .map(_ > 0)
 
   }
 
