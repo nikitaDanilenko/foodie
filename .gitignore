@@ -9,3 +9,4 @@ target
 
 # Ignore the deployment file due to possibly sensitive content.
 deployment.env
+/.bsp/sbt.json
