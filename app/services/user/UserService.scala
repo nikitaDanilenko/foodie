@@ -17,12 +17,14 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 trait UserService {
   def get(userId: UserId): Future[Option[User]]
+  def getByNickname(nickname: String): Future[Option[User]]
 }
 
 object UserService {
 
   trait Companion {
     def get(userId: UserId)(implicit executionContext: ExecutionContext): DBIO[Option[User]]
+    def getByNickname(nickname: String)(implicit executionContext: ExecutionContext): DBIO[Option[User]]
   }
 
   class Live @Inject() (
@@ -32,7 +34,8 @@ object UserService {
       executionContext: ExecutionContext
   ) extends UserService
       with HasDatabaseConfigProvider[PostgresProfile] {
-    override def get(userId: UserId): Future[Option[User]] = db.run(companion.get(userId))
+    override def get(userId: UserId): Future[Option[User]]             = db.run(companion.get(userId))
+    override def getByNickname(nickname: String): Future[Option[User]] = db.run(companion.getByNickname(nickname))
   }
 
   object Live extends Companion {
@@ -41,6 +44,16 @@ object UserService {
       OptionT(
         Tables.User
           .filter(_.id === userId.transformInto[UUID])
+          .result
+          .headOption: DBIO[Option[Tables.UserRow]]
+      )
+        .map(_.transformInto[User])
+        .value
+
+    override def getByNickname(nickname: String)(implicit executionContext: ExecutionContext): DBIO[Option[User]] =
+      OptionT(
+        Tables.User
+          .filter(_.nickname === nickname)
           .result
           .headOption: DBIO[Option[Tables.UserRow]]
       )
