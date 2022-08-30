@@ -108,7 +108,7 @@ update msg model =
 login : Configuration -> Credentials -> Cmd Msg
 login conf cred =
     Http.post
-        { url = conf.mainPageURL ++ "/login"
+        { url = conf.backendURL ++ "/login"
         , expect = Http.expectString GotResponse
         , body = Http.jsonBody (encoderCredentials cred)
         }
