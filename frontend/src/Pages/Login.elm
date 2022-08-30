@@ -1,6 +1,7 @@
-module Pages.Login exposing (Model, Msg, Flags, init, update, view)
+module Pages.Login exposing (Flags, Model, Msg, init, update, view)
 
 import Api.Types.Credentials exposing (Credentials, encoderCredentials)
+import Browser.Navigation
 import Configuration exposing (Configuration)
 import Html exposing (Html, button, div, input, label, text)
 import Html.Attributes exposing (autocomplete, class, for, id, type_)
@@ -99,7 +100,7 @@ update msg model =
             case remoteData of
                 Ok token ->
                     -- todo: Save token in browser memory
-                    ( state.set Success model, Cmd.none )
+                    ( state.set Success model, navigateToOverview )
 
                 Err error ->
                     ( state.set Failure model, Cmd.none )
@@ -108,7 +109,17 @@ update msg model =
 login : Configuration -> Credentials -> Cmd Msg
 login conf cred =
     Http.post
-        { url = conf.backendURL ++ "/login"
+        { url = String.join "/" [ conf.backendURL, "login" ]
         , expect = Http.expectString GotResponse
         , body = Http.jsonBody (encoderCredentials cred)
         }
+
+
+navigateToOverview : Cmd Msg
+navigateToOverview =
+    -- todo: Check loading the address works in a non-local setting.
+    let
+        address =
+            String.join "/" [ "", "#", "overview" ]
+    in
+    Browser.Navigation.load address
