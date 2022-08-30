@@ -10,6 +10,7 @@ import Html.Events.Extra exposing (onEnter)
 import Http exposing (Error)
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
+import Ports exposing (storeToken)
 import Util.CredentialsUtil as CredentialsUtil
 import Util.TriState exposing (TriState(..))
 
@@ -57,7 +58,7 @@ init flags =
 
 
 view : Model -> Html Msg
-view model =
+view _ =
     div [ id "initialMain" ]
         [ div [ id "userField" ]
             [ label [ for "user" ] [ text "Nickname" ]
@@ -99,10 +100,14 @@ update msg model =
         GotResponse remoteData ->
             case remoteData of
                 Ok token ->
-                    -- todo: Save token in browser memory
-                    ( state.set Success model, navigateToOverview )
+                    ( state.set Success model
+                    , Cmd.batch
+                        [ storeToken token
+                        , navigateToOverview
+                        ]
+                    )
 
-                Err error ->
+                Err _ ->
                     ( state.set Failure model, Cmd.none )
 
 
