@@ -1,13 +1,13 @@
 module Main exposing (main)
 
---import Pages.Overview.Overview as Overview
-
 import Basics.Extra exposing (flip)
 import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav
 import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
 import Pages.Login as Login
+import Pages.Overview as Overview
+import Ports exposing (doFetchToken, fetchToken)
 import Url exposing (Url)
 import Url.Parser as Parser exposing (Parser, s)
 
@@ -18,10 +18,15 @@ main =
         { init = init
         , onUrlChange = ChangedUrl
         , onUrlRequest = ClickedLink
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         , update = update
         , view = \model -> { title = titleFor model, body = [ view model ] }
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    fetchToken FetchToken
 
 
 type alias Model =
@@ -33,18 +38,16 @@ type alias Model =
 
 type Page
     = Login Login.Model
-      --| Overview Overview.Model
+    | Overview Overview.Model
     | NotFound
 
 
 type Msg
     = ClickedLink UrlRequest
     | ChangedUrl Url
+    | FetchToken String
     | LoginMsg Login.Msg
-
-
-
---| OverviewMsg Overview.Msg
+    | OverviewMsg Overview.Msg
 
 
 titleFor : Model -> String
@@ -54,11 +57,15 @@ titleFor _ =
 
 init : Configuration -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init configuration url key =
-    stepTo url
-        { page = NotFound
-        , key = key
-        , configuration = configuration
-        }
+    let
+        ( model, cmd ) =
+            stepTo url
+                { page = NotFound
+                , key = key
+                , configuration = configuration
+                }
+    in
+    ( model, Cmd.batch [ doFetchToken (), cmd ] )
 
 
 view : Model -> Html Msg
@@ -67,9 +74,9 @@ view model =
         Login login ->
             Html.map LoginMsg (Login.view login)
 
-        --
-        --Overview overview ->
-        --    Html.map OverviewMsg (Overview.view overview)
+        Overview overview ->
+            Html.map OverviewMsg (Overview.view overview)
+
         NotFound ->
             div [] [ text "Page not found" ]
 
@@ -91,9 +98,21 @@ update msg model =
         ( LoginMsg loginMsg, Login login ) ->
             stepLogin model (Login.update loginMsg login)
 
-        --
-        --( OverviewMsg overviewMsg, Overview overview ) ->
-        --    stepOverview model (Overview.update overviewMsg overview)
+        -- todo: Check all cases, and possibly refactor to have less duplication.
+        ( FetchToken token, page ) ->
+            case page of
+                Login _ ->
+                    ( model, Cmd.none )
+
+                Overview overview ->
+                    stepOverview model (Overview.update (Overview.updateToken token) overview)
+
+                NotFound ->
+                    ( model, Cmd.none )
+
+        ( OverviewMsg overviewMsg, Overview overview ) ->
+            stepOverview model (Overview.update overviewMsg overview)
+
         _ ->
             ( model, Cmd.none )
 
@@ -106,8 +125,9 @@ stepTo url model =
                 LoginRoute flags ->
                     Login.init flags |> stepLogin model
 
-        --OverviewRoute flags ->
-        --    Overview.init flags |> stepOverview model
+                OverviewRoute flags ->
+                    Overview.init flags |> stepOverview model
+
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -117,19 +137,14 @@ stepLogin model ( login, cmd ) =
     ( { model | page = Login login }, Cmd.map LoginMsg cmd )
 
 
-
---
---stepOverview : Model -> ( Overview.Model, Cmd Overview.Msg ) -> ( Model, Cmd Msg )
---stepOverview model ( overview, cmd ) =
---    ( { model | page = Overview overview }, Cmd.map OverviewMsg cmd )
+stepOverview : Model -> ( Overview.Model, Cmd Overview.Msg ) -> ( Model, Cmd Msg )
+stepOverview model ( overview, cmd ) =
+    ( { model | page = Overview overview }, Cmd.map OverviewMsg cmd )
 
 
 type Route
     = LoginRoute Login.Flags
-
-
-
---| OverviewRoute Overview.Flags
+    | OverviewRoute Overview.Flags
 
 
 routeParser : Configuration -> Parser (Route -> a) a
@@ -140,17 +155,10 @@ routeParser configuration =
 
         overviewParser =
             s "overview"
-                |> Parser.map
-                    (\token ->
-                        { token = token
-                        , configuration = configuration
-                        }
-                    )
     in
     Parser.oneOf
         [ route loginParser (LoginRoute { configuration = configuration })
-
-        --, route overviewParser OverviewRoute
+        , route overviewParser (OverviewRoute { configuration = configuration, token = "" })
         ]
 
 
