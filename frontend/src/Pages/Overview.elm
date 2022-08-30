@@ -52,7 +52,6 @@ view model =
     div [ id "overviewMain" ]
         [ div [ id "recipesButton" ]
             [ button [ class "button", onClick Recipes ] [ text "Recipes" ]
-            , text model.token
             ]
         , div [ id "projectsButton" ]
             [ button [ class "button", onClick Meals ] [ text "Meals" ] ]
@@ -77,6 +76,7 @@ update msg model =
 
                         _ ->
                             ""
+
                 link =
                     UrlBuilder.relative
                         [ model.configuration.mainPageURL
