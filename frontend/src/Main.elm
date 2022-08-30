@@ -7,11 +7,9 @@ import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav
 import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
-import Maybe.Extra
-import Pages.Login.Login as Login
-import Url exposing (Protocol(..), Url)
-import Url.Parser as Parser exposing ((</>), (<?>), Parser, s)
-import Url.Parser.Query as Query
+import Pages.Login as Login
+import Url exposing (Url)
+import Url.Parser as Parser exposing (Parser, s)
 
 
 main : Program Configuration Model Msg
@@ -133,31 +131,25 @@ type Route
 
 --| OverviewRoute Overview.Flags
 
+
 routeParser : Configuration -> Parser (Route -> a) a
 routeParser configuration =
     let
         loginParser =
             s "login"
-                |> Parser.map
-                    (\language ->
-                        { language = language
-                        , configuration = configuration
-                        }
-                    )
 
         overviewParser =
-            (s "overview"
-            )
+            s "overview"
                 |> Parser.map
-                    (\token language ->
+                    (\token ->
                         { token = token
-                        , language = language
                         , configuration = configuration
                         }
                     )
     in
     Parser.oneOf
-        [ route loginParser LoginRoute
+        [ route loginParser (LoginRoute { configuration = configuration })
+
         --, route overviewParser OverviewRoute
         ]
 

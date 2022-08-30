@@ -1,12 +1,114 @@
-module Pages.Login exposing (Model, init, update, view)
+module Pages.Login exposing (Model, Msg, Flags, init, update, view)
 
-import Util.TriState exposing (TriState)
+import Api.Types.Credentials exposing (Credentials, encoderCredentials)
+import Configuration exposing (Configuration)
+import Html exposing (Html, button, div, input, label, text)
+import Html.Attributes exposing (autocomplete, class, for, id, type_)
+import Html.Events exposing (onClick, onInput)
+import Html.Events.Extra exposing (onEnter)
+import Http exposing (Error)
+import Monocle.Compose as Compose
+import Monocle.Lens exposing (Lens)
+import Util.CredentialsUtil as CredentialsUtil
+import Util.TriState exposing (TriState(..))
 
 
 type alias Model =
-    { nickname : String
-    , password : String
+    { credentials : Credentials
     , state : TriState
+    , configuration : Configuration
     }
 
-nick
+
+credentials : Lens Model Credentials
+credentials =
+    Lens .credentials (\b a -> { a | credentials = b })
+
+
+state : Lens Model TriState
+state =
+    Lens .state (\b a -> { a | state = b })
+
+
+type Msg
+    = SetNickname String
+    | SetPassword String
+    | Login
+    | GotResponse (Result Error String)
+
+
+type alias Flags =
+    { configuration : Configuration
+    }
+
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    ( { credentials =
+            { nickname = ""
+            , password = ""
+            }
+      , state = Initial
+      , configuration = flags.configuration
+      }
+    , Cmd.none
+    )
+
+
+view : Model -> Html Msg
+view model =
+    div [ id "initialMain" ]
+        [ div [ id "userField" ]
+            [ label [ for "user" ] [ text "Nickname" ]
+            , input [ autocomplete True, onInput SetNickname, onEnter Login ] []
+            ]
+        , div [ id "passwordField" ]
+            [ label [ for "password" ] [ text "Password" ]
+            , input [ type_ "password", autocomplete True, onInput SetPassword, onEnter Login ] []
+            ]
+        , div [ id "fetchButton" ]
+            [ button [ class "button", onClick Login ] [ text "Log In" ] ]
+        ]
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        SetNickname n ->
+            ( (credentials
+                |> Compose.lensWithLens CredentialsUtil.nickname
+              ).set
+                n
+                model
+            , Cmd.none
+            )
+
+        SetPassword p ->
+            ( (credentials
+                |> Compose.lensWithLens CredentialsUtil.password
+              ).set
+                p
+                model
+            , Cmd.none
+            )
+
+        Login ->
+            ( model, login model.configuration model.credentials )
+
+        GotResponse remoteData ->
+            case remoteData of
+                Ok token ->
+                    -- todo: Save token in browser memory
+                    ( state.set Success model, Cmd.none )
+
+                Err error ->
+                    ( state.set Failure model, Cmd.none )
+
+
+login : Configuration -> Credentials -> Cmd Msg
+login conf cred =
+    Http.post
+        { url = conf.mainPageURL ++ "/login"
+        , expect = Http.expectString GotResponse
+        , body = Http.jsonBody (encoderCredentials cred)
+        }
