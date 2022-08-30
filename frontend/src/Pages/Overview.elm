@@ -48,7 +48,7 @@ init flags =
 
 
 view : Model -> Html Msg
-view model =
+view _ =
     div [ id "overviewMain" ]
         [ div [ id "recipesButton" ]
             [ button [ class "button", onClick Recipes ] [ text "Recipes" ]
