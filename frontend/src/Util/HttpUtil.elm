@@ -72,6 +72,9 @@ errorToString error =
 userTokenHeader : String
 userTokenHeader = "User-Token"
 
+jwtHeader : String -> Http.Header
+jwtHeader = Http.header userTokenHeader
+
 postJsonWithJWT :
     String
     ->
@@ -83,9 +86,27 @@ postJsonWithJWT :
 postJsonWithJWT jwt request =
     Http.request
         { method = "POST"
-        , headers = [ Http.header userTokenHeader jwt ]
+        , headers = [ jwtHeader jwt ]
         , url = request.url
         , body = Http.jsonBody request.body
+        , expect = request.expect
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+getJsonWithJWT :
+  String
+    ->
+        { url : String
+        , expect : Expect msg
+        }
+    -> Cmd msg
+getJsonWithJWT jwt request =
+    Http.request
+        { method = "POST"
+        , headers = [ jwtHeader jwt ]
+        , url = request.url
+        , body = Http.emptyBody
         , expect = request.expect
         , timeout = Nothing
         , tracker = Nothing
