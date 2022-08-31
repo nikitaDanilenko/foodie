@@ -24,6 +24,7 @@ token =
 type Msg
     = Recipes
     | Meals
+    | Statistics
     | UpdateToken String
 
 
@@ -51,10 +52,11 @@ view : Model -> Html Msg
 view _ =
     div [ id "overviewMain" ]
         [ div [ id "recipesButton" ]
-            [ button [ class "button", onClick Recipes ] [ text "Recipes" ]
-            ]
-        , div [ id "projectsButton" ]
+            [ button [ class "button", onClick Recipes ] [ text "Recipes" ] ]
+        , div [ id "mealsButton" ]
             [ button [ class "button", onClick Meals ] [ text "Meals" ] ]
+        , div [ id "statsButton" ]
+            [ button [ class "button", onClick Statistics ] [ text "Statistics" ] ]
         ]
 
 
@@ -73,6 +75,9 @@ update msg model =
 
                         Meals ->
                             "meals"
+
+                        Statistics ->
+                            "statistics"
 
                         _ ->
                             ""
