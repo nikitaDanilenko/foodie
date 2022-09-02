@@ -8,10 +8,12 @@ import Html.Attributes exposing (autocomplete, class, for, id, type_)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Http exposing (Error)
+import Json.Decode as Decode
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Ports exposing (storeToken)
 import Util.CredentialsUtil as CredentialsUtil
+import Util.HttpUtil as HttpUtil
 import Util.TriState exposing (TriState(..))
 
 
@@ -115,7 +117,7 @@ login : Configuration -> Credentials -> Cmd Msg
 login conf cred =
     Http.post
         { url = String.join "/" [ conf.backendURL, "login" ]
-        , expect = Http.expectString GotResponse
+        , expect = HttpUtil.expectJson GotResponse Decode.string
         , body = Http.jsonBody (encoderCredentials cred)
         }
 
