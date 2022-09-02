@@ -75,7 +75,7 @@ init flags =
         ( jwt, cmd ) =
             case flags.jwt of
                 Just token ->
-                    ( token, Cmd.none )
+                    ( token, fetchRecipes flags.configuration token )
 
                 Nothing ->
                     ( "", doFetchToken () )
@@ -291,7 +291,7 @@ update msg model =
                     ( model, Cmd.none )
 
         UpdateJWT jwt ->
-            ( jwtLens.set jwt model, Cmd.none )
+            ( jwtLens.set jwt model, fetchRecipes model.configuration model.jwt )
 
 
 recipeIdIs : RecipeId -> Either Recipe (Editing Recipe RecipeUpdate) -> Bool
