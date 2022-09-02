@@ -11,37 +11,25 @@ import java.util.UUID
 case class Recipe(
     id: RecipeId,
     name: String,
-    description: Option[String],
-    ingredients: Seq[Ingredient]
+    description: Option[String]
 )
 
 object Recipe {
 
-  case class DBRepresentation(
-      recipeRow: Tables.RecipeRow,
-      ingredientRows: Seq[Tables.RecipeIngredientRow]
-  )
-
-  implicit val fromRepresentation: Transformer[DBRepresentation, Recipe] =
+  implicit val fromDB: Transformer[Tables.RecipeRow, Recipe] =
     Transformer
-      .define[DBRepresentation, Recipe]
-      .withFieldComputed(_.id, _.recipeRow.id.transformInto[RecipeId])
-      .withFieldComputed(_.name, _.recipeRow.name)
-      .withFieldComputed(_.description, _.recipeRow.description)
-      .withFieldComputed(_.ingredients, _.ingredientRows.map(_.transformInto[Ingredient]))
+      .define[Tables.RecipeRow, Recipe]
       .buildTransformer
 
-  implicit val toRepresentation: Transformer[(Recipe, UserId), DBRepresentation] = {
+  implicit val toDB: Transformer[(Recipe, UserId), Tables.RecipeRow] = {
     case (recipe, userId) =>
-      DBRepresentation(
-        Tables.RecipeRow(
-          id = recipe.id.transformInto[UUID],
-          userId = userId.transformInto[UUID],
-          name = recipe.name,
-          description = recipe.description
-        ),
-        recipe.ingredients.map(i => (i, recipe.id).transformInto[Tables.RecipeIngredientRow])
+      Tables.RecipeRow(
+        id = recipe.id.transformInto[UUID],
+        userId = userId.transformInto[UUID],
+        name = recipe.name,
+        description = recipe.description
       )
+
   }
 
 }

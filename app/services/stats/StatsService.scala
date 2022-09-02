@@ -7,10 +7,10 @@ import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
 import services.{ MealId, RecipeId, UserId }
 import services.meal.MealService
 import services.nutrient.{ NutrientMap, NutrientService }
-import services.recipe.RecipeService
+import services.recipe.{ Ingredient, RecipeService }
 import slick.dbio.DBIO
-
 import javax.inject.Inject
+
 import scala.concurrent.{ ExecutionContext, Future }
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
@@ -57,18 +57,15 @@ object StatsService {
         mealIdsPlain <- Tables.Meal.filter(m => dateFilter(m.consumedOnDate)).map(_.id).result
         mealIds = mealIdsPlain.map(_.transformInto[MealId])
         meals <- mealIds.traverse(MealService.Live.getMeal(userId, _)).map(_.flatten)
-        recipes <-
+        nutrientsPerRecipe <-
           meals
             .flatMap(_.entries.map(_.recipeId))
             .distinct
-            .traverse(RecipeService.Live.getRecipe(userId, _))
-            .map(_.flatten)
-        nutrientsPerRecipe <-
-          recipes
-            .traverse(r =>
-              NutrientService.Live
-                .nutrientsOfIngredients(r.ingredients)
-                .map(r.id -> _): DBIO[(RecipeId, NutrientMap)]
+            .traverse(recipeId =>
+              RecipeService.Live
+                .getIngredients(userId, recipeId)
+                .flatMap(NutrientService.Live.nutrientsOfIngredients)
+                .map(recipeId -> _): DBIO[(RecipeId, NutrientMap)]
             )
             .map(_.toMap)
       } yield {

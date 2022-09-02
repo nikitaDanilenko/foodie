@@ -106,6 +106,20 @@ class RecipeController @Inject() (
         )
     }
 
+  def getIngredients(id: UUID): Action[AnyContent] =
+    jwtAction.async { request =>
+      recipeService
+        .getIngredients(
+          request.user.id,
+          id.transformInto[RecipeId]
+        )
+        .map(
+          _.pipe(_.map(_.transformInto[Ingredient]).asJson)
+            .pipe(Ok(_))
+        )
+        .recover(recipeErrorHandler)
+    }
+
   def addIngredient: Action[IngredientCreation] =
     jwtAction.async(circe.tolerantJson[IngredientCreation]) { request =>
       EitherT(

@@ -12,9 +12,11 @@ import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import utils.DBIOUtil.instances._
 import utils.TransformerUtils.Implicits._
-
 import java.util.UUID
+
+import cats.Applicative
 import javax.inject.Inject
+
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait RecipeService {
@@ -28,6 +30,7 @@ trait RecipeService {
   def updateRecipe(userId: UserId, recipeUpdate: RecipeUpdate): Future[ServerError.Or[Recipe]]
   def deleteRecipe(userId: UserId, id: RecipeId): Future[Boolean]
 
+  def getIngredients(userId: UserId, recipeId: RecipeId): Future[List[Ingredient]]
   def addIngredient(userId: UserId, ingredientCreation: IngredientCreation): Future[ServerError.Or[Ingredient]]
   def updateIngredient(userId: UserId, ingredientUpdate: IngredientUpdate): Future[ServerError.Or[Ingredient]]
   def removeIngredient(userId: UserId, ingredientId: IngredientId): Future[Boolean]
@@ -65,6 +68,11 @@ object RecipeService {
         userId: UserId,
         id: RecipeId
     )(implicit ec: ExecutionContext): DBIO[Boolean]
+
+    def getIngredients(
+        userId: UserId,
+        recipeId: RecipeId
+    )(implicit ec: ExecutionContext): DBIO[List[Ingredient]]
 
     def addIngredient(
         userId: UserId,
@@ -138,6 +146,10 @@ object RecipeService {
         id: RecipeId
     ): Future[Boolean] = db.run(companion.deleteRecipe(userId, id))
 
+    override def getIngredients(userId: UserId, recipeId: RecipeId): Future[List[Ingredient]] =
+      db.run(companion.getIngredients(userId, recipeId))
+        .map(_.transformInto[List[Ingredient]])
+
     override def addIngredient(
         userId: UserId,
         ingredientCreation: IngredientCreation
@@ -187,25 +199,10 @@ object RecipeService {
 
     override def getRecipe(userId: UserId, id: RecipeId)(implicit
         ec: ExecutionContext
-    ): DBIO[Option[Recipe]] = {
-      val recipeId = id.transformInto[UUID]
-
-      val transformer = for {
-        recipeRow <- OptionT(
-          recipeQuery(userId, id).result.headOption: DBIO[Option[Tables.RecipeRow]]
-        )
-        ingredientRows <- OptionT.liftF(
-          Tables.RecipeIngredient.filter(_.recipeId === recipeId).result: DBIO[Seq[Tables.RecipeIngredientRow]]
-        )
-      } yield Recipe
-        .DBRepresentation(
-          recipeRow,
-          ingredientRows
-        )
-        .transformInto[Recipe]
-
-      transformer.value
-    }
+    ): DBIO[Option[Recipe]] =
+      OptionT(
+        recipeQuery(userId, id).result.headOption: DBIO[Option[Tables.RecipeRow]]
+      ).map(_.transformInto[Recipe]).value
 
     override def createRecipe(
         userId: UserId,
@@ -214,14 +211,10 @@ object RecipeService {
     )(implicit
         ec: ExecutionContext
     ): DBIO[Recipe] = {
-      val recipe           = RecipeCreation.create(id, recipeCreation)
-      val dbRepresentation = (recipe, userId).transformInto[Recipe.DBRepresentation]
-      (Tables.Recipe.returning(Tables.Recipe) += dbRepresentation.recipeRow)
-        .map { recipeRow =>
-          dbRepresentation
-            .copy(recipeRow = recipeRow)
-            .transformInto[Recipe]
-        }
+      val recipe    = RecipeCreation.create(id, recipeCreation)
+      val recipeRow = (recipe, userId).transformInto[Tables.RecipeRow]
+      (Tables.Recipe.returning(Tables.Recipe) += recipeRow)
+        .map(_.transformInto[Recipe])
     }
 
     // TODO: Bottleneck - updates concern only the non-ingredient parts, but the full recipe is fetched again.
@@ -240,8 +233,7 @@ object RecipeService {
               .update(recipe, recipeUpdate),
             userId
           )
-            .transformInto[Recipe.DBRepresentation]
-            .recipeRow
+            .transformInto[Tables.RecipeRow]
         )
         updatedRecipe <- findAction
       } yield updatedRecipe
@@ -252,6 +244,27 @@ object RecipeService {
     ): DBIO[Boolean] =
       recipeQuery(userId, id).delete
         .map(_ > 0)
+
+    override def getIngredients(
+        userId: UserId,
+        recipeId: RecipeId
+    )(implicit
+        ec: ExecutionContext
+    ): DBIO[List[Ingredient]] =
+      for {
+        exists <-
+          Tables.Recipe
+            .filter(r => r.id === recipeId.transformInto[UUID] && r.userId === userId.transformInto[UUID])
+            .exists
+            .result
+        ingredients <-
+          if (exists)
+            Tables.RecipeIngredient
+              .filter(_.recipeId === recipeId.transformInto[UUID])
+              .result
+              .map(_.map(_.transformInto[Ingredient]).toList)
+          else Applicative[DBIO].pure(List.empty)
+      } yield ingredients
 
     override def addIngredient(
         userId: UserId,

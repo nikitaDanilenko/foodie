@@ -13,8 +13,7 @@ object RecipeCreation {
     Recipe(
       id = id,
       name = recipeCreation.name,
-      description = recipeCreation.description,
-      ingredients = Seq.empty
+      description = recipeCreation.description
     )
 
 }

@@ -10,8 +10,7 @@ import java.util.UUID
 case class Recipe(
     id: UUID,
     name: String,
-    description: Option[String],
-    ingredients: Seq[Ingredient]
+    description: Option[String]
 )
 
 object Recipe {
