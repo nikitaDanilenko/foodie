@@ -1,9 +1,14 @@
 module Api.Auxiliary exposing (..)
 
+import Api.Types.UUID exposing (UUID)
+
 
 type alias RecipeId =
-    String
+    UUID
 
 
 type alias IngredientId =
-    String
+    UUID
+
+type alias JWT =
+  String
