@@ -94,7 +94,7 @@ view model =
         viewEditRecipes =
             List.map
                 (Either.unpack
-                    (editOrDeleteRecipeLine model.configuration model.jwt)
+                    (editOrDeleteRecipeLine model.configuration)
                     (\e -> e.update |> editRecipeLine e.original.id)
                 )
     in
@@ -110,8 +110,8 @@ view model =
         )
 
 
-editOrDeleteRecipeLine : Configuration -> String -> Recipe -> Html Msg
-editOrDeleteRecipeLine configuration t recipe =
+editOrDeleteRecipeLine : Configuration -> Recipe -> Html Msg
+editOrDeleteRecipeLine configuration recipe =
     tr [ id "editingRecipe" ]
         [ td [] [ label [] [ text recipe.name ] ]
         , td [] [ label [] [ recipe.description |> Maybe.withDefault "" |> text ] ]
