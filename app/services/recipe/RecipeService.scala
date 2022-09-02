@@ -20,7 +20,6 @@ import javax.inject.Inject
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait RecipeService {
-  // TODO: Add suggestion function that presents the valid measures for a food
   def allFoods: Future[Seq[Food]]
   def allMeasures: Future[Seq[Measure]]
 
@@ -180,8 +179,18 @@ object RecipeService {
   object Live extends Companion {
 
     override def allFoods(implicit ec: ExecutionContext): DBIO[Seq[Food]] =
-      Tables.FoodName.result
-        .map(_.map(_.transformInto[Food]))
+      for {
+        foods <- Tables.FoodName.result
+        withMeasure <- foods.traverse { food =>
+          Tables.ConversionFactor
+            .filter(cf => cf.foodId === food.foodId)
+            .map(_.measureId)
+            .result
+            .flatMap(measureIds =>
+              Tables.MeasureName.filter(_.measureId.inSetBind(measureIds)).result.map(ms => food -> ms.toList)
+            ): DBIO[(Tables.FoodNameRow, List[Tables.MeasureNameRow])]
+        }
+      } yield withMeasure.map(_.transformInto[Food])
 
     override def allMeasures(implicit ec: ExecutionContext): DBIO[Seq[Measure]] =
       Tables.MeasureName.result
@@ -217,7 +226,6 @@ object RecipeService {
         .map(_.transformInto[Recipe])
     }
 
-    // TODO: Bottleneck - updates concern only the non-ingredient parts, but the full recipe is fetched again.
     override def updateRecipe(
         userId: UserId,
         recipeUpdate: RecipeUpdate

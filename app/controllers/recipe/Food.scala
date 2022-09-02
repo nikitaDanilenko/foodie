@@ -8,7 +8,8 @@ import utils.TransformerUtils.Implicits._
 @JsonCodec
 case class Food(
     id: Int,
-    name: String
+    name: String,
+    measures: List[Measure]
 )
 
 object Food {
