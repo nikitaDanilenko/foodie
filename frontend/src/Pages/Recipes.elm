@@ -122,7 +122,7 @@ editOrDeleteRecipeLine configuration recipe =
                     UrlBuilder.relative
                         [ configuration.mainPageURL
                         , "#"
-                        , "recipe"
+                        , "ingredient-editor"
                         , recipe.id
                         ]
                         []

@@ -48,6 +48,7 @@ type Page
     = Login Login.Model
     | Overview Overview.Model
     | Recipes Recipes.Model
+    | IngredientEditor IngredientEditor.Model
     | NotFound
 
 
@@ -58,6 +59,7 @@ type Msg
     | LoginMsg Login.Msg
     | OverviewMsg Overview.Msg
     | RecipesMsg Recipes.Msg
+    | IngredientEditorMsg IngredientEditor.Msg
 
 
 titleFor : Model -> String
@@ -90,6 +92,9 @@ view model =
 
         Recipes recipes ->
             Html.map RecipesMsg (Recipes.view recipes)
+
+        IngredientEditor ingredientEditor ->
+            Html.map IngredientEditorMsg (IngredientEditor.view ingredientEditor)
 
         NotFound ->
             div [] [ text "Page not found" ]
@@ -124,6 +129,9 @@ update msg model =
                 Recipes recipes ->
                     stepRecipes model (Recipes.update (Recipes.updateJWT token) recipes)
 
+                IngredientEditor ingredientEditor ->
+                    stepIngredientEditor model (IngredientEditor.update (IngredientEditor.updateJWT token) ingredientEditor)
+
                 NotFound ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
@@ -132,6 +140,9 @@ update msg model =
 
         ( RecipesMsg recipesMsg, Recipes recipes ) ->
             stepRecipes model (Recipes.update recipesMsg recipes)
+
+        ( IngredientEditorMsg ingredientEditorMsg, IngredientEditor ingredientEditor) ->
+            stepIngredientEditor model (IngredientEditor.update ingredientEditorMsg ingredientEditor)
 
         _ ->
             ( model, Cmd.none )
@@ -168,6 +179,10 @@ stepOverview model ( overview, cmd ) =
 stepRecipes : Model -> ( Recipes.Model, Cmd Recipes.Msg ) -> ( Model, Cmd Msg )
 stepRecipes model ( recipes, cmd ) =
     ( { model | page = Recipes recipes }, Cmd.map RecipesMsg cmd )
+
+stepIngredientEditor : Model -> ( IngredientEditor.Model, Cmd IngredientEditor.Msg ) -> ( Model, Cmd Msg )
+stepIngredientEditor model ( ingredientEditor, cmd ) =
+    ( { model | page = IngredientEditor ingredientEditor }, Cmd.map IngredientEditorMsg cmd )
 
 
 type Route
