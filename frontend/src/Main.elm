@@ -5,8 +5,10 @@ import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav
 import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
+import Monocle.Lens exposing (Lens)
 import Pages.Login as Login
 import Pages.Overview as Overview
+import Pages.Recipes as Recipes
 import Ports exposing (doFetchToken, fetchToken)
 import Url exposing (Url)
 import Url.Parser as Parser exposing (Parser, s)
@@ -33,12 +35,17 @@ type alias Model =
     { key : Nav.Key
     , page : Page
     , configuration : Configuration
+    , jwt : Maybe String
     }
 
+jwtLens : Lens Model (Maybe String)
+jwtLens =
+    Lens .jwt (\b a -> { a | jwt = b })
 
 type Page
     = Login Login.Model
     | Overview Overview.Model
+    | Recipes Recipes.Model
     | NotFound
 
 
@@ -48,6 +55,7 @@ type Msg
     | FetchToken String
     | LoginMsg Login.Msg
     | OverviewMsg Overview.Msg
+    | RecipesMsg Recipes.Msg
 
 
 titleFor : Model -> String
@@ -63,6 +71,7 @@ init configuration url key =
                 { page = NotFound
                 , key = key
                 , configuration = configuration
+                , jwt = Nothing
                 }
     in
     ( model, Cmd.batch [ doFetchToken (), cmd ] )
@@ -76,6 +85,9 @@ view model =
 
         Overview overview ->
             Html.map OverviewMsg (Overview.view overview)
+
+        Recipes recipes ->
+            Html.map RecipesMsg (Recipes.view recipes)
 
         NotFound ->
             div [] [ text "Page not found" ]
@@ -102,24 +114,29 @@ update msg model =
         ( FetchToken token, page ) ->
             case page of
                 Login _ ->
-                    ( model, Cmd.none )
+                    ( jwtLens.set (Just token) model, Cmd.none )
 
                 Overview overview ->
-                    stepOverview model (Overview.update (Overview.updateToken token) overview)
+                    stepOverview model (Overview.update (Overview.updateJWT token) overview)
+
+                Recipes recipes ->
+                    stepRecipes model (Recipes.update (Recipes.updateJWT token) recipes)
 
                 NotFound ->
-                    ( model, Cmd.none )
+                    ( jwtLens.set (Just token) model, Cmd.none )
 
         ( OverviewMsg overviewMsg, Overview overview ) ->
             stepOverview model (Overview.update overviewMsg overview)
 
+        (RecipesMsg recipesMsg, Recipes recipes) ->
+          stepRecipes model (Recipes.update recipesMsg recipes)
         _ ->
             ( model, Cmd.none )
 
 
 stepTo : Url -> Model -> ( Model, Cmd Msg )
 stepTo url model =
-    case Parser.parse (routeParser model.configuration) (fragmentToPath url) of
+    case Parser.parse (routeParser model.jwt model.configuration) (fragmentToPath url) of
         Just answer ->
             case answer of
                 LoginRoute flags ->
@@ -127,6 +144,9 @@ stepTo url model =
 
                 OverviewRoute flags ->
                     Overview.init flags |> stepOverview model
+
+                RecipesRoute flags ->
+                    Recipes.init flags |> stepRecipes model
 
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
@@ -142,23 +162,36 @@ stepOverview model ( overview, cmd ) =
     ( { model | page = Overview overview }, Cmd.map OverviewMsg cmd )
 
 
+stepRecipes : Model -> ( Recipes.Model, Cmd Recipes.Msg ) -> ( Model, Cmd Msg )
+stepRecipes model ( recipes, cmd ) =
+    ( { model | page = Recipes recipes }, Cmd.map RecipesMsg cmd )
+
+
 type Route
     = LoginRoute Login.Flags
     | OverviewRoute Overview.Flags
+    | RecipesRoute Recipes.Flags
 
 
-routeParser : Configuration -> Parser (Route -> a) a
-routeParser configuration =
+routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
+routeParser jwt configuration =
     let
         loginParser =
             s "login"
 
         overviewParser =
             s "overview"
+
+        recipesParser =
+            s "recipes"
+
+        flags =
+            { configuration = configuration, jwt = jwt }
     in
     Parser.oneOf
         [ route loginParser (LoginRoute { configuration = configuration })
-        , route overviewParser (OverviewRoute { configuration = configuration, token = "" })
+        , route overviewParser (OverviewRoute flags)
+        , route recipesParser (RecipesRoute flags)
         ]
 
 

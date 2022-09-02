@@ -1,4 +1,4 @@
-module Pages.Overview exposing (Flags, Model, Msg, init, update, updateToken, view)
+module Pages.Overview exposing (Flags, Model, Msg, init, update, updateJWT, view)
 
 import Browser.Navigation as Navigation
 import Configuration exposing (Configuration)
@@ -25,27 +25,36 @@ type Msg
     = Recipes
     | Meals
     | Statistics
-    | UpdateToken String
+    | UpdateJWT String
 
 
-updateToken : String -> Msg
-updateToken =
-    UpdateToken
+updateJWT : String -> Msg
+updateJWT =
+    UpdateJWT
 
 
 type alias Flags =
     { configuration : Configuration
-    , token : String
+    , jwt : Maybe String
     }
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { configuration = flags.configuration
-      , token = flags.token
-      }
-    , doFetchToken ()
-    )
+    case flags.jwt of
+        Just jwt ->
+            ( { configuration = flags.configuration
+              , token = jwt
+              }
+            , Cmd.none
+            )
+
+        Nothing ->
+            ( { configuration = flags.configuration
+              , token = ""
+              }
+            , doFetchToken ()
+            )
 
 
 view : Model -> Html Msg
@@ -63,7 +72,7 @@ view _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UpdateToken t ->
+        UpdateJWT t ->
             ( token.set t model, Cmd.none )
 
         _ ->

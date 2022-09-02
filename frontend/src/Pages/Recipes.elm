@@ -1,37 +1,47 @@
-module Pages.Recipes exposing (Flags, Model, Msg, init, update, updateToken, view)
+module Pages.Recipes exposing (Flags, Model, Msg, init, update, updateJWT, view)
 
 import Api.Auxiliary exposing (RecipeId)
 import Api.Lenses.RecipeUpdateLens as RecipeUpdateLens
 import Api.Types.Recipe exposing (Recipe, decoderRecipe)
-import Api.Types.RecipeUpdate exposing (RecipeUpdate)
+import Api.Types.RecipeCreation exposing (RecipeCreation, encoderRecipeCreation)
+import Api.Types.RecipeUpdate exposing (RecipeUpdate, encoderRecipeUpdate)
 import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
-import Either exposing (Either)
+import Either exposing (Either(..))
 import Html exposing (Html, button, div, input, label, td, text, thead, tr)
-import Html.Attributes exposing (class, id, type_, value)
+import Html.Attributes exposing (class, id, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Http exposing (Error)
 import Json.Decode as Decode
+import List.Extra
 import Maybe.Extra
-import Monocle.Lens exposing (Lens)
+import Monocle.Compose as Compose
+import Monocle.Lens as Lens exposing (Lens)
+import Monocle.Optional as Optional
 import Pages.Util.Links as Links
 import Ports exposing (doFetchToken)
 import Url.Builder as UrlBuilder
-import Util.Editing exposing (Editing)
+import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
+import Util.LensUtil as LensUtil
 
 
 type alias Model =
     { configuration : Configuration
-    , token : String
+    , jwt : String
     , recipes : List (Either Recipe (Editing Recipe RecipeUpdate))
     }
 
 
-token : Lens Model String
-token =
-    Lens .token (\b a -> { a | token = b })
+jwtLens : Lens Model String
+jwtLens =
+    Lens .jwt (\b a -> { a | jwt = b })
+
+
+recipesLens : Lens Model (List (Either Recipe (Editing Recipe RecipeUpdate)))
+recipesLens =
+    Lens .recipes (\b a -> { a | recipes = b })
 
 
 type Msg
@@ -39,31 +49,42 @@ type Msg
     | GotCreateRecipeResponse (Result Error Recipe)
     | UpdateRecipe RecipeId RecipeUpdate
     | SaveRecipeEdit RecipeId
-    | GotSaveRecipeResponse (Result Error Recipe)
+    | GotSaveRecipeResponse RecipeId (Result Error Recipe)
     | EnterEditRecipe RecipeId
     | ExitEditRecipeAt RecipeId
     | DeleteRecipe RecipeId
+    | GotDeleteRecipeResponse RecipeId (Result Error ())
     | GotFetchRecipesResponse (Result Error (List Recipe))
-    | UpdateToken String
+    | UpdateJWT String
 
 
-updateToken : String -> Msg
-updateToken =
-    UpdateToken
+updateJWT : String -> Msg
+updateJWT =
+    UpdateJWT
 
 
 type alias Flags =
     { configuration : Configuration
+    , jwt : Maybe String
     }
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
+    let
+        ( jwt, cmd ) =
+            case flags.jwt of
+                Just token ->
+                    ( token, Cmd.none )
+
+                Nothing ->
+                    ( "", doFetchToken () )
+    in
     ( { configuration = flags.configuration
-      , token = ""
+      , jwt = jwt
       , recipes = []
       }
-    , doFetchToken ()
+    , cmd
     )
 
 
@@ -73,7 +94,7 @@ view model =
         viewEditRecipes =
             List.map
                 (Either.unpack
-                    (editOrDeleteRecipeLine model.configuration model.token)
+                    (editOrDeleteRecipeLine model.configuration model.jwt)
                     (\e -> e.update |> editRecipeLine e.original.id)
                 )
     in
@@ -157,22 +178,23 @@ editRecipeLine recipeId recipeUpdateClientInput =
             [ text "Cancel" ]
         ]
 
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         CreateRecipe ->
             ( model, createRecipe model )
 
-        GotCreateRecipeResponse graphQLDataOrError ->
-            case graphQLDataOrError of
-                Success projectInformation ->
+        GotCreateRecipeResponse dataOrError ->
+            case dataOrError of
+                Ok recipe ->
                     let
                         newModel =
-                            Lens.modify ownRecipesLens
+                            Lens.modify recipesLens
                                 (\ts ->
                                     Right
-                                        { original = projectInformation
-                                        , update = RecipeUpdateClientInput.from projectInformation
+                                        { original = recipe
+                                        , update = recipeUpdateFromRecipe recipe
                                         }
                                         :: ts
                                 )
@@ -184,42 +206,40 @@ update msg model =
                     -- todo: Handle error case
                     ( model, Cmd.none )
 
-        UpdateRecipe projectId projectUpdateClientInput ->
+        UpdateRecipe recipeId recipeUpdateClientInput ->
             ( model
                 |> Optional.modify
-                    (ownRecipesLens
+                    (recipesLens
                         |> Compose.lensWithOptional
-                            (projectIdIs projectId |> LensUtil.firstSuch)
+                            (recipeIdIs recipeId |> LensUtil.firstSuch)
                     )
-                    (Either.mapRight (Editing.updateLens.set projectUpdateClientInput))
+                    (Either.mapRight (Editing.updateLens.set recipeUpdateClientInput))
             , Cmd.none
             )
 
-        SaveRecipeEdit projectId ->
+        SaveRecipeEdit recipeId ->
             let
                 cmd =
                     Maybe.Extra.unwrap
                         Cmd.none
                         (Either.unwrap Cmd.none
-                            (\editing ->
-                                saveRecipe model
-                                    (RecipeUpdateClientInput.to projectId editing.original.ownerId editing.update |> RecipeInformation.toUpdate)
-                                    editing.original.id
+                            (.update
+                                >> saveRecipe model
                             )
                         )
-                        (List.Extra.find (projectIdIs projectId) model.ownRecipes)
+                        (List.Extra.find (recipeIdIs recipeId) model.recipes)
             in
             ( model, cmd )
 
-        GotSaveRecipeResponse projectId graphQLDataOrError ->
+        GotSaveRecipeResponse recipeId graphQLDataOrError ->
             case graphQLDataOrError of
-                Success project ->
+                Ok recipe ->
                     ( model
                         |> Optional.modify
-                            (ownRecipesLens
-                                |> Compose.lensWithOptional (projectIdIs projectId |> LensUtil.firstSuch)
+                            (recipesLens
+                                |> Compose.lensWithOptional (recipeIdIs recipeId |> LensUtil.firstSuch)
                             )
-                            (Either.andThenRight (always (Left project)))
+                            (Either.andThenRight (always (Left recipe)))
                     , Cmd.none
                     )
 
@@ -227,27 +247,27 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        EnterEditRecipe projectId ->
+        EnterEditRecipe recipeId ->
             ( model
-                |> Optional.modify (ownRecipesLens |> Compose.lensWithOptional (projectIdIs projectId |> LensUtil.firstSuch))
-                    (Either.unpack (\project -> { original = project, update = RecipeUpdateClientInput.from project }) identity >> Right)
+                |> Optional.modify (recipesLens |> Compose.lensWithOptional (recipeIdIs recipeId |> LensUtil.firstSuch))
+                    (Either.unpack (\recipe -> { original = recipe, update = recipeUpdateFromRecipe recipe }) identity >> Right)
             , Cmd.none
             )
 
-        ExitEditRecipeAt projectId ->
-            ( model |> Optional.modify (ownRecipesLens |> Compose.lensWithOptional (projectIdIs projectId |> LensUtil.firstSuch)) (Either.unpack identity .original >> Left), Cmd.none )
+        ExitEditRecipeAt recipeId ->
+            ( model |> Optional.modify (recipesLens |> Compose.lensWithOptional (recipeIdIs recipeId |> LensUtil.firstSuch)) (Either.unpack identity .original >> Left), Cmd.none )
 
-        DeleteRecipe projectId ->
+        DeleteRecipe recipeId ->
             ( model
-            , deleteRecipe model projectId
+            , deleteRecipe model recipeId
             )
 
-        GotDeleteRecipeResponse graphQLDataOrError ->
-            case graphQLDataOrError of
-                Success deletedId ->
+        GotDeleteRecipeResponse deletedId dataOrError ->
+            case dataOrError of
+                Ok _ ->
                     ( model
-                        |> ownRecipesLens.set
-                            (model.ownRecipes
+                        |> recipesLens.set
+                            (model.recipes
                                 |> List.Extra.filterNot
                                     (Either.unpack
                                         (\t -> t.id == deletedId)
@@ -261,27 +281,69 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        GotFetchOwnRecipesResponse graphQLDataOrError ->
-            case graphQLDataOrError of
-                Success ownRecipes ->
-                    ( model |> ownRecipesLens.set (ownRecipes |> List.map Left), Cmd.none )
+        GotFetchRecipesResponse dataOrError ->
+            case dataOrError of
+                Ok ownRecipes ->
+                    ( model |> recipesLens.set (ownRecipes |> List.map Left), Cmd.none )
 
                 -- todo: Handle error case
                 _ ->
                     ( model, Cmd.none )
 
-        GotFetchWriteAccessRecipesResponse graphQLDataOrError ->
-            case graphQLDataOrError of
-                Success writeAccessRecipes ->
-                    ( model |> writeAccessRecipesLens.set (writeAccessRecipes |> List.map Left), Cmd.none )
+        UpdateJWT jwt ->
+            ( jwtLens.set jwt model, Cmd.none )
 
-                -- todo: Handle error case
-                _ ->
-                    ( model, Cmd.none )
+
+recipeIdIs : RecipeId -> Either Recipe (Editing Recipe RecipeUpdate) -> Bool
+recipeIdIs recipeId =
+    Either.unpack
+        (\p -> p.id == recipeId)
+        (\e -> e.original.id == recipeId)
+
+
+recipeUpdateFromRecipe : Recipe -> RecipeUpdate
+recipeUpdateFromRecipe r =
+    { id = r.id
+    , name = r.name
+    , description = r.description
+    }
+
 
 fetchRecipes : Configuration -> String -> Cmd Msg
 fetchRecipes conf jwt =
     HttpUtil.getJsonWithJWT jwt
         { url = String.join "/" [ conf.backendURL, "recipe", "all" ]
         , expect = HttpUtil.expectJson GotFetchRecipesResponse (Decode.list decoderRecipe)
+        }
+
+
+createRecipe : Model -> Cmd Msg
+createRecipe md =
+    let
+        defaultRecipeCreation =
+            { name = ""
+            , description = Nothing
+            }
+    in
+    HttpUtil.postJsonWithJWT md.jwt
+        { url = String.join "/" [ md.configuration.backendURL, "recipe", "create" ]
+        , body = encoderRecipeCreation defaultRecipeCreation
+        , expect = HttpUtil.expectJson GotCreateRecipeResponse decoderRecipe
+        }
+
+
+saveRecipe : Model -> RecipeUpdate -> Cmd Msg
+saveRecipe md ru =
+    HttpUtil.postJsonWithJWT md.jwt
+        { url = String.join "/" [ md.configuration.backendURL, "recipe", "update" ]
+        , body = encoderRecipeUpdate ru
+        , expect = HttpUtil.expectJson (GotSaveRecipeResponse ru.id) decoderRecipe
+        }
+
+
+deleteRecipe : Model -> RecipeId -> Cmd Msg
+deleteRecipe md rId =
+    HttpUtil.deleteWithJWT md.jwt
+        { url = String.join "/" [ md.configuration.backendURL, "recipe", "delete", rId ]
+        , expect = HttpUtil.expectWhatever (GotDeleteRecipeResponse rId)
         }

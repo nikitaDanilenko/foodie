@@ -51,6 +51,7 @@ expectWhatever toMsg =
                 Http.GoodStatus_ _ _ ->
                     Ok ()
 
+
 errorToString : Error -> String
 errorToString error =
     case error of
@@ -69,11 +70,16 @@ errorToString error =
         BadBody string ->
             string
 
+
 userTokenHeader : String
-userTokenHeader = "User-Token"
+userTokenHeader =
+    "User-Token"
+
 
 jwtHeader : String -> Http.Header
-jwtHeader = Http.header userTokenHeader
+jwtHeader =
+    Http.header userTokenHeader
+
 
 postJsonWithJWT :
     String
@@ -94,8 +100,28 @@ postJsonWithJWT jwt request =
         , tracker = Nothing
         }
 
+
+deleteWithJWT :
+    String
+    ->
+        { url : String
+        , expect : Expect msg
+        }
+    -> Cmd msg
+deleteWithJWT jwt request =
+    Http.request
+        { method = "DELETE"
+        , headers = [ jwtHeader jwt ]
+        , url = request.url
+        , body = Http.emptyBody
+        , expect = request.expect
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
 getJsonWithJWT :
-  String
+    String
     ->
         { url : String
         , expect : Expect msg
