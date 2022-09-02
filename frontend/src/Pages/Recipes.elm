@@ -1,6 +1,6 @@
 module Pages.Recipes exposing (Flags, Model, Msg, init, update, updateJWT, view)
 
-import Api.Auxiliary exposing (RecipeId)
+import Api.Auxiliary exposing (JWT, RecipeId)
 import Api.Lenses.RecipeUpdateLens as RecipeUpdateLens
 import Api.Types.Recipe exposing (Recipe, decoderRecipe)
 import Api.Types.RecipeCreation exposing (RecipeCreation, encoderRecipeCreation)
@@ -309,7 +309,7 @@ recipeUpdateFromRecipe r =
     }
 
 
-fetchRecipes : Configuration -> String -> Cmd Msg
+fetchRecipes : Configuration -> JWT -> Cmd Msg
 fetchRecipes conf jwt =
     HttpUtil.getJsonWithJWT jwt
         { url = String.join "/" [ conf.backendURL, "recipe", "all" ]
