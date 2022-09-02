@@ -10,5 +10,10 @@ type alias RecipeId =
 type alias IngredientId =
     UUID
 
+
+type alias MeasureId =
+    Int
+
+
 type alias JWT =
-  String
+    String

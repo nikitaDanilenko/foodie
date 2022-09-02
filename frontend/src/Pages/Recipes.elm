@@ -136,20 +136,20 @@ editOrDeleteRecipeLine configuration recipe =
 
 
 editRecipeLine : RecipeId -> RecipeUpdate -> Html Msg
-editRecipeLine recipeId recipeUpdateClientInput =
+editRecipeLine recipeId recipeUpdate =
     let
-        createOnEnter =
+        saveOnEnter =
             onEnter (SaveRecipeEdit recipeId)
     in
     -- todo: Check whether the update behaviour is correct. There is the implicit assumption that the update originates from the recipe.
     --       cf. name, description
     div [ class "recipeLine" ]
-        [ div [ class "plainName" ]
+        [ div [ class "name" ]
             [ label [] [ text "Name" ]
             , input
-                [ value recipeUpdateClientInput.name
-                , onInput (flip RecipeUpdateLens.name.set recipeUpdateClientInput >> UpdateRecipe recipeId)
-                , createOnEnter
+                [ value recipeUpdate.name
+                , onInput (flip RecipeUpdateLens.name.set recipeUpdate >> UpdateRecipe recipeId)
+                , saveOnEnter
                 ]
                 []
             ]
@@ -157,17 +157,17 @@ editRecipeLine recipeId recipeUpdateClientInput =
             [ label [] [ text "Description" ]
             , div [ class "recipeDescription" ]
                 [ input
-                    [ Maybe.withDefault "" recipeUpdateClientInput.description |> value
+                    [ Maybe.withDefault "" recipeUpdate.description |> value
                     , onInput
                         (flip
                             (Just
                                 >> Maybe.Extra.filter (String.isEmpty >> not)
                                 >> RecipeUpdateLens.description.set
                             )
-                            recipeUpdateClientInput
+                            recipeUpdate
                             >> UpdateRecipe recipeId
                         )
-                    , createOnEnter
+                    , saveOnEnter
                     ]
                     []
                 ]
@@ -206,14 +206,14 @@ update msg model =
                     -- todo: Handle error case
                     ( model, Cmd.none )
 
-        UpdateRecipe recipeId recipeUpdateClientInput ->
+        UpdateRecipe recipeId recipeUpdate ->
             ( model
                 |> Optional.modify
                     (recipesLens
                         |> Compose.lensWithOptional
                             (recipeIdIs recipeId |> LensUtil.firstSuch)
                     )
-                    (Either.mapRight (Editing.updateLens.set recipeUpdateClientInput))
+                    (Either.mapRight (Editing.updateLens.set recipeUpdate))
             , Cmd.none
             )
 

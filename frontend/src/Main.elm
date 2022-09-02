@@ -6,12 +6,14 @@ import Browser.Navigation as Nav
 import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
 import Monocle.Lens exposing (Lens)
+import Pages.IngredientEditor as IngredientEditor
 import Pages.Login as Login
 import Pages.Overview as Overview
 import Pages.Recipes as Recipes
-import Ports exposing (doFetchToken, fetchToken)
+import Pages.Util.ParserUtil as ParserUtil
+import Ports exposing (doFetchToken, fetchFoods, fetchToken)
 import Url exposing (Url)
-import Url.Parser as Parser exposing (Parser, s)
+import Url.Parser as Parser exposing ((</>), Parser, s)
 
 
 main : Program Configuration Model Msg
@@ -28,7 +30,10 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    fetchToken FetchToken
+    Sub.batch [
+    fetchToken FetchToken,
+    fetchFoods FetchFoods
+    ]
 
 
 type alias Model =
@@ -56,6 +61,7 @@ type Msg
     = ClickedLink UrlRequest
     | ChangedUrl Url
     | FetchToken String
+    | FetchFoods String
     | LoginMsg Login.Msg
     | OverviewMsg Overview.Msg
     | RecipesMsg Recipes.Msg
@@ -135,13 +141,16 @@ update msg model =
                 NotFound ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
+        ( FetchFoods foods, IngredientEditor ingredientEditor) ->
+            stepIngredientEditor model (IngredientEditor.update (IngredientEditor.updateFoods foods) ingredientEditor)
+
         ( OverviewMsg overviewMsg, Overview overview ) ->
             stepOverview model (Overview.update overviewMsg overview)
 
         ( RecipesMsg recipesMsg, Recipes recipes ) ->
             stepRecipes model (Recipes.update recipesMsg recipes)
 
-        ( IngredientEditorMsg ingredientEditorMsg, IngredientEditor ingredientEditor) ->
+        ( IngredientEditorMsg ingredientEditorMsg, IngredientEditor ingredientEditor ) ->
             stepIngredientEditor model (IngredientEditor.update ingredientEditorMsg ingredientEditor)
 
         _ ->
@@ -162,6 +171,9 @@ stepTo url model =
                 RecipesRoute flags ->
                     Recipes.init flags |> stepRecipes model
 
+                IngredientEditorRoute flags ->
+                    IngredientEditor.init flags |> stepIngredientEditor model
+
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -180,6 +192,7 @@ stepRecipes : Model -> ( Recipes.Model, Cmd Recipes.Msg ) -> ( Model, Cmd Msg )
 stepRecipes model ( recipes, cmd ) =
     ( { model | page = Recipes recipes }, Cmd.map RecipesMsg cmd )
 
+
 stepIngredientEditor : Model -> ( IngredientEditor.Model, Cmd IngredientEditor.Msg ) -> ( Model, Cmd Msg )
 stepIngredientEditor model ( ingredientEditor, cmd ) =
     ( { model | page = IngredientEditor ingredientEditor }, Cmd.map IngredientEditorMsg cmd )
@@ -189,27 +202,39 @@ type Route
     = LoginRoute Login.Flags
     | OverviewRoute Overview.Flags
     | RecipesRoute Recipes.Flags
+    | IngredientEditorRoute IngredientEditor.Flags
 
 
 routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
 routeParser jwt configuration =
     let
         loginParser =
-            s "login"
+            s "login" |> Parser.map { configuration = configuration }
 
         overviewParser =
-            s "overview"
+            s "overview" |> Parser.map flags
 
         recipesParser =
-            s "recipes"
+            s "recipes" |> Parser.map flags
+
+        ingredientEditorParser =
+            (s "ingredient-editor" </> ParserUtil.uuidParser)
+                |> Parser.map
+                    (\recipeId ->
+                        { recipeId = recipeId
+                        , configuration = configuration
+                        , jwt = jwt
+                        }
+                    )
 
         flags =
             { configuration = configuration, jwt = jwt }
     in
     Parser.oneOf
-        [ route loginParser (LoginRoute { configuration = configuration })
-        , route overviewParser (OverviewRoute flags)
-        , route recipesParser (RecipesRoute flags)
+        [ route loginParser LoginRoute
+        , route overviewParser OverviewRoute
+        , route recipesParser RecipesRoute
+        , route ingredientEditorParser IngredientEditorRoute
         ]
 
 
