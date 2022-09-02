@@ -38,9 +38,11 @@ type alias Model =
     , jwt : Maybe String
     }
 
+
 jwtLens : Lens Model (Maybe String)
 jwtLens =
     Lens .jwt (\b a -> { a | jwt = b })
+
 
 type Page
     = Login Login.Model
@@ -128,8 +130,9 @@ update msg model =
         ( OverviewMsg overviewMsg, Overview overview ) ->
             stepOverview model (Overview.update overviewMsg overview)
 
-        (RecipesMsg recipesMsg, Recipes recipes) ->
-          stepRecipes model (Recipes.update recipesMsg recipes)
+        ( RecipesMsg recipesMsg, Recipes recipes ) ->
+            stepRecipes model (Recipes.update recipesMsg recipes)
+
         _ ->
             ( model, Cmd.none )
 
