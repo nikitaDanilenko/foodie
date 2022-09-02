@@ -1,5 +1,6 @@
 module Util.HttpUtil exposing (..)
 
+import Api.Auxiliary exposing (JWT)
 import Http exposing (Error(..), Expect, expectStringResponse)
 import Json.Decode as D
 import Json.Encode as Encode
@@ -76,13 +77,13 @@ userTokenHeader =
     "User-Token"
 
 
-jwtHeader : String -> Http.Header
+jwtHeader : JWT -> Http.Header
 jwtHeader =
     Http.header userTokenHeader
 
 
 postJsonWithJWT :
-    String
+    JWT
     ->
         { url : String
         , body : Encode.Value
@@ -102,7 +103,7 @@ postJsonWithJWT jwt request =
 
 
 deleteWithJWT :
-    String
+    JWT
     ->
         { url : String
         , expect : Expect msg
@@ -121,7 +122,7 @@ deleteWithJWT jwt request =
 
 
 getJsonWithJWT :
-    String
+    JWT
     ->
         { url : String
         , expect : Expect msg
@@ -129,7 +130,7 @@ getJsonWithJWT :
     -> Cmd msg
 getJsonWithJWT jwt request =
     Http.request
-        { method = "POST"
+        { method = "GET"
         , headers = [ jwtHeader jwt ]
         , url = request.url
         , body = Http.emptyBody
