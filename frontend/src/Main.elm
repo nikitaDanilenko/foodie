@@ -6,7 +6,7 @@ import Browser.Navigation as Nav
 import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
 import Monocle.Lens exposing (Lens)
-import Pages.IngredientEditor as IngredientEditor
+import Pages.InIngredientEditor.IngredientEditor as IngredientEditor
 import Pages.Login as Login
 import Pages.Overview as Overview
 import Pages.Recipes as Recipes

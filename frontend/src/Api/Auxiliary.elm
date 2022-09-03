@@ -15,5 +15,9 @@ type alias MeasureId =
     Int
 
 
+type alias FoodId =
+    Int
+
+
 type alias JWT =
     String

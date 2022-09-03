@@ -1,5 +1,5 @@
 module Pages.Util.ValidatedInput exposing
-    ( FromInput
+    ( ValidatedInput
     , emptyText
     , isValid
     , lift
@@ -11,7 +11,7 @@ import Basics.Extra exposing (flip)
 import Monocle.Lens exposing (Lens)
 
 
-type alias FromInput a =
+type alias ValidatedInput a =
     { value : a
     , ifEmptyValue : a
     , text : String
@@ -20,12 +20,12 @@ type alias FromInput a =
     }
 
 
-text : Lens (FromInput a) String
+text : Lens (ValidatedInput a) String
 text =
     Lens .text (\b a -> { a | text = b })
 
 
-value : Lens (FromInput a) a
+value : Lens (ValidatedInput a) a
 value =
     Lens .value (\b a -> { a | value = b })
 
@@ -36,7 +36,7 @@ emptyText :
     , parse : String -> Result String a
     , isPartial : String -> Bool
     }
-    -> FromInput a
+    -> ValidatedInput a
 emptyText params =
     { value = params.value
     , ifEmptyValue = params.ifEmptyValue
@@ -46,7 +46,7 @@ emptyText params =
     }
 
 
-isValid : FromInput a -> Bool
+isValid : ValidatedInput a -> Bool
 isValid fromInput =
     case fromInput.parse fromInput.text of
         Ok v ->
@@ -56,7 +56,7 @@ isValid fromInput =
             False
 
 
-setWithLens : Lens model (FromInput a) -> String -> model -> model
+setWithLens : Lens model (ValidatedInput a) -> String -> model -> model
 setWithLens lens txt model =
     let
         fromInput =
@@ -80,6 +80,6 @@ setWithLens lens txt model =
             lens.set possiblyValid model
 
 
-lift : Lens model (FromInput a) -> Lens model String
+lift : Lens model (ValidatedInput a) -> Lens model String
 lift lens =
     Lens (lens.get >> .text) (setWithLens lens)
