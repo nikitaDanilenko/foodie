@@ -11,7 +11,7 @@ import Pages.Login as Login
 import Pages.Overview as Overview
 import Pages.Recipes as Recipes
 import Pages.Util.ParserUtil as ParserUtil
-import Ports exposing (doFetchToken, fetchFoods, fetchToken)
+import Ports exposing (doFetchToken, fetchFoods, fetchMeasures, fetchToken)
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s)
 
@@ -30,10 +30,11 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.batch [
-    fetchToken FetchToken,
-    fetchFoods FetchFoods
-    ]
+    Sub.batch
+        [ fetchToken FetchToken
+        , fetchFoods FetchFoods
+        , fetchMeasures FetchMeasures
+        ]
 
 
 type alias Model =
@@ -62,6 +63,7 @@ type Msg
     | ChangedUrl Url
     | FetchToken String
     | FetchFoods String
+    | FetchMeasures String
     | LoginMsg Login.Msg
     | OverviewMsg Overview.Msg
     | RecipesMsg Recipes.Msg
@@ -141,8 +143,11 @@ update msg model =
                 NotFound ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
-        ( FetchFoods foods, IngredientEditor ingredientEditor) ->
+        ( FetchFoods foods, IngredientEditor ingredientEditor ) ->
             stepIngredientEditor model (IngredientEditor.update (IngredientEditor.updateFoods foods) ingredientEditor)
+
+        ( FetchMeasures measures, IngredientEditor ingredientEditor ) ->
+            stepIngredientEditor model (IngredientEditor.update (IngredientEditor.updateMeasures measures) ingredientEditor)
 
         ( OverviewMsg overviewMsg, Overview overview ) ->
             stepOverview model (Overview.update overviewMsg overview)

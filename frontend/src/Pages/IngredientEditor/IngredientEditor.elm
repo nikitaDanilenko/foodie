@@ -1,12 +1,10 @@
-module Pages.IngredientEditor.IngredientEditor exposing (Flags, Model, Msg, init, update, updateFoods, updateJWT, view)
+module Pages.IngredientEditor.IngredientEditor exposing (Flags, Model, Msg, init, update, updateFoods, updateJWT, updateMeasures, view)
 
 import Api.Auxiliary exposing (FoodId, IngredientId, JWT, MeasureId, RecipeId)
-import Api.Lenses.IngredientUpdateLens as IngredientUpdateLens
 import Api.Types.Food exposing (Food, decoderFood, encoderFood)
 import Api.Types.Ingredient exposing (Ingredient, decoderIngredient)
 import Api.Types.IngredientCreation exposing (IngredientCreation, encoderIngredientCreation)
-import Api.Types.IngredientUpdate exposing (IngredientUpdate)
-import Api.Types.Measure exposing (Measure)
+import Api.Types.Measure exposing (Measure, decoderMeasure, encoderMeasure)
 import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
 import Dict exposing (Dict)
@@ -23,13 +21,13 @@ import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
-import Monocle.Optional as Optional
+import Monocle.Optional
 import Pages.IngredientEditor.AmountUnitClientInput as AmountUnitClientInput
 import Pages.IngredientEditor.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.IngredientEditor.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
-import Pages.IngredientEditor.NamedIngredient as NamedIngredient exposing (NamedIngredient)
+import Pages.IngredientEditor.NamedIngredient exposing (NamedIngredient)
 import Pages.Util.ValidatedInput as ValidatedInput
-import Ports exposing (doFetchFoods, doFetchToken, storeFoods)
+import Ports exposing (doFetchFoods, doFetchMeasures, doFetchToken, storeFoods, storeMeasures)
 import Util.Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
 import Util.LensUtil as LensUtil
@@ -65,6 +63,11 @@ foodsLens =
     Lens .foods (\b a -> { a | foods = b })
 
 
+measuresLens : Lens Model MeasureMap
+measuresLens =
+    Lens .measures (\b a -> { a | measures = b })
+
+
 ingredientsLens : Lens Model (List (Either NamedIngredient (Editing NamedIngredient IngredientUpdateClientInput)))
 ingredientsLens =
     Lens .ingredients (\b a -> { a | ingredients = b })
@@ -92,12 +95,14 @@ type Msg
     | GotDeleteIngredientResponse IngredientId (Result Error ())
     | GotFetchIngredientsResponse (Result Error (List Ingredient))
     | GotFetchFoodsResponse (Result Error (List Food))
+    | GotFetchMeasuresResponse (Result Error (List Measure))
     | SelectFood Food
     | DeselectFood FoodId
     | AddFood FoodId
     | UpdateAddFood IngredientCreationClientInput
     | UpdateJWT String
     | UpdateFoods String
+    | UpdateMeasures String
     | SetFoodsSearchString String
 
 
@@ -111,11 +116,29 @@ updateFoods =
     UpdateFoods
 
 
+updateMeasures : String -> Msg
+updateMeasures =
+    UpdateMeasures
+
+
 type alias Flags =
     { configuration : Configuration
-    , jwt : Maybe String
+    , jwt : Maybe JWT
     , recipeId : RecipeId
     }
+
+
+type alias FlagsWithJWT =
+    { configuration : Configuration, jwt : JWT, recipeId : RecipeId }
+
+
+initialFetch : FlagsWithJWT -> Cmd Msg
+initialFetch flags =
+    Cmd.batch
+        [ fetchIngredients flags
+        , doFetchFoods ()
+        , doFetchMeasures ()
+        ]
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -125,16 +148,11 @@ init flags =
             case flags.jwt of
                 Just token ->
                     ( token
-                    , Cmd.batch
-                        [ fetchIngredients
-                            { configuration = flags.configuration
-                            , jwt = token
-                            , recipeId = flags.recipeId
-                            }
-
-                        -- todo: Check if foods are already present to avoid unnecessary loading.
-                        , doFetchFoods ()
-                        ]
+                    , initialFetch
+                        { configuration = flags.configuration
+                        , jwt = token
+                        , recipeId = flags.recipeId
+                        }
                     )
 
                 Nothing ->
@@ -386,11 +404,40 @@ update msg model =
             ( model, Cmd.none )
 
         GotFetchFoodsResponse result ->
-            ( model, Cmd.none )
+            case result of
+                Ok foods ->
+                    ( foods
+                        |> List.map (\f -> ( f.id, f ))
+                        |> Dict.fromList
+                        |> flip foodsLens.set model
+                    , foods
+                        |> Encode.list encoderFood
+                        |> Encode.encode 0
+                        |> storeFoods
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        GotFetchMeasuresResponse result ->
+            case result of
+                Ok measures ->
+                    ( measures
+                        |> List.map (\m -> ( m.id, m ))
+                        |> Dict.fromList
+                        |> flip measuresLens.set model
+                    , measures
+                        |> Encode.list encoderMeasure
+                        |> Encode.encode 0
+                        |> storeMeasures
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
 
         UpdateJWT jwt ->
             ( jwtLens.set jwt model
-            , fetchIngredients
+            , initialFetch
                 { configuration = model.configuration
                 , jwt = jwt
                 , recipeId = model.recipeId
@@ -404,10 +451,36 @@ update msg model =
                         |> List.map (\f -> ( f.id, f ))
                         |> Dict.fromList
                         |> flip foodsLens.set model
-                    , foods
-                        |> Encode.list encoderFood
-                        |> Encode.encode 0
-                        |> storeFoods
+                    , if List.isEmpty foods then
+                        fetchFoods
+                            { configuration = model.configuration
+                            , jwt = model.jwt
+                            , recipeId = model.recipeId
+                            }
+
+                      else
+                        Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        UpdateMeasures string ->
+            case Decode.decodeString (Decode.list decoderMeasure) string of
+                Ok measures ->
+                    ( measures
+                        |> List.map (\f -> ( f.id, f ))
+                        |> Dict.fromList
+                        |> flip measuresLens.set model
+                    , if List.isEmpty measures then
+                        fetchMeasures
+                            { configuration = model.configuration
+                            , jwt = model.jwt
+                            , recipeId = model.recipeId
+                            }
+
+                      else
+                        Cmd.none
                     )
 
                 _ ->
@@ -455,11 +528,45 @@ update msg model =
             )
 
 
-fetchIngredients : { configuration : Configuration, jwt : JWT, recipeId : RecipeId } -> Cmd Msg
-fetchIngredients ps =
-    HttpUtil.getJsonWithJWT ps.jwt
-        { url = String.join "/" [ ps.configuration.backendURL, "recipe", ps.recipeId, "ingredients" ]
-        , expect = HttpUtil.expectJson GotFetchIngredientsResponse (Decode.list decoderIngredient)
+fetchIngredients : FlagsWithJWT -> Cmd Msg
+fetchIngredients flags =
+    fetchList
+        { addressSuffix = String.join "/" [ "recipe", flags.recipeId, "ingredients" ]
+        , decoder = decoderIngredient
+        , gotMsg = GotFetchIngredientsResponse
+        }
+        flags
+
+
+fetchFoods : FlagsWithJWT -> Cmd Msg
+fetchFoods =
+    fetchList
+        { addressSuffix = String.join "/" [ "recipe", "foods" ]
+        , decoder = decoderFood
+        , gotMsg = GotFetchFoodsResponse
+        }
+
+
+fetchMeasures : FlagsWithJWT -> Cmd Msg
+fetchMeasures =
+    fetchList
+        { addressSuffix = String.join "/" [ "recipe", "measures" ]
+        , decoder = decoderMeasure
+        , gotMsg = GotFetchMeasuresResponse
+        }
+
+
+fetchList :
+    { addressSuffix : String
+    , decoder : Decode.Decoder a
+    , gotMsg : Result Error (List a) -> Msg
+    }
+    -> FlagsWithJWT
+    -> Cmd Msg
+fetchList ps flags =
+    HttpUtil.getJsonWithJWT flags.jwt
+        { url = String.join "/" [ flags.configuration.backendURL, ps.addressSuffix ]
+        , expect = HttpUtil.expectJson ps.gotMsg (Decode.list ps.decoder)
         }
 
 
