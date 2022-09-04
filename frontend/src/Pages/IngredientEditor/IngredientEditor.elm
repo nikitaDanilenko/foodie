@@ -21,11 +21,10 @@ import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
-import Monocle.Optional
+import Monocle.Optional as Optional
 import Pages.IngredientEditor.AmountUnitClientInput as AmountUnitClientInput
 import Pages.IngredientEditor.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.IngredientEditor.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
-import Pages.IngredientEditor.NamedIngredient exposing (NamedIngredient)
 import Pages.Util.ValidatedInput as ValidatedInput
 import Ports exposing (doFetchFoods, doFetchMeasures, doFetchToken, storeFoods, storeMeasures)
 import Util.Editing exposing (Editing)
@@ -37,7 +36,7 @@ type alias Model =
     { configuration : Configuration
     , jwt : String
     , recipeId : RecipeId
-    , ingredients : List (Either NamedIngredient (Editing NamedIngredient IngredientUpdateClientInput))
+    , ingredients : List (Either Ingredient (Editing Ingredient IngredientUpdateClientInput))
     , foods : FoodMap
     , measures : MeasureMap
     , foodsSearchString : String
@@ -68,7 +67,7 @@ measures =
     Lens .measures (\b a -> { a | measures = b })
 
 
-ingredients : Lens Model (List (Either NamedIngredient (Editing NamedIngredient IngredientUpdateClientInput)))
+ingredients : Lens Model (List (Either Ingredient (Editing Ingredient IngredientUpdateClientInput)))
 ingredients =
     Lens .ingredients (\b a -> { a | ingredients = b })
 
@@ -177,7 +176,7 @@ view model =
         viewEditIngredients =
             List.map
                 (Either.unpack
-                    (editOrDeleteIngredientLine model.measures)
+                    (editOrDeleteIngredientLine model.measures model.foods)
                     (\e -> e.update |> editIngredientLine model.measures model.foods e.original)
                 )
 
@@ -218,29 +217,34 @@ view model =
         ]
 
 
-editOrDeleteIngredientLine : MeasureMap -> NamedIngredient -> Html Msg
-editOrDeleteIngredientLine measureMap namedIngredient =
+ingredientNameOrEmpty : FoodMap -> FoodId -> String
+ingredientNameOrEmpty fm fi =
+    Dict.get fi fm |> Maybe.Extra.unpack (\_ -> "") .name
+
+
+editOrDeleteIngredientLine : MeasureMap -> FoodMap -> Ingredient -> Html Msg
+editOrDeleteIngredientLine measureMap foodMap ingredient =
     tr [ id "editingIngredient" ]
-        [ td [] [ label [] [ text namedIngredient.name ] ]
-        , td [] [ label [] [ namedIngredient.ingredient.amountUnit.factor |> String.fromFloat |> text ] ]
-        , td [] [ label [] [ namedIngredient.ingredient.amountUnit.measureId |> flip Dict.get measureMap |> Maybe.Extra.unpack (always "") .name |> text ] ]
-        , td [] [ button [ class "button", onClick (EnterEditIngredient namedIngredient.ingredient.id) ] [ text "Edit" ] ]
-        , td [] [ button [ class "button", onClick (DeleteIngredient namedIngredient.ingredient.id) ] [ text "Delete" ] ]
+        [ td [] [ label [] [ ingredient.foodId |> ingredientNameOrEmpty foodMap |> text ] ]
+        , td [] [ label [] [ ingredient.amountUnit.factor |> String.fromFloat |> text ] ]
+        , td [] [ label [] [ ingredient.amountUnit.measureId |> flip Dict.get measureMap |> Maybe.Extra.unpack (always "") .name |> text ] ]
+        , td [] [ button [ class "button", onClick (EnterEditIngredient ingredient.id) ] [ text "Edit" ] ]
+        , td [] [ button [ class "button", onClick (DeleteIngredient ingredient.id) ] [ text "Delete" ] ]
         ]
 
 
-editIngredientLine : MeasureMap -> FoodMap -> NamedIngredient -> IngredientUpdateClientInput -> Html Msg
-editIngredientLine measureMap foodMap namedIngredient ingredientUpdateClientInput =
+editIngredientLine : MeasureMap -> FoodMap -> Ingredient -> IngredientUpdateClientInput -> Html Msg
+editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
     let
         saveOnEnter =
-            onEnter (SaveIngredientEdit namedIngredient.ingredient.id)
+            onEnter (SaveIngredientEdit ingredient.id)
     in
     -- todo: Check whether the update behaviour is correct. There is the implicit assumption that the update originates from the ingredient.
     --       cf. name, description
     div [ class "ingredientLine" ]
         [ div [ class "name" ]
             [ label [] [ text "Name" ]
-            , label [] [ text namedIngredient.name ]
+            , label [] [ ingredient.foodId |> ingredientNameOrEmpty foodMap |> text ]
             ]
         , div [ class "amount" ]
             [ label [] [ text "Amount" ]
@@ -254,7 +258,7 @@ editIngredientLine measureMap foodMap namedIngredient ingredientUpdateClientInpu
                             )
                         ).set
                         ingredientUpdateClientInput
-                        >> UpdateIngredient namedIngredient.ingredient.id
+                        >> UpdateIngredient ingredient.id
                     )
                 , saveOnEnter
                 ]
@@ -266,15 +270,15 @@ editIngredientLine measureMap foodMap namedIngredient ingredientUpdateClientInpu
                 [ dropdown
                     { items =
                         foodMap
-                            |> Dict.get namedIngredient.ingredient.foodId
+                            |> Dict.get ingredient.foodId
                             |> Maybe.Extra.unpack (\_ -> []) .measures
                             |> List.map (\m -> { value = String.fromInt m.id, text = m.name, enabled = True })
                     , emptyItem =
                         Just
-                            { value = String.fromInt namedIngredient.ingredient.amountUnit.measureId
+                            { value = String.fromInt ingredient.amountUnit.measureId
                             , text =
                                 measureMap
-                                    |> Dict.get namedIngredient.ingredient.amountUnit.measureId
+                                    |> Dict.get ingredient.amountUnit.measureId
                                     |> Maybe.Extra.unpack (\_ -> "") .name
                             , enabled = True
                             }
@@ -282,18 +286,18 @@ editIngredientLine measureMap foodMap namedIngredient ingredientUpdateClientInpu
                         Maybe.andThen String.toInt
                             >> Maybe.withDefault ingredientUpdateClientInput.amountUnit.measureId
                             >> flip (IngredientUpdateClientInput.amountUnit |> Compose.lensWithLens AmountUnitClientInput.measureId).set ingredientUpdateClientInput
-                            >> UpdateIngredient namedIngredient.ingredient.id
+                            >> UpdateIngredient ingredient.id
                     }
                     []
-                    (namedIngredient.ingredient.amountUnit.measureId
+                    (ingredient.amountUnit.measureId
                         |> flip Dict.get measureMap
                         |> Maybe.map .name
                     )
                 ]
             ]
-        , button [ class "button", onClick (SaveIngredientEdit namedIngredient.ingredient.id) ]
+        , button [ class "button", onClick (SaveIngredientEdit ingredient.id) ]
             [ text "Save" ]
-        , button [ class "button", onClick (ExitEditIngredientAt namedIngredient.ingredient.id) ]
+        , button [ class "button", onClick (ExitEditIngredientAt ingredient.id) ]
             [ text "Cancel" ]
         ]
 
@@ -370,6 +374,13 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
         )
 
 
+ingredientIdIs : IngredientId -> Either Ingredient (Editing Ingredient IngredientUpdateClientInput) -> Bool
+ingredientIdIs ingredientId =
+    Either.unpack
+        (\i -> i.id == ingredientId)
+        (\e -> e.original.id == ingredientId)
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
@@ -403,10 +414,13 @@ update msg model =
             ( model, Cmd.none )
 
         EnterEditIngredient ingredientId ->
-            ( model, Cmd.none )
+            ( model
+                |> Optional.modify (ingredients |> Compose.lensWithOptional (LensUtil.firstSuch (ingredientIdIs ingredientId))) (Either.unpack (\i -> { original = i, update = IngredientUpdateClientInput.from i }) identity >> Right)
+            , Cmd.none
+            )
 
         ExitEditIngredientAt ingredientId ->
-            ( model, Cmd.none )
+            ( model |> Optional.modify (ingredients |> Compose.lensWithOptional (LensUtil.firstSuch (ingredientIdIs ingredientId))) (Either.unpack identity .original >> Left), Cmd.none )
 
         DeleteIngredient ingredientId ->
             ( model, deleteIngredient fs ingredientId )
@@ -418,10 +432,7 @@ update msg model =
                         |> ingredients.set
                             (model.ingredients
                                 |> List.Extra.filterNot
-                                    (Either.unpack
-                                        (\i -> i.ingredient.id == ingredientId)
-                                        (\i -> i.original.ingredient.id == ingredientId)
-                                    )
+                                    (ingredientIdIs ingredientId)
                             )
                     , Cmd.none
                     )
@@ -433,13 +444,7 @@ update msg model =
             case result of
                 Ok is ->
                     ( is
-                        |> List.map
-                            (\i ->
-                                Left
-                                    { ingredient = i
-                                    , name = Dict.get i.foodId model.foods |> Maybe.Extra.unpack (\_ -> "") .name
-                                    }
-                            )
+                        |> List.map Left
                         |> flip ingredients.set model
                     , Cmd.none
                     )
