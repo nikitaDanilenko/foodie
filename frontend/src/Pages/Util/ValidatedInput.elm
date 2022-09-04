@@ -5,9 +5,11 @@ module Pages.Util.ValidatedInput exposing
     , lift
     , text
     , value
+    , positive
     )
 
 import Basics.Extra exposing (flip)
+import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 
 
@@ -83,3 +85,16 @@ setWithLens lens txt model =
 lift : Lens model (ValidatedInput a) -> Lens model String
 lift lens =
     Lens (lens.get >> .text) (setWithLens lens)
+
+
+positive : ValidatedInput Float
+positive =
+    { value = 0
+    , ifEmptyValue = 0
+    , text = ""
+    , parse =
+        String.toFloat
+            >> Maybe.Extra.filter (\x -> x > 0)
+            >> Result.fromMaybe "Error"
+    , partial = \str -> List.length (String.split "." str) <= 2 && String.all (\c -> c == '.' || Char.isDigit c) str
+    }

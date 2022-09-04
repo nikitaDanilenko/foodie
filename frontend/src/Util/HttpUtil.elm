@@ -90,9 +90,34 @@ postJsonWithJWT :
         , expect : Expect msg
         }
     -> Cmd msg
-postJsonWithJWT jwt request =
+postJsonWithJWT =
+    sendJsonWithJWTVerb "POST"
+
+
+patchJsonWithJWT :
+    JWT
+    ->
+        { url : String
+        , body : Encode.Value
+        , expect : Expect msg
+        }
+    -> Cmd msg
+patchJsonWithJWT =
+    sendJsonWithJWTVerb "PATCH"
+
+
+sendJsonWithJWTVerb :
+    String
+    -> JWT
+    ->
+        { url : String
+        , body : Encode.Value
+        , expect : Expect msg
+        }
+    -> Cmd msg
+sendJsonWithJWTVerb verb jwt request =
     Http.request
-        { method = "POST"
+        { method = verb
         , headers = [ jwtHeader jwt ]
         , url = request.url
         , body = Http.jsonBody request.body

@@ -27,6 +27,6 @@ app.ports.storeFoods.subscribe(function(foods) {
 
 app.ports.doFetchFoods.subscribe(function() {
     var storedFoods = localStorage.getItem(foodsKey);
-    var foodsOrEmpty = storedFoods ? storedFoods : '';
+    var foodsOrEmpty = storedFoods ? storedFoods : '[]';
     app.ports.fetchFoods.send(foodsOrEmpty);
 });
