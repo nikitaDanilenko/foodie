@@ -372,6 +372,13 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        fs =
+            { configuration = model.configuration
+            , jwt = model.jwt
+            , recipeId = model.recipeId
+            }
+    in
     case msg of
         AddIngredient ->
             ( model, Cmd.none )
@@ -395,10 +402,25 @@ update msg model =
             ( model, Cmd.none )
 
         DeleteIngredient ingredientId ->
-            ( model, Cmd.none )
+            ( model, deleteIngredient fs ingredientId )
 
         GotDeleteIngredientResponse ingredientId result ->
-            ( model, Cmd.none )
+            case result of
+                Ok _ ->
+                    ( model
+                        |> ingredientsLens.set
+                            (model.ingredients
+                                |> List.Extra.filterNot
+                                    (Either.unpack
+                                        (\i -> i.ingredient.id == ingredientId)
+                                        (\i -> i.original.ingredient.id == ingredientId)
+                                    )
+                            )
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
 
         GotFetchIngredientsResponse result ->
             ( model, Cmd.none )
@@ -437,11 +459,7 @@ update msg model =
 
         UpdateJWT jwt ->
             ( jwtLens.set jwt model
-            , initialFetch
-                { configuration = model.configuration
-                , jwt = jwt
-                , recipeId = model.recipeId
-                }
+            , initialFetch fs
             )
 
         UpdateFoods string ->
@@ -452,11 +470,7 @@ update msg model =
                         |> Dict.fromList
                         |> flip foodsLens.set model
                     , if List.isEmpty foods then
-                        fetchFoods
-                            { configuration = model.configuration
-                            , jwt = model.jwt
-                            , recipeId = model.recipeId
-                            }
+                        fetchFoods fs
 
                       else
                         Cmd.none
@@ -473,11 +487,7 @@ update msg model =
                         |> Dict.fromList
                         |> flip measuresLens.set model
                     , if List.isEmpty measures then
-                        fetchMeasures
-                            { configuration = model.configuration
-                            , jwt = model.jwt
-                            , recipeId = model.recipeId
-                            }
+                        fetchMeasures fs
 
                       else
                         Cmd.none
@@ -576,6 +586,14 @@ addFood ps =
         { url = String.join "/" [ ps.configuration.backendURL, "recipe", "add-ingredient" ]
         , body = encoderIngredientCreation ps.ingredientCreation
         , expect = HttpUtil.expectJson GotAddIngredientResponse decoderIngredient
+        }
+
+
+deleteIngredient : FlagsWithJWT -> IngredientId -> Cmd Msg
+deleteIngredient fs iid =
+    HttpUtil.deleteWithJWT fs.jwt
+        { url = String.join "/" [ fs.configuration.backendURL, "recipe", "remove-ingredient", iid ]
+        , expect = HttpUtil.expectWhatever (GotDeleteIngredientResponse iid)
         }
 
 
