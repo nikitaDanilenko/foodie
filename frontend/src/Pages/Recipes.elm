@@ -127,7 +127,7 @@ editOrDeleteRecipeLine configuration recipe =
                         ]
                         []
                 , attributes = [ class "button" ]
-                , children = [ text "Edit" ]
+                , children = [ text "Edit ingredients" ]
                 , isDisabled = False
                 }
             ]
@@ -334,7 +334,7 @@ createRecipe md =
 
 saveRecipe : Model -> RecipeUpdate -> Cmd Msg
 saveRecipe md ru =
-    HttpUtil.postJsonWithJWT md.jwt
+    HttpUtil.patchJsonWithJWT md.jwt
         { url = String.join "/" [ md.configuration.backendURL, "recipe", "update" ]
         , body = encoderRecipeUpdate ru
         , expect = HttpUtil.expectJson (GotSaveRecipeResponse ru.id) decoderRecipe
