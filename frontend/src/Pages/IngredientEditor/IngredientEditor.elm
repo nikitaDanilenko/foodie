@@ -9,7 +9,7 @@ import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
 import Dict exposing (Dict)
 import Dropdown exposing (dropdown)
-import Either exposing (Either)
+import Either exposing (Either(..))
 import Html exposing (Html, button, div, input, label, td, text, thead, tr)
 import Html.Attributes exposing (class, id, value)
 import Html.Events exposing (onClick, onInput)
@@ -53,23 +53,23 @@ type alias MeasureMap =
     Dict MeasureId Measure
 
 
-jwtLens : Lens Model JWT
-jwtLens =
+jwt : Lens Model JWT
+jwt =
     Lens .jwt (\b a -> { a | jwt = b })
 
 
-foodsLens : Lens Model FoodMap
-foodsLens =
+foods : Lens Model FoodMap
+foods =
     Lens .foods (\b a -> { a | foods = b })
 
 
-measuresLens : Lens Model MeasureMap
-measuresLens =
+measures : Lens Model MeasureMap
+measures =
     Lens .measures (\b a -> { a | measures = b })
 
 
-ingredientsLens : Lens Model (List (Either NamedIngredient (Editing NamedIngredient IngredientUpdateClientInput)))
-ingredientsLens =
+ingredients : Lens Model (List (Either NamedIngredient (Editing NamedIngredient IngredientUpdateClientInput)))
+ingredients =
     Lens .ingredients (\b a -> { a | ingredients = b })
 
 
@@ -144,7 +144,7 @@ initialFetch flags =
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
-        ( jwt, cmd ) =
+        ( j, cmd ) =
             case flags.jwt of
                 Just token ->
                     ( token
@@ -159,7 +159,7 @@ init flags =
                     ( "", doFetchToken () )
     in
     ( { configuration = flags.configuration
-      , jwt = jwt
+      , jwt = j
       , recipeId = flags.recipeId
       , ingredients = []
       , foods = Dict.empty
@@ -378,6 +378,13 @@ update msg model =
             , jwt = model.jwt
             , recipeId = model.recipeId
             }
+
+        set : List a -> (a -> comparable) -> Lens Model (Dict comparable a) -> Model -> Model
+        set xs idOf lens md =
+            xs
+                |> List.map (\m -> ( idOf m, m ))
+                |> Dict.fromList
+                |> flip lens.set md
     in
     case msg of
         AddIngredient ->
@@ -408,7 +415,7 @@ update msg model =
             case result of
                 Ok _ ->
                     ( model
-                        |> ingredientsLens.set
+                        |> ingredients.set
                             (model.ingredients
                                 |> List.Extra.filterNot
                                     (Either.unpack
@@ -423,16 +430,28 @@ update msg model =
                     ( model, Cmd.none )
 
         GotFetchIngredientsResponse result ->
-            ( model, Cmd.none )
+            case result of
+                Ok is ->
+                    ( is
+                        |> List.map
+                            (\i ->
+                                Left
+                                    { ingredient = i
+                                    , name = Dict.get i.foodId model.foods |> Maybe.Extra.unpack (\_ -> "") .name
+                                    }
+                            )
+                        |> flip ingredients.set model
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
 
         GotFetchFoodsResponse result ->
             case result of
-                Ok foods ->
-                    ( foods
-                        |> List.map (\f -> ( f.id, f ))
-                        |> Dict.fromList
-                        |> flip foodsLens.set model
-                    , foods
+                Ok fds ->
+                    ( set fds .id foods model
+                    , fds
                         |> Encode.list encoderFood
                         |> Encode.encode 0
                         |> storeFoods
@@ -443,12 +462,9 @@ update msg model =
 
         GotFetchMeasuresResponse result ->
             case result of
-                Ok measures ->
-                    ( measures
-                        |> List.map (\m -> ( m.id, m ))
-                        |> Dict.fromList
-                        |> flip measuresLens.set model
-                    , measures
+                Ok ms ->
+                    ( set ms .id measures model
+                    , ms
                         |> Encode.list encoderMeasure
                         |> Encode.encode 0
                         |> storeMeasures
@@ -457,19 +473,16 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        UpdateJWT jwt ->
-            ( jwtLens.set jwt model
+        UpdateJWT token ->
+            ( jwt.set token model
             , initialFetch fs
             )
 
         UpdateFoods string ->
             case Decode.decodeString (Decode.list decoderFood) string of
-                Ok foods ->
-                    ( foods
-                        |> List.map (\f -> ( f.id, f ))
-                        |> Dict.fromList
-                        |> flip foodsLens.set model
-                    , if List.isEmpty foods then
+                Ok fds ->
+                    ( set fds .id foods model
+                    , if List.isEmpty fds then
                         fetchFoods fs
 
                       else
@@ -481,12 +494,9 @@ update msg model =
 
         UpdateMeasures string ->
             case Decode.decodeString (Decode.list decoderMeasure) string of
-                Ok measures ->
-                    ( measures
-                        |> List.map (\f -> ( f.id, f ))
-                        |> Dict.fromList
-                        |> flip measuresLens.set model
-                    , if List.isEmpty measures then
+                Ok ms ->
+                    ( set ms .id measures model
+                    , if List.isEmpty ms then
                         fetchMeasures fs
 
                       else
