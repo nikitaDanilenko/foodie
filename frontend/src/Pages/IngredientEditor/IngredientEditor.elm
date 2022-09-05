@@ -20,7 +20,7 @@ import Json.Encode as Encode
 import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
-import Monocle.Lens exposing (Lens)
+import Monocle.Lens as Lens exposing (Lens)
 import Monocle.Optional as Optional
 import Pages.IngredientEditor.AmountUnitClientInput as AmountUnitClientInput
 import Pages.IngredientEditor.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
@@ -30,6 +30,7 @@ import Ports exposing (doFetchFoods, doFetchMeasures, doFetchToken, storeFoods, 
 import Util.Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
 import Util.LensUtil as LensUtil
+import Util.ListUtil as ListUtil
 
 
 type alias Model =
@@ -77,15 +78,13 @@ foodsToAdd =
     Lens .foodsToAdd (\b a -> { a | foodsToAdd = b })
 
 
-foodsSearchStringLens : Lens Model String
-foodsSearchStringLens =
+foodsSearchString : Lens Model String
+foodsSearchString =
     Lens .foodsSearchString (\b a -> { a | foodsSearchString = b })
 
 
 type Msg
-    = AddIngredient
-    | GotAddIngredientResponse (Result Error Ingredient)
-    | UpdateIngredient IngredientId IngredientUpdateClientInput
+    = UpdateIngredient IngredientId IngredientUpdateClientInput
     | SaveIngredientEdit IngredientId
     | GotSaveIngredientResponse IngredientId (Result Error Ingredient)
     | EnterEditIngredient IngredientId
@@ -98,6 +97,7 @@ type Msg
     | SelectFood Food
     | DeselectFood FoodId
     | AddFood FoodId
+    | GotAddFoodResponse (Result Error Ingredient)
     | UpdateAddFood IngredientCreationClientInput
     | UpdateJWT String
     | UpdateFoods String
@@ -381,6 +381,13 @@ ingredientIdIs ingredientId =
         (\e -> e.original.id == ingredientId)
 
 
+foodIdOf : Either Ingredient (Editing Ingredient IngredientUpdateClientInput) -> FoodId
+foodIdOf =
+    Either.unpack
+        .foodId
+        (.original >> .foodId)
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
@@ -398,12 +405,6 @@ update msg model =
                 |> flip lens.set md
     in
     case msg of
-        AddIngredient ->
-            ( model, Cmd.none )
-
-        GotAddIngredientResponse result ->
-            ( model, Cmd.none )
-
         UpdateIngredient ingredientId ingredientUpdate ->
             ( model, Cmd.none )
 
@@ -512,7 +513,7 @@ update msg model =
                     ( model, Cmd.none )
 
         SetFoodsSearchString string ->
-            ( foodsSearchStringLens.set string model, Cmd.none )
+            ( foodsSearchString.set string model, Cmd.none )
 
         SelectFood food ->
             ( model
@@ -544,6 +545,26 @@ update msg model =
                                     }
                            )
                     )
+
+        GotAddFoodResponse result ->
+            case result of
+                Ok ingredient ->
+                    ( model
+                        |> Lens.modify
+                            ingredients
+                            (ListUtil.insertBy
+                                { compareA = .foodId >> ingredientNameOrEmpty model.foods
+                                , compareB = foodIdOf >> ingredientNameOrEmpty model.foods
+                                , mapAB = Left
+                                }
+                                ingredient
+                            )
+                        |> Lens.modify foodsToAdd (List.Extra.filterNot (\ic -> ic.foodId == ingredient.foodId))
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
 
         UpdateAddFood ingredientCreationClientInput ->
             ( model.foodsToAdd
@@ -600,7 +621,7 @@ addFood ps =
     HttpUtil.patchJsonWithJWT ps.jwt
         { url = String.join "/" [ ps.configuration.backendURL, "recipe", "add-ingredient" ]
         , body = encoderIngredientCreation ps.ingredientCreation
-        , expect = HttpUtil.expectJson GotAddIngredientResponse decoderIngredient
+        , expect = HttpUtil.expectJson GotAddFoodResponse decoderIngredient
         }
 
 
