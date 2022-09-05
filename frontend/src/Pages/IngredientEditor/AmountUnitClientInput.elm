@@ -26,6 +26,13 @@ from au =
     }
 
 
+to : AmountUnitClientInput -> AmountUnit
+to input =
+    { measureId = input.measureId
+    , factor = input.factor.value
+    }
+
+
 measureId : Lens AmountUnitClientInput MeasureId
 measureId =
     Lens .measureId (\b a -> { a | measureId = b })

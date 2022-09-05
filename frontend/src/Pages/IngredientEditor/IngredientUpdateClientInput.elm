@@ -1,13 +1,14 @@
 module Pages.IngredientEditor.IngredientUpdateClientInput exposing (..)
 
+import Api.Auxiliary exposing (IngredientId)
 import Api.Types.Ingredient exposing (Ingredient)
-import Api.Types.UUID exposing (UUID)
+import Api.Types.IngredientUpdate exposing (IngredientUpdate)
 import Monocle.Lens exposing (Lens)
 import Pages.IngredientEditor.AmountUnitClientInput as AmountUnitClientInput exposing (AmountUnitClientInput)
 
 
 type alias IngredientUpdateClientInput =
-    { ingredientId : UUID
+    { ingredientId : IngredientId
     , amountUnit : AmountUnitClientInput
     }
 
@@ -21,4 +22,11 @@ from : Ingredient -> IngredientUpdateClientInput
 from ingredient =
     { ingredientId = ingredient.id
     , amountUnit = AmountUnitClientInput.from ingredient.amountUnit
+    }
+
+
+to : IngredientUpdateClientInput -> IngredientUpdate
+to input =
+    { ingredientId = input.ingredientId
+    , amountUnit = AmountUnitClientInput.to input.amountUnit
     }

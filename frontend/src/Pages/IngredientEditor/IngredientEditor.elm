@@ -4,6 +4,7 @@ import Api.Auxiliary exposing (FoodId, IngredientId, JWT, MeasureId, RecipeId)
 import Api.Types.Food exposing (Food, decoderFood, encoderFood)
 import Api.Types.Ingredient exposing (Ingredient, decoderIngredient)
 import Api.Types.IngredientCreation exposing (IngredientCreation, encoderIngredientCreation)
+import Api.Types.IngredientUpdate exposing (IngredientUpdate, encoderIngredientUpdate)
 import Api.Types.Measure exposing (Measure, decoderMeasure, encoderMeasure)
 import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
@@ -86,7 +87,7 @@ foodsSearchStringLens =
 type Msg
     = UpdateIngredient IngredientId IngredientUpdateClientInput
     | SaveIngredientEdit IngredientId
-    | GotSaveIngredientResponse IngredientId (Result Error Ingredient)
+    | GotSaveIngredientResponse (Result Error Ingredient)
     | EnterEditIngredient IngredientId
     | ExitEditIngredientAt IngredientId
     | DeleteIngredient IngredientId
@@ -128,7 +129,10 @@ type alias Flags =
 
 
 type alias FlagsWithJWT =
-    { configuration : Configuration, jwt : JWT, recipeId : RecipeId }
+    { configuration : Configuration
+    , jwt : JWT
+    , recipeId : RecipeId
+    }
 
 
 initialFetch : FlagsWithJWT -> Cmd Msg
@@ -219,7 +223,7 @@ view model =
 
 ingredientNameOrEmpty : FoodMap -> FoodId -> String
 ingredientNameOrEmpty fm fi =
-    Dict.get fi fm |> Maybe.Extra.unpack (\_ -> "") .name
+    Dict.get fi fm |> Maybe.Extra.unwrap "" .name
 
 
 editOrDeleteIngredientLine : MeasureMap -> FoodMap -> Ingredient -> Html Msg
@@ -227,7 +231,7 @@ editOrDeleteIngredientLine measureMap foodMap ingredient =
     tr [ id "editingIngredient" ]
         [ td [] [ label [] [ ingredient.foodId |> ingredientNameOrEmpty foodMap |> text ] ]
         , td [] [ label [] [ ingredient.amountUnit.factor |> String.fromFloat |> text ] ]
-        , td [] [ label [] [ ingredient.amountUnit.measureId |> flip Dict.get measureMap |> Maybe.Extra.unpack (always "") .name |> text ] ]
+        , td [] [ label [] [ ingredient.amountUnit.measureId |> flip Dict.get measureMap |> Maybe.Extra.unwrap "" .name |> text ] ]
         , td [] [ button [ class "button", onClick (EnterEditIngredient ingredient.id) ] [ text "Edit" ] ]
         , td [] [ button [ class "button", onClick (DeleteIngredient ingredient.id) ] [ text "Delete" ] ]
         ]
@@ -271,7 +275,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                     { items =
                         foodMap
                             |> Dict.get ingredient.foodId
-                            |> Maybe.Extra.unpack (\_ -> []) .measures
+                            |> Maybe.Extra.unwrap [] .measures
                             |> List.map (\m -> { value = String.fromInt m.id, text = m.name, enabled = True })
                     , emptyItem =
                         Just
@@ -279,7 +283,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                             , text =
                                 measureMap
                                     |> Dict.get ingredient.amountUnit.measureId
-                                    |> Maybe.Extra.unpack (\_ -> "") .name
+                                    |> Maybe.Extra.unwrap "" .name
                             , enabled = True
                             }
                     , onChange =
@@ -341,7 +345,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                                 { items =
                                     foodMap
                                         |> Dict.get food.id
-                                        |> Maybe.Extra.unpack (\_ -> []) .measures
+                                        |> Maybe.Extra.unwrap [] .measures
                                         |> List.map (\m -> { value = String.fromInt m.id, text = m.name, enabled = True })
                                 , emptyItem =
                                     Just
@@ -349,7 +353,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                                         , text =
                                             measureMap
                                                 |> Dict.get ingredientToAdd.amountUnit.measureId
-                                                |> Maybe.Extra.unpack (\_ -> "") .name
+                                                |> Maybe.Extra.unwrap "" .name
                                         , enabled = True
                                         }
                                 , onChange =
@@ -414,10 +418,29 @@ update msg model =
             )
 
         SaveIngredientEdit ingredientId ->
-            ( model, Cmd.none )
+            let
+                cmd =
+                    model
+                        |> ingredientsLens.get
+                        |> List.Extra.find (ingredientIdIs ingredientId)
+                        |> Maybe.andThen Either.rightToMaybe
+                        |> Maybe.Extra.unwrap Cmd.none
+                            (.update >> IngredientUpdateClientInput.to >> saveIngredient fs)
+            in
+            ( model, cmd )
 
-        GotSaveIngredientResponse ingredientId result ->
-            ( model, Cmd.none )
+        GotSaveIngredientResponse result ->
+            case result of
+                Ok ingredient ->
+                    ( model
+                        |> Optional.modify
+                            (ingredientsLens |> Compose.lensWithOptional (LensUtil.firstSuch (ingredientIdIs ingredient.id)))
+                            (Either.andThenRight (always (Left ingredient)))
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
 
         EnterEditIngredient ingredientId ->
             ( model
@@ -523,7 +546,7 @@ update msg model =
         SelectFood food ->
             ( model
                 |> (foodsToAddLens |> Compose.lensWithOptional (LensUtil.firstSuch (\x -> x.foodId == food.id))).set
-                    (IngredientCreationClientInput.default model.recipeId food.id (food.measures |> List.head |> Maybe.Extra.unpack (\_ -> 0) .id))
+                    (IngredientCreationClientInput.default model.recipeId food.id (food.measures |> List.head |> Maybe.Extra.unwrap 0 .id))
             , Cmd.none
             )
 
@@ -627,6 +650,16 @@ addFood ps =
         { url = String.join "/" [ ps.configuration.backendURL, "recipe", "add-ingredient" ]
         , body = encoderIngredientCreation ps.ingredientCreation
         , expect = HttpUtil.expectJson GotAddFoodResponse decoderIngredient
+        }
+
+
+saveIngredient : FlagsWithJWT -> IngredientUpdate -> Cmd Msg
+saveIngredient flags ingredientUpdate =
+    HttpUtil.patchJsonWithJWT
+        flags.jwt
+        { url = String.join "/" [ flags.configuration.backendURL, "recipe", "update-ingredient" ]
+        , body = encoderIngredientUpdate ingredientUpdate
+        , expect = HttpUtil.expectJson GotSaveIngredientResponse decoderIngredient
         }
 
 
