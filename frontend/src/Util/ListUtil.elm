@@ -17,8 +17,8 @@ insertBy ps x list =
             [ ps.mapAB x ]
 
         Just ( e, es ) ->
-            if ps.compareA e < ps.compareB x then
+            if ps.compareB e < ps.compareA x then
                 e :: insertBy ps x es
 
             else
-                f x :: list
+                ps.mapAB x :: list
