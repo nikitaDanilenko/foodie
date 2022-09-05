@@ -27,7 +27,7 @@ import Pages.IngredientEditor.IngredientCreationClientInput as IngredientCreatio
 import Pages.IngredientEditor.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
 import Pages.Util.ValidatedInput as ValidatedInput
 import Ports exposing (doFetchFoods, doFetchMeasures, doFetchToken, storeFoods, storeMeasures)
-import Util.Editing exposing (Editing)
+import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
 import Util.LensUtil as LensUtil
 import Util.ListUtil as ListUtil
@@ -53,33 +53,33 @@ type alias MeasureMap =
     Dict MeasureId Measure
 
 
-jwt : Lens Model JWT
-jwt =
+jwtLens : Lens Model JWT
+jwtLens =
     Lens .jwt (\b a -> { a | jwt = b })
 
 
-foods : Lens Model FoodMap
-foods =
+foodsLens : Lens Model FoodMap
+foodsLens =
     Lens .foods (\b a -> { a | foods = b })
 
 
-measures : Lens Model MeasureMap
-measures =
+measuresLens : Lens Model MeasureMap
+measuresLens =
     Lens .measures (\b a -> { a | measures = b })
 
 
-ingredients : Lens Model (List (Either Ingredient (Editing Ingredient IngredientUpdateClientInput)))
-ingredients =
+ingredientsLens : Lens Model (List (Either Ingredient (Editing Ingredient IngredientUpdateClientInput)))
+ingredientsLens =
     Lens .ingredients (\b a -> { a | ingredients = b })
 
 
-foodsToAdd : Lens Model (List IngredientCreationClientInput)
-foodsToAdd =
+foodsToAddLens : Lens Model (List IngredientCreationClientInput)
+foodsToAddLens =
     Lens .foodsToAdd (\b a -> { a | foodsToAdd = b })
 
 
-foodsSearchString : Lens Model String
-foodsSearchString =
+foodsSearchStringLens : Lens Model String
+foodsSearchStringLens =
     Lens .foodsSearchString (\b a -> { a | foodsSearchString = b })
 
 
@@ -406,7 +406,12 @@ update msg model =
     in
     case msg of
         UpdateIngredient ingredientId ingredientUpdate ->
-            ( model, Cmd.none )
+            ( model
+                |> Optional.modify
+                    (ingredientsLens |> Compose.lensWithOptional (LensUtil.firstSuch (ingredientIdIs ingredientId)))
+                    (Either.mapRight (Editing.updateLens.set ingredientUpdate))
+            , Cmd.none
+            )
 
         SaveIngredientEdit ingredientId ->
             ( model, Cmd.none )
@@ -416,12 +421,12 @@ update msg model =
 
         EnterEditIngredient ingredientId ->
             ( model
-                |> Optional.modify (ingredients |> Compose.lensWithOptional (LensUtil.firstSuch (ingredientIdIs ingredientId))) (Either.unpack (\i -> { original = i, update = IngredientUpdateClientInput.from i }) identity >> Right)
+                |> Optional.modify (ingredientsLens |> Compose.lensWithOptional (LensUtil.firstSuch (ingredientIdIs ingredientId))) (Either.unpack (\i -> { original = i, update = IngredientUpdateClientInput.from i }) identity >> Right)
             , Cmd.none
             )
 
         ExitEditIngredientAt ingredientId ->
-            ( model |> Optional.modify (ingredients |> Compose.lensWithOptional (LensUtil.firstSuch (ingredientIdIs ingredientId))) (Either.unpack identity .original >> Left), Cmd.none )
+            ( model |> Optional.modify (ingredientsLens |> Compose.lensWithOptional (LensUtil.firstSuch (ingredientIdIs ingredientId))) (Either.unpack identity .original >> Left), Cmd.none )
 
         DeleteIngredient ingredientId ->
             ( model, deleteIngredient fs ingredientId )
@@ -430,7 +435,7 @@ update msg model =
             case result of
                 Ok _ ->
                     ( model
-                        |> ingredients.set
+                        |> ingredientsLens.set
                             (model.ingredients
                                 |> List.Extra.filterNot
                                     (ingredientIdIs ingredientId)
@@ -446,7 +451,7 @@ update msg model =
                 Ok is ->
                     ( is
                         |> List.map Left
-                        |> flip ingredients.set model
+                        |> flip ingredientsLens.set model
                     , Cmd.none
                     )
 
@@ -456,7 +461,7 @@ update msg model =
         GotFetchFoodsResponse result ->
             case result of
                 Ok fds ->
-                    ( set fds .id foods model
+                    ( set fds .id foodsLens model
                     , fds
                         |> Encode.list encoderFood
                         |> Encode.encode 0
@@ -469,7 +474,7 @@ update msg model =
         GotFetchMeasuresResponse result ->
             case result of
                 Ok ms ->
-                    ( set ms .id measures model
+                    ( set ms .id measuresLens model
                     , ms
                         |> Encode.list encoderMeasure
                         |> Encode.encode 0
@@ -480,14 +485,14 @@ update msg model =
                     ( model, Cmd.none )
 
         UpdateJWT token ->
-            ( jwt.set token model
+            ( jwtLens.set token model
             , initialFetch fs
             )
 
         UpdateFoods string ->
             case Decode.decodeString (Decode.list decoderFood) string of
                 Ok fds ->
-                    ( set fds .id foods model
+                    ( set fds .id foodsLens model
                     , if List.isEmpty fds then
                         fetchFoods fs
 
@@ -501,7 +506,7 @@ update msg model =
         UpdateMeasures string ->
             case Decode.decodeString (Decode.list decoderMeasure) string of
                 Ok ms ->
-                    ( set ms .id measures model
+                    ( set ms .id measuresLens model
                     , if List.isEmpty ms then
                         fetchMeasures fs
 
@@ -513,18 +518,18 @@ update msg model =
                     ( model, Cmd.none )
 
         SetFoodsSearchString string ->
-            ( foodsSearchString.set string model, Cmd.none )
+            ( foodsSearchStringLens.set string model, Cmd.none )
 
         SelectFood food ->
             ( model
-                |> (foodsToAdd |> Compose.lensWithOptional (LensUtil.firstSuch (\x -> x.foodId == food.id))).set
+                |> (foodsToAddLens |> Compose.lensWithOptional (LensUtil.firstSuch (\x -> x.foodId == food.id))).set
                     (IngredientCreationClientInput.default model.recipeId food.id (food.measures |> List.head |> Maybe.Extra.unpack (\_ -> 0) .id))
             , Cmd.none
             )
 
         DeselectFood foodId ->
             ( model
-                |> foodsToAdd.set (List.filter (\f -> f.foodId /= foodId) model.foodsToAdd)
+                |> foodsToAddLens.set (List.filter (\f -> f.foodId /= foodId) model.foodsToAdd)
             , Cmd.none
             )
 
@@ -551,7 +556,7 @@ update msg model =
                 Ok ingredient ->
                     ( model
                         |> Lens.modify
-                            ingredients
+                            ingredientsLens
                             (ListUtil.insertBy
                                 { compareA = .foodId >> ingredientNameOrEmpty model.foods
                                 , compareB = foodIdOf >> ingredientNameOrEmpty model.foods
@@ -559,7 +564,7 @@ update msg model =
                                 }
                                 ingredient
                             )
-                        |> Lens.modify foodsToAdd (List.Extra.filterNot (\ic -> ic.foodId == ingredient.foodId))
+                        |> Lens.modify foodsToAddLens (List.Extra.filterNot (\ic -> ic.foodId == ingredient.foodId))
                     , Cmd.none
                     )
 
@@ -569,7 +574,7 @@ update msg model =
         UpdateAddFood ingredientCreationClientInput ->
             ( model.foodsToAdd
                 |> List.Extra.setIf (\f -> f.foodId == ingredientCreationClientInput.foodId) ingredientCreationClientInput
-                |> flip foodsToAdd.set model
+                |> flip foodsToAddLens.set model
             , Cmd.none
             )
 
