@@ -205,7 +205,7 @@ view model =
         , div [ id "addIngredientView" ]
             (div [ id "addIngredient" ]
                 [ div [ id "searchField" ]
-                    [ label [] [ text (special 128269) ]
+                    [ label [] [ text lookingGlass ]
                     , input [ onInput SetFoodsSearchString ] []
                     ]
                 ]
@@ -678,3 +678,8 @@ deleteIngredient fs iid =
 special : Int -> String
 special =
     Char.fromCode >> String.fromChar
+
+
+lookingGlass : String
+lookingGlass =
+    special 128269
