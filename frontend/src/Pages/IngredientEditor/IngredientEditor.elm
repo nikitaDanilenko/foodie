@@ -212,8 +212,6 @@ view model =
                 :: thead []
                     [ tr []
                         [ td [] [ label [] [ text "Name" ] ]
-                        , td [] [ label [] [ text "Amount" ] ]
-                        , td [] [ label [] [ text "Unit" ] ]
                         ]
                     ]
                 :: viewFoods model.foodsSearchString
@@ -545,8 +543,14 @@ update msg model =
 
         SelectFood food ->
             ( model
-                |> (foodsToAddLens |> Compose.lensWithOptional (LensUtil.firstSuch (\x -> x.foodId == food.id))).set
-                    (IngredientCreationClientInput.default model.recipeId food.id (food.measures |> List.head |> Maybe.Extra.unwrap 0 .id))
+                |> Lens.modify foodsToAddLens
+                    (ListUtil.insertBy
+                        { compareA = .foodId >> ingredientNameOrEmpty model.foods
+                        , compareB = .foodId >> ingredientNameOrEmpty model.foods
+                        , mapAB = identity
+                        }
+                        (IngredientCreationClientInput.default model.recipeId food.id (food.measures |> List.head |> Maybe.Extra.unwrap 0 .id))
+                    )
             , Cmd.none
             )
 
