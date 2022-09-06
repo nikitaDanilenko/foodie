@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '16.x'
       - name: Install create-elm-app
-        run: npm install create-elm-app && npm audit fix
+        run: npm install create-elm-app
       - name: Build Elm app with deployment variables
         run: cd frontend && env $(cat deployment.env | xargs) elm-app build
       - name: Set up Docker Buildx
