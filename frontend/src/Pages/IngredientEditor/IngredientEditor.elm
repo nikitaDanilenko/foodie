@@ -12,7 +12,7 @@ import Dict exposing (Dict)
 import Dropdown exposing (dropdown)
 import Either exposing (Either(..))
 import Html exposing (Html, button, div, input, label, td, text, thead, tr)
-import Html.Attributes exposing (class, id, value)
+import Html.Attributes exposing (class, disabled, id, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Http exposing (Error)
@@ -237,10 +237,6 @@ editOrDeleteIngredientLine measureMap foodMap ingredient =
 
 editIngredientLine : MeasureMap -> FoodMap -> Ingredient -> IngredientUpdateClientInput -> Html Msg
 editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
-    let
-        saveOnEnter =
-            onEnter (SaveIngredientEdit ingredient.id)
-    in
     -- todo: Check whether the update behaviour is correct. There is the implicit assumption that the update originates from the ingredient.
     --       cf. name, description
     div [ class "ingredientLine" ]
@@ -251,7 +247,9 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
         , div [ class "amount" ]
             [ label [] [ text "Amount" ]
             , input
-                [ ingredientUpdateClientInput.amountUnit.factor.text |> value
+                [ ingredientUpdateClientInput.amountUnit.factor.value
+                    |> String.fromFloat
+                    |> value
                 , onInput
                     (flip
                         (ValidatedInput.lift
@@ -262,7 +260,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                         ingredientUpdateClientInput
                         >> UpdateIngredient ingredient.id
                     )
-                , saveOnEnter
+                , onEnter (SaveIngredientEdit ingredient.id)
                 ]
                 []
             ]
@@ -366,7 +364,17 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                         ]
 
                     -- todo: Disable button for missing amount/unit
-                    , td [] [ button [ class "button", onClick (AddFood food.id) ] [ text "Add" ] ]
+                    , td []
+                        [ button
+                            [ class "button"
+                            , disabled
+                                (List.Extra.find (\f -> f.foodId == food.id) ingredientsToAdd
+                                    |> Maybe.Extra.unwrap True (\f -> f.amountUnit.factor.value <= 0)
+                                )
+                            , onClick (AddFood food.id)
+                            ]
+                            [ text "Add" ]
+                        ]
                     , td [] [ button [ class "button", onClick (DeselectFood food.id) ] [ text "Cancel" ] ]
                     ]
     in
