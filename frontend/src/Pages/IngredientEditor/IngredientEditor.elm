@@ -1,6 +1,7 @@
 module Pages.IngredientEditor.IngredientEditor exposing (Flags, Model, Msg, init, update, updateFoods, updateJWT, updateMeasures, view)
 
 import Api.Auxiliary exposing (FoodId, IngredientId, JWT, MeasureId, RecipeId)
+import Api.Types.AmountUnit exposing (AmountUnit)
 import Api.Types.Food exposing (Food, decoderFood, encoderFood)
 import Api.Types.Ingredient exposing (Ingredient, decoderIngredient)
 import Api.Types.IngredientCreation exposing (IngredientCreation, encoderIngredientCreation)
@@ -269,19 +270,14 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                 [ dropdown
                     { items = unitDropdown foodMap ingredient.foodId
                     , emptyItem =
-                        Just
-                            { value = String.fromInt ingredient.amountUnit.measureId
-                            , text =
-                                measureMap
-                                    |> Dict.get ingredient.amountUnit.measureId
-                                    |> Maybe.Extra.unwrap "" .name
-                            , enabled = True
-                            }
+                        Just <| startingDropdownUnit measureMap ingredient.amountUnit.measureId
                     , onChange =
-                        Maybe.andThen String.toInt
-                            >> Maybe.withDefault ingredientUpdateClientInput.amountUnit.measureId
-                            >> flip (IngredientUpdateClientInput.amountUnit |> Compose.lensWithLens AmountUnitClientInput.measureId).set ingredientUpdateClientInput
-                            >> UpdateIngredient ingredient.id
+                        onChangeDropdown
+                            { amountUnitLens = IngredientUpdateClientInput.amountUnit
+                            , measureIdOf = .amountUnit >> .measureId
+                            , mkMsg = UpdateIngredient ingredient.id
+                            , input = ingredientUpdateClientInput
+                            }
                     }
                     []
                     (ingredient.amountUnit.measureId
@@ -303,6 +299,32 @@ unitDropdown fm fId =
         |> Dict.get fId
         |> Maybe.Extra.unwrap [] .measures
         |> List.map (\m -> { value = String.fromInt m.id, text = m.name, enabled = True })
+
+
+startingDropdownUnit : MeasureMap -> MeasureId -> Dropdown.Item
+startingDropdownUnit mm mId =
+    { value = String.fromInt mId
+    , text =
+        mm
+            |> Dict.get mId
+            |> Maybe.Extra.unwrap "" .name
+    , enabled = True
+    }
+
+
+onChangeDropdown :
+    { amountUnitLens : Lens input AmountUnitClientInput.AmountUnitClientInput
+    , measureIdOf : input -> MeasureId
+    , input : input
+    , mkMsg : input -> Msg
+    }
+    -> Maybe String
+    -> Msg
+onChangeDropdown ps =
+    Maybe.andThen String.toInt
+        >> Maybe.withDefault (ps.measureIdOf ps.input)
+        >> flip (ps.amountUnitLens |> Compose.lensWithLens AmountUnitClientInput.measureId).set ps.input
+        >> ps.mkMsg
 
 
 viewFoodLine : FoodMap -> MeasureMap -> List IngredientCreationClientInput -> Food -> Html Msg
@@ -343,19 +365,14 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                             [ dropdown
                                 { items = unitDropdown foodMap food.id
                                 , emptyItem =
-                                    Just
-                                        { value = String.fromInt ingredientToAdd.amountUnit.measureId
-                                        , text =
-                                            measureMap
-                                                |> Dict.get ingredientToAdd.amountUnit.measureId
-                                                |> Maybe.Extra.unwrap "" .name
-                                        , enabled = True
-                                        }
+                                    Just <| startingDropdownUnit measureMap ingredientToAdd.amountUnit.measureId
                                 , onChange =
-                                    Maybe.andThen String.toInt
-                                        >> Maybe.withDefault ingredientToAdd.amountUnit.measureId
-                                        >> flip (IngredientCreationClientInput.amountUnit |> Compose.lensWithLens AmountUnitClientInput.measureId).set ingredientToAdd
-                                        >> UpdateAddFood
+                                    onChangeDropdown
+                                        { amountUnitLens = IngredientCreationClientInput.amountUnit
+                                        , measureIdOf = .amountUnit >> .measureId
+                                        , mkMsg = UpdateAddFood
+                                        , input = ingredientToAdd
+                                        }
                                 }
                                 []
                                 (ingredientToAdd.amountUnit.measureId |> String.fromInt |> Just)
