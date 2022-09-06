@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "main"
+      - "use-context-for-directory-switch"
 
 permissions:
   contents: read
@@ -20,7 +21,9 @@ jobs:
       - name: Install create-elm-app
         run: npm install create-elm-app
       - name: Build Elm app with deployment variables
-        run: cd frontend && env $(cat deployment.env | xargs) elm-app build
+        run: env $(cat deployment.env | xargs) elm-app build
+        with:
+          context: frontend
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to DockerHub
