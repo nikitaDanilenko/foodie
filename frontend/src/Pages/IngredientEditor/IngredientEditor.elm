@@ -9,7 +9,7 @@ import Api.Types.Measure exposing (Measure, decoderMeasure, encoderMeasure)
 import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
 import Dict exposing (Dict)
-import Dropdown exposing (dropdown)
+import Dropdown exposing (Item, dropdown)
 import Either exposing (Either(..))
 import Html exposing (Html, button, div, input, label, td, text, thead, tr)
 import Html.Attributes exposing (class, disabled, id, value)
@@ -227,9 +227,9 @@ ingredientNameOrEmpty fm fi =
 editOrDeleteIngredientLine : MeasureMap -> FoodMap -> Ingredient -> Html Msg
 editOrDeleteIngredientLine measureMap foodMap ingredient =
     tr [ id "editingIngredient" ]
-        [ td [] [ label [] [ ingredient.foodId |> ingredientNameOrEmpty foodMap |> text ] ]
-        , td [] [ label [] [ ingredient.amountUnit.factor |> String.fromFloat |> text ] ]
-        , td [] [ label [] [ ingredient.amountUnit.measureId |> flip Dict.get measureMap |> Maybe.Extra.unwrap "" .name |> text ] ]
+        [ td [] [ label [] [ text (ingredient.foodId |> ingredientNameOrEmpty foodMap) ] ]
+        , td [] [ label [] [ text (ingredient.amountUnit.factor |> String.fromFloat) ] ]
+        , td [] [ label [] [ text (ingredient.amountUnit.measureId |> flip Dict.get measureMap |> Maybe.Extra.unwrap "" .name) ] ]
         , td [] [ button [ class "button", onClick (EnterEditIngredient ingredient.id) ] [ text "Edit" ] ]
         , td [] [ button [ class "button", onClick (DeleteIngredient ingredient.id) ] [ text "Delete" ] ]
         ]
@@ -267,11 +267,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
             [ label [] [ text "Unit" ]
             , div [ class "unit" ]
                 [ dropdown
-                    { items =
-                        foodMap
-                            |> Dict.get ingredient.foodId
-                            |> Maybe.Extra.unwrap [] .measures
-                            |> List.map (\m -> { value = String.fromInt m.id, text = m.name, enabled = True })
+                    { items = unitDropdown foodMap ingredient.foodId
                     , emptyItem =
                         Just
                             { value = String.fromInt ingredient.amountUnit.measureId
@@ -301,6 +297,14 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
         ]
 
 
+unitDropdown : FoodMap -> FoodId -> List Dropdown.Item
+unitDropdown fm fId =
+    fm
+        |> Dict.get fId
+        |> Maybe.Extra.unwrap [] .measures
+        |> List.map (\m -> { value = String.fromInt m.id, text = m.name, enabled = True })
+
+
 viewFoodLine : FoodMap -> MeasureMap -> List IngredientCreationClientInput -> Food -> Html Msg
 viewFoodLine foodMap measureMap ingredientsToAdd food =
     let
@@ -317,7 +321,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                         [ div [ class "amount" ]
                             [ label [] [ text "Amount" ]
                             , input
-                                [ ingredientToAdd.amountUnit.factor.text |> value
+                                [ value ingredientToAdd.amountUnit.factor.text
                                 , onInput
                                     (flip
                                         (ValidatedInput.lift
@@ -337,11 +341,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                         [ label [] [ text "Unit" ]
                         , div [ class "unit" ]
                             [ dropdown
-                                { items =
-                                    foodMap
-                                        |> Dict.get food.id
-                                        |> Maybe.Extra.unwrap [] .measures
-                                        |> List.map (\m -> { value = String.fromInt m.id, text = m.name, enabled = True })
+                                { items = unitDropdown foodMap food.id
                                 , emptyItem =
                                     Just
                                         { value = String.fromInt ingredientToAdd.amountUnit.measureId
