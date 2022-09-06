@@ -363,7 +363,6 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                             ]
                         ]
 
-                    -- todo: Disable button for missing amount/unit
                     , td []
                         [ button
                             [ class "button"
