@@ -237,19 +237,18 @@ editOrDeleteIngredientLine measureMap foodMap ingredient =
 
 editIngredientLine : MeasureMap -> FoodMap -> Ingredient -> IngredientUpdateClientInput -> Html Msg
 editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
-    -- todo: Check whether the update behaviour is correct. There is the implicit assumption that the update originates from the ingredient.
-    --       cf. name, description
     div [ class "ingredientLine" ]
         [ div [ class "name" ]
             [ label [] [ text "Name" ]
-            , label [] [ ingredient.foodId |> ingredientNameOrEmpty foodMap |> text ]
+            , label [] [ text (ingredient.foodId |> ingredientNameOrEmpty foodMap) ]
             ]
         , div [ class "amount" ]
             [ label [] [ text "Amount" ]
             , input
-                [ ingredientUpdateClientInput.amountUnit.factor.value
-                    |> String.fromFloat
-                    |> value
+                [ value
+                    (ingredientUpdateClientInput.amountUnit.factor.value
+                        |> String.fromFloat
+                    )
                 , onInput
                     (flip
                         (ValidatedInput.lift
@@ -362,7 +361,6 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                                 (ingredientToAdd.amountUnit.measureId |> String.fromInt |> Just)
                             ]
                         ]
-
                     , td []
                         [ button
                             [ class "button"
