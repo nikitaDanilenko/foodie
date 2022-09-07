@@ -27,7 +27,7 @@ services:
     ports:
       - "9002:80"
     env_file:
-      - deployment.env
+      - frontend/deployment.env
     restart: always
 volumes:
   postgres-data:
