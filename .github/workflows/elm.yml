@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "main"
-      - "use-context-for-directory-switch"
 
 permissions:
   contents: read
