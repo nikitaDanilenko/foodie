@@ -13,7 +13,7 @@ services:
       - postgres-data:/var/lib/postgresql/data/
       - ./scripts:/tmp/scripts
   backend:
-    image: foodie:latest
+    image: nikita-danilenko/foodie:latest
     ports:
       - "9001:9000"
     env_file:
@@ -21,10 +21,12 @@ services:
     depends_on:
       - db
   frontend:
-    image: foodie-frontend:latest
+    image: nikita-danilenko/foodie-frontend:latest
     ports:
       - "9002:80"
     build: ./frontend
+    env_file:
+      - deployment.env
     container_name: foodie-frontend
     restart: always
 volumes:
