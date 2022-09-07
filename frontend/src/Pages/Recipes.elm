@@ -21,7 +21,7 @@ import Monocle.Lens as Lens exposing (Lens)
 import Monocle.Optional as Optional
 import Pages.Util.Links as Links
 import Ports exposing (doFetchToken)
-import Url.Builder as UrlBuilder
+import Url.Builder
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
 import Util.LensUtil as LensUtil
@@ -119,7 +119,7 @@ editOrDeleteRecipeLine configuration recipe =
         , td []
             [ Links.linkButton
                 { url =
-                    UrlBuilder.relative
+                    Url.Builder.relative
                         [ configuration.mainPageURL
                         , "#"
                         , "ingredient-editor"
@@ -312,7 +312,7 @@ recipeUpdateFromRecipe r =
 fetchRecipes : Configuration -> JWT -> Cmd Msg
 fetchRecipes conf jwt =
     HttpUtil.getJsonWithJWT jwt
-        { url = String.join "/" [ conf.backendURL, "recipe", "all" ]
+        { url = Url.Builder.relative [ conf.backendURL, "recipe", "all" ] []
         , expect = HttpUtil.expectJson GotFetchRecipesResponse (Decode.list decoderRecipe)
         }
 
@@ -326,7 +326,7 @@ createRecipe md =
             }
     in
     HttpUtil.postJsonWithJWT md.jwt
-        { url = String.join "/" [ md.configuration.backendURL, "recipe", "create" ]
+        { url = Url.Builder.relative [ md.configuration.backendURL, "recipe", "create" ] []
         , body = encoderRecipeCreation defaultRecipeCreation
         , expect = HttpUtil.expectJson GotCreateRecipeResponse decoderRecipe
         }
@@ -335,7 +335,7 @@ createRecipe md =
 saveRecipe : Model -> RecipeUpdate -> Cmd Msg
 saveRecipe md ru =
     HttpUtil.patchJsonWithJWT md.jwt
-        { url = String.join "/" [ md.configuration.backendURL, "recipe", "update" ]
+        { url = Url.Builder.relative [ md.configuration.backendURL, "recipe", "update" ] []
         , body = encoderRecipeUpdate ru
         , expect = HttpUtil.expectJson (GotSaveRecipeResponse ru.id) decoderRecipe
         }
@@ -344,6 +344,6 @@ saveRecipe md ru =
 deleteRecipe : Model -> RecipeId -> Cmd Msg
 deleteRecipe md rId =
     HttpUtil.deleteWithJWT md.jwt
-        { url = String.join "/" [ md.configuration.backendURL, "recipe", "delete", rId ]
+        { url = Url.Builder.relative [ md.configuration.backendURL, "recipe", "delete", rId ] []
         , expect = HttpUtil.expectWhatever (GotDeleteRecipeResponse rId)
         }

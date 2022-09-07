@@ -12,6 +12,7 @@ import Json.Decode as Decode
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Ports exposing (storeToken)
+import Url.Builder
 import Util.CredentialsUtil as CredentialsUtil
 import Util.HttpUtil as HttpUtil
 import Util.TriState exposing (TriState(..))
@@ -105,7 +106,7 @@ update msg model =
                     ( state.set Success model
                     , Cmd.batch
                         [ storeToken token
-                        , navigateToOverview
+                        , navigateToOverview model.configuration
                         ]
                     )
 
@@ -116,17 +117,16 @@ update msg model =
 login : Configuration -> Credentials -> Cmd Msg
 login conf cred =
     Http.post
-        { url = String.join "/" [ conf.backendURL, "login" ]
+        { url = Url.Builder.relative [ conf.backendURL, "login" ] []
         , expect = HttpUtil.expectJson GotResponse Decode.string
         , body = Http.jsonBody (encoderCredentials cred)
         }
 
 
-navigateToOverview : Cmd Msg
-navigateToOverview =
-    -- todo: Check loading the address works in a non-local setting.
+navigateToOverview : Configuration -> Cmd Msg
+navigateToOverview conf =
     let
         address =
-            String.join "/" [ "", "#", "overview" ]
+            Url.Builder.relative [ conf.mainPageURL, "#", "overview" ] []
     in
     Browser.Navigation.load address
