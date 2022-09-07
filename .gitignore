@@ -13,3 +13,4 @@ deployment.env
 
 # Elm related
 frontend/elm-stuff
+frontend/build
