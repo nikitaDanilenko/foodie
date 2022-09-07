@@ -40,6 +40,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
-          context: frontend/build
+          context: frontend
           push: true
           tags: ${{ steps.metadata.outputs.tags }}
