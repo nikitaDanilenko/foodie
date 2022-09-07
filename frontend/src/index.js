@@ -4,7 +4,7 @@ var app = Elm.Main.init({
   node: document.getElementById('root'),
   flags: {
     backendURL: process.env.ELM_APP_BACKEND_URL,
-    mainPageURL: process.env.ELM_APP_MAIN_PAGE_URL,
+    mainPageURL: process.env.ELM_APP_MAIN_PAGE_URL
   }
 });
 
