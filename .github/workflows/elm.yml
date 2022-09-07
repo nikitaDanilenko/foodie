@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "main"
-      - "adjust-elm-docker-structure"
 
 permissions:
   contents: read
