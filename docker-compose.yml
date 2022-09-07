@@ -26,8 +26,6 @@ services:
     image: nikitadanilenko/foodie-frontend:latest
     ports:
       - "9002:80"
-    env_file:
-      - frontend/deployment.env
     restart: always
 volumes:
   postgres-data:
