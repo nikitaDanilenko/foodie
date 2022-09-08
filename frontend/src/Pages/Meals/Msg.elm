@@ -114,6 +114,7 @@ update msg model =
             handleUpdateJWT model jwt
 
 
+handleCreateMeal : Pages.Meals.Model.Model -> Cmd Msg
 handleCreateMeal model =
     HttpUtil.postJsonWithJWT model.jwt
         { url = Url.Builder.relative [ model.configuration.backendURL, "meal", "create" ] []
@@ -125,6 +126,7 @@ handleCreateMeal model =
         }
 
 
+handleCreateMealResponse : Pages.Meals.Model.Model -> Result Error Meal -> ( Pages.Meals.Model.Model, Cmd msg )
 handleCreateMealResponse model dataOrError =
     case dataOrError of
         Ok meal ->
@@ -154,6 +156,7 @@ handleUpdateMeal model mealUpdate =
             (Either.mapRight (Editing.updateLens.set mealUpdate))
 
 
+handleSaveMealUpdate : Pages.Meals.Model.Model -> MealId -> Cmd Msg
 handleSaveMealUpdate model mealId =
     Maybe.Extra.unwrap
         Cmd.none
@@ -165,6 +168,7 @@ handleSaveMealUpdate model mealId =
         (List.Extra.find (Editing.is .id mealId) model.meals)
 
 
+handleGotSaveMealResponse : Pages.Meals.Model.Model -> Result Error Meal -> Pages.Meals.Model.Model
 handleGotSaveMealResponse model dataOrError =
     case dataOrError of
         Ok meal ->
@@ -197,6 +201,7 @@ handleDeleteMeal model mealId =
         }
 
 
+handleGotDeleteMealResponse : Pages.Meals.Model.Model -> MealId -> Result Error () -> Pages.Meals.Model.Model
 handleGotDeleteMealResponse model deletedId dataOrError =
     case dataOrError of
         Ok _ ->
@@ -215,6 +220,7 @@ handleGotDeleteMealResponse model deletedId dataOrError =
             model
 
 
+handleGotFetchMealsResponse : Pages.Meals.Model.Model -> Result Error (List Meal) -> Pages.Meals.Model.Model
 handleGotFetchMealsResponse model dataOrError =
     case dataOrError of
         Ok ownMeals ->
@@ -225,6 +231,7 @@ handleGotFetchMealsResponse model dataOrError =
             model
 
 
+handleUpdateJWT : Pages.Meals.Model.Model -> JWT -> (Pages.Meals.Model.Model, Cmd Msg)
 handleUpdateJWT model jwt =
     ( Pages.Meals.Model.lens.jwt.set jwt model
     , fetchMeals model.configuration model.jwt
