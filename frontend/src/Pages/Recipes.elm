@@ -293,7 +293,9 @@ update msg model =
 
 mapRecipeOrUpdateById : RecipeId -> (RecipeOrUpdate -> RecipeOrUpdate) -> Model -> Model
 mapRecipeOrUpdateById recipeId =
-    Optional.modify (recipesLens |> Compose.lensWithOptional (recipeId |> recipeIdIs |> LensUtil.firstSuch))
+    recipesLens
+        |> Compose.lensWithOptional (recipeId |> recipeIdIs |> LensUtil.firstSuch)
+        |> Optional.modify
 
 
 recipeIdIs : RecipeId -> Either Recipe (Editing Recipe RecipeUpdate) -> Bool
