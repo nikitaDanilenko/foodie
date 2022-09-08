@@ -30,8 +30,12 @@ import Util.LensUtil as LensUtil
 type alias Model =
     { configuration : Configuration
     , jwt : String
-    , recipes : List (Either Recipe (Editing Recipe RecipeUpdate))
+    , recipes : List RecipeOrUpdate
     }
+
+
+type alias RecipeOrUpdate =
+    Either Recipe (Editing Recipe RecipeUpdate)
 
 
 jwtLens : Lens Model String
@@ -39,7 +43,7 @@ jwtLens =
     Lens .jwt (\b a -> { a | jwt = b })
 
 
-recipesLens : Lens Model (List (Either Recipe (Editing Recipe RecipeUpdate)))
+recipesLens : Lens Model (List RecipeOrUpdate)
 recipesLens =
     Lens .recipes (\b a -> { a | recipes = b })
 
@@ -47,9 +51,9 @@ recipesLens =
 type Msg
     = CreateRecipe
     | GotCreateRecipeResponse (Result Error Recipe)
-    | UpdateRecipe RecipeId RecipeUpdate
+    | UpdateRecipe RecipeUpdate
     | SaveRecipeEdit RecipeId
-    | GotSaveRecipeResponse RecipeId (Result Error Recipe)
+    | GotSaveRecipeResponse (Result Error Recipe)
     | EnterEditRecipe RecipeId
     | ExitEditRecipeAt RecipeId
     | DeleteRecipe RecipeId
@@ -148,7 +152,7 @@ editRecipeLine recipeId recipeUpdate =
             [ label [] [ text "Name" ]
             , input
                 [ value recipeUpdate.name
-                , onInput (flip RecipeUpdateLens.name.set recipeUpdate >> UpdateRecipe recipeId)
+                , onInput (flip RecipeUpdateLens.name.set recipeUpdate >> UpdateRecipe)
                 , saveOnEnter
                 ]
                 []
@@ -165,7 +169,7 @@ editRecipeLine recipeId recipeUpdate =
                                 >> RecipeUpdateLens.description.set
                             )
                             recipeUpdate
-                            >> UpdateRecipe recipeId
+                            >> UpdateRecipe
                         )
                     , saveOnEnter
                     ]
@@ -206,13 +210,9 @@ update msg model =
                     -- todo: Handle error case
                     ( model, Cmd.none )
 
-        UpdateRecipe recipeId recipeUpdate ->
+        UpdateRecipe recipeUpdate ->
             ( model
-                |> Optional.modify
-                    (recipesLens
-                        |> Compose.lensWithOptional
-                            (recipeIdIs recipeId |> LensUtil.firstSuch)
-                    )
+                |> mapRecipeOrUpdateById recipeUpdate.id
                     (Either.mapRight (Editing.updateLens.set recipeUpdate))
             , Cmd.none
             )
@@ -231,14 +231,11 @@ update msg model =
             in
             ( model, cmd )
 
-        GotSaveRecipeResponse recipeId graphQLDataOrError ->
-            case graphQLDataOrError of
+        GotSaveRecipeResponse dataOrError ->
+            case dataOrError of
                 Ok recipe ->
                     ( model
-                        |> Optional.modify
-                            (recipesLens
-                                |> Compose.lensWithOptional (recipeIdIs recipeId |> LensUtil.firstSuch)
-                            )
+                        |> mapRecipeOrUpdateById recipe.id
                             (Either.andThenRight (always (Left recipe)))
                     , Cmd.none
                     )
@@ -249,13 +246,13 @@ update msg model =
 
         EnterEditRecipe recipeId ->
             ( model
-                |> Optional.modify (recipesLens |> Compose.lensWithOptional (recipeIdIs recipeId |> LensUtil.firstSuch))
+                |> mapRecipeOrUpdateById recipeId
                     (Either.unpack (\recipe -> { original = recipe, update = recipeUpdateFromRecipe recipe }) identity >> Right)
             , Cmd.none
             )
 
         ExitEditRecipeAt recipeId ->
-            ( model |> Optional.modify (recipesLens |> Compose.lensWithOptional (recipeIdIs recipeId |> LensUtil.firstSuch)) (Either.unpack identity .original >> Left), Cmd.none )
+            ( model |> mapRecipeOrUpdateById recipeId (Either.unpack identity .original >> Left), Cmd.none )
 
         DeleteRecipe recipeId ->
             ( model
@@ -294,11 +291,14 @@ update msg model =
             ( jwtLens.set jwt model, fetchRecipes model.configuration model.jwt )
 
 
+mapRecipeOrUpdateById : RecipeId -> (RecipeOrUpdate -> RecipeOrUpdate) -> Model -> Model
+mapRecipeOrUpdateById recipeId =
+    Optional.modify (recipesLens |> Compose.lensWithOptional (recipeId |> recipeIdIs |> LensUtil.firstSuch))
+
+
 recipeIdIs : RecipeId -> Either Recipe (Editing Recipe RecipeUpdate) -> Bool
-recipeIdIs recipeId =
-    Either.unpack
-        (\p -> p.id == recipeId)
-        (\e -> e.original.id == recipeId)
+recipeIdIs =
+    Editing.is .id
 
 
 recipeUpdateFromRecipe : Recipe -> RecipeUpdate
@@ -337,7 +337,7 @@ saveRecipe md ru =
     HttpUtil.patchJsonWithJWT md.jwt
         { url = Url.Builder.relative [ md.configuration.backendURL, "recipe", "update" ] []
         , body = encoderRecipeUpdate ru
-        , expect = HttpUtil.expectJson (GotSaveRecipeResponse ru.id) decoderRecipe
+        , expect = HttpUtil.expectJson GotSaveRecipeResponse decoderRecipe
         }
 
 
