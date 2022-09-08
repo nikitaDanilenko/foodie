@@ -14,6 +14,7 @@ import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional as Optional
 import Pages.Meals.Model
+import Ports exposing (doFetchToken)
 import Url.Builder
 import Util.Editing as Editing
 import Util.HttpUtil as HttpUtil
@@ -37,6 +38,24 @@ type Msg
 updateJWT : String -> Msg
 updateJWT =
     UpdateJWT
+
+
+init : Pages.Meals.Model.Flags -> ( Pages.Meals.Model.Model, Cmd Msg )
+init flags =
+    let
+        ( jwt, cmd ) =
+            flags.jwt
+                |> Maybe.Extra.unwrap
+                    ( "", doFetchToken () )
+                    (\t -> ( t, fetchMeals flags.configuration t ))
+    in
+    ( { configuration = flags.configuration
+      , jwt = jwt
+      , meals = []
+      , mealsToAdd = []
+      }
+    , cmd
+    )
 
 
 update : Msg -> Pages.Meals.Model.Model -> ( Pages.Meals.Model.Model, Cmd Msg )
