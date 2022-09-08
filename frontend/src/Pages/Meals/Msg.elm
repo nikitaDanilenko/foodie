@@ -13,6 +13,7 @@ import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional as Optional
+import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
 import Pages.Meals.Model
 import Ports exposing (doFetchToken)
 import Url.Builder
@@ -114,24 +115,12 @@ update msg model =
 
 
 handleCreateMeal model =
-    let
-        -- todo: Either use the current day as a base or switch to a proper creation entirely
-        defaultMealCreation =
-            { date =
-                { date =
-                    { year = 2022
-                    , month = 1
-                    , day = 1
-                    }
-                , time = Nothing
-                }
-            , name = Nothing
-            , amount = 0
-            }
-    in
     HttpUtil.postJsonWithJWT model.jwt
         { url = Url.Builder.relative [ model.configuration.backendURL, "meal", "create" ] []
-        , body = encoderMealCreation defaultMealCreation
+        , body =
+            MealCreationClientInput.default
+                |> MealCreationClientInput.toCreation
+                |> encoderMealCreation
         , expect = HttpUtil.expectJson GotCreateMealResponse decoderMeal
         }
 
