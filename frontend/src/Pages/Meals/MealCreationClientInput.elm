@@ -28,19 +28,16 @@ default =
     }
 
 
-dateLens : Lens MealCreationClientInput SimpleDate
-dateLens =
-    Lens .date (\b a -> { a | date = b })
-
-
-nameLens : Lens MealCreationClientInput (Maybe String)
-nameLens =
-    Lens .name (\b a -> { a | name = b })
-
-
-amountLens : Lens MealCreationClientInput (ValidatedInput Float)
-amountLens =
-    Lens .amount (\b a -> { a | amount = b })
+lenses :
+    { date : Lens MealCreationClientInput SimpleDate
+    , name : Lens MealCreationClientInput (Maybe String)
+    , amount : Lens MealCreationClientInput (ValidatedInput Float)
+    }
+lenses =
+    { date = Lens .date (\b a -> { a | date = b })
+    , name = Lens .name (\b a -> { a | name = b })
+    , amount = Lens .amount (\b a -> { a | amount = b })
+    }
 
 
 toCreation : MealCreationClientInput -> MealCreation
