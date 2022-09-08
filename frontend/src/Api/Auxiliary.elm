@@ -19,5 +19,9 @@ type alias FoodId =
     Int
 
 
+type alias MealId =
+    UUID
+
+
 type alias JWT =
     String
