@@ -1,9 +1,10 @@
 package controllers.meal
 
+import java.util.UUID
+
 import io.circe.generic.JsonCodec
 import io.scalaland.chimney.Transformer
 import utils.TransformerUtils.Implicits._
-import java.util.UUID
 
 import utils.date.SimpleDate
 
@@ -11,8 +12,7 @@ import utils.date.SimpleDate
 case class MealUpdate(
     id: UUID,
     date: SimpleDate,
-    name: Option[String],
-    recipeId: UUID
+    name: Option[String]
 )
 
 object MealUpdate {

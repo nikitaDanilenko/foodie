@@ -1,13 +1,12 @@
 package services.meal
 
-import services.{ MealId, RecipeId }
+import services.MealId
 import utils.date.SimpleDate
 
 case class MealUpdate(
     id: MealId,
     date: SimpleDate,
-    name: Option[String],
-    recipeId: RecipeId
+    name: Option[String]
 )
 
 object MealUpdate {
