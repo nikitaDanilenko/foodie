@@ -11,7 +11,6 @@ import utils.date.SimpleDate
 case class MealCreation(
     date: SimpleDate,
     name: Option[String],
-    recipeId: UUID,
     amount: BigDecimal
 )
 
