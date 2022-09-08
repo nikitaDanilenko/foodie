@@ -10,6 +10,7 @@ import Pages.IngredientEditor.IngredientEditor as IngredientEditor
 import Pages.Login as Login
 import Pages.Meals.Model
 import Pages.Meals.Msg
+import Pages.Meals.View
 import Pages.Overview as Overview
 import Pages.Recipes as Recipes
 import Pages.Util.ParserUtil as ParserUtil
