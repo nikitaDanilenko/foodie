@@ -331,8 +331,8 @@ onChangeDropdown ps =
 viewFoodLine : FoodMap -> MeasureMap -> List IngredientCreationClientInput -> Food -> Html Msg
 viewFoodLine foodMap measureMap ingredientsToAdd food =
     let
-        saveOnEnter =
-            onEnter (AddFood food.id)
+        addMsg =
+            AddFood food.id
 
         process =
             case List.Extra.find (\i -> i.foodId == food.id) ingredientsToAdd of
@@ -355,7 +355,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                                         ingredientToAdd
                                         >> UpdateAddFood
                                     )
-                                , saveOnEnter
+                                , onEnter addMsg
                                 ]
                                 []
                             ]
@@ -386,7 +386,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                                 (List.Extra.find (\f -> f.foodId == food.id) ingredientsToAdd
                                     |> Maybe.Extra.unwrap True (\f -> f.amountUnit.factor.value <= 0)
                                 )
-                            , onClick (AddFood food.id)
+                            , onClick addMsg
                             ]
                             [ text "Add" ]
                         ]
