@@ -24,10 +24,13 @@ class MealController @Inject() (
     extends AbstractController(controllerComponents)
     with Circe {
 
-  def all: Action[RequestInterval] =
-    jwtAction.async(circe.tolerantJson[RequestInterval]) { request =>
+  def all: Action[AnyContent] =
+    jwtAction.async { request =>
       mealService
-        .allMeals(request.user.id, request.body.transformInto[services.meal.RequestInterval])
+        .allMeals(
+          userId = request.user.id,
+          interval = RequestInterval(from = None, to = None).transformInto[services.meal.RequestInterval]
+        )
         .map(
           _.pipe(
             _.map(_.transformInto[Meal])

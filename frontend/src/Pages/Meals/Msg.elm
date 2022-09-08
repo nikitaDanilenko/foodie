@@ -1,4 +1,4 @@
-module Pages.Meals.Msg exposing (Msg, init, update, updateJWT)
+module Pages.Meals.Msg exposing (Msg (..), init, update, updateJWT)
 
 import Api.Auxiliary exposing (JWT, MealId)
 import Api.Types.Meal exposing (Meal, decoderMeal)

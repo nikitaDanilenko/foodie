@@ -193,6 +193,9 @@ stepTo url model =
                 IngredientEditorRoute flags ->
                     IngredientEditor.init flags |> stepIngredientEditor model
 
+                MealsRoute flags ->
+                    Pages.Meals.Msg.init flags |> stepMeals model
+
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -227,6 +230,7 @@ type Route
     | OverviewRoute Overview.Flags
     | RecipesRoute Recipes.Flags
     | IngredientEditorRoute IngredientEditor.Flags
+    | MealsRoute Pages.Meals.Model.Flags
 
 
 routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
@@ -251,6 +255,9 @@ routeParser jwt configuration =
                         }
                     )
 
+        mealsParser =
+            s "meals" |> Parser.map flags
+
         flags =
             { configuration = configuration, jwt = jwt }
     in
@@ -259,6 +266,7 @@ routeParser jwt configuration =
         , route overviewParser OverviewRoute
         , route recipesParser RecipesRoute
         , route ingredientEditorParser IngredientEditorRoute
+        , route mealsParser MealsRoute
         ]
 
 
