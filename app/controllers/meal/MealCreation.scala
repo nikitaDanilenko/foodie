@@ -2,16 +2,13 @@ package controllers.meal
 
 import io.circe.generic.JsonCodec
 import io.scalaland.chimney.Transformer
-import java.util.UUID
 
-import utils.TransformerUtils.Implicits._
 import utils.date.SimpleDate
 
 @JsonCodec
 case class MealCreation(
     date: SimpleDate,
-    name: Option[String],
-    amount: BigDecimal
+    name: Option[String]
 )
 
 object MealCreation {
