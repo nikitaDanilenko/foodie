@@ -8,6 +8,9 @@ import Html exposing (Html, div, text)
 import Monocle.Lens exposing (Lens)
 import Pages.IngredientEditor.IngredientEditor as IngredientEditor
 import Pages.Login as Login
+import Pages.MealEntryEditor.Handler
+import Pages.MealEntryEditor.Page
+import Pages.MealEntryEditor.View
 import Pages.Meals.Model
 import Pages.Meals.Msg
 import Pages.Meals.View
@@ -59,6 +62,7 @@ type Page
     | Recipes Recipes.Model
     | IngredientEditor IngredientEditor.Model
     | Meals Pages.Meals.Model.Model
+    | MealEntryEditor Pages.MealEntryEditor.Page.Model
     | NotFound
 
 
@@ -73,6 +77,7 @@ type Msg
     | RecipesMsg Recipes.Msg
     | IngredientEditorMsg IngredientEditor.Msg
     | MealsMsg Pages.Meals.Msg.Msg
+    | MealEntryEditorMsg Pages.MealEntryEditor.Page.Msg
 
 
 titleFor : Model -> String
@@ -112,6 +117,9 @@ view model =
         Meals meals ->
             Html.map MealsMsg (Pages.Meals.View.view meals)
 
+        MealEntryEditor mealEntryEditor ->
+            Html.map MealEntryEditorMsg (Pages.MealEntryEditor.View.view mealEntryEditor)
+
         NotFound ->
             div [] [ text "Page not found" ]
 
@@ -150,6 +158,9 @@ update msg model =
 
                 Meals meals ->
                     stepMeals model (Pages.Meals.Msg.update (Pages.Meals.Msg.updateJWT token) meals)
+
+                MealEntryEditor mealEntryEditor ->
+                    stepMealEntryEditor model (Pages.MealEntryEditor.Handler.update (Pages.MealEntryEditor.Page.UpdateJWT token) mealEntryEditor)
 
                 NotFound ->
                     ( jwtLens.set (Just token) model, Cmd.none )
@@ -196,6 +207,9 @@ stepTo url model =
                 MealsRoute flags ->
                     Pages.Meals.Msg.init flags |> stepMeals model
 
+                MealEntryEditorRoute flags ->
+                    Pages.MealEntryEditor.Handler.init flags |> stepMealEntryEditor model
+
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -220,6 +234,11 @@ stepIngredientEditor model ( ingredientEditor, cmd ) =
     ( { model | page = IngredientEditor ingredientEditor }, Cmd.map IngredientEditorMsg cmd )
 
 
+stepMealEntryEditor : Model -> ( Pages.MealEntryEditor.Page.Model, Cmd Pages.MealEntryEditor.Page.Msg ) -> ( Model, Cmd Msg )
+stepMealEntryEditor model ( mealEntryEditor, cmd ) =
+    ( { model | page = MealEntryEditor mealEntryEditor }, Cmd.map MealEntryEditorMsg cmd )
+
+
 stepMeals : Model -> ( Pages.Meals.Model.Model, Cmd Pages.Meals.Msg.Msg ) -> ( Model, Cmd Msg )
 stepMeals model ( recipes, cmd ) =
     ( { model | page = Meals recipes }, Cmd.map MealsMsg cmd )
@@ -231,6 +250,7 @@ type Route
     | RecipesRoute Recipes.Flags
     | IngredientEditorRoute IngredientEditor.Flags
     | MealsRoute Pages.Meals.Model.Flags
+    | MealEntryEditorRoute Pages.MealEntryEditor.Page.Flags
 
 
 routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
@@ -258,6 +278,16 @@ routeParser jwt configuration =
         mealsParser =
             s "meals" |> Parser.map flags
 
+        mealEntryEditorParser =
+            (s "meal-entry-editor" </> ParserUtil.uuidParser)
+                |> Parser.map
+                    (\mealId ->
+                        { mealId = mealId
+                        , configuration = configuration
+                        , jwt = jwt
+                        }
+                    )
+
         flags =
             { configuration = configuration, jwt = jwt }
     in
@@ -267,6 +297,7 @@ routeParser jwt configuration =
         , route recipesParser RecipesRoute
         , route ingredientEditorParser IngredientEditorRoute
         , route mealsParser MealsRoute
+        , route mealEntryEditorParser MealEntryEditorRoute
         ]
 
 
