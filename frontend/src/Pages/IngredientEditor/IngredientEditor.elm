@@ -440,12 +440,12 @@ update msg model =
 
         EnterEditIngredient ingredientId ->
             ( model
-                |> mapIngredientOrUpdateById ingredientId (Either.unpack (\i -> { original = i, update = IngredientUpdateClientInput.from i }) identity >> Right)
+                |> mapIngredientOrUpdateById ingredientId (Either.andThenLeft (\i -> Right { original = i, update = IngredientUpdateClientInput.from i }))
             , Cmd.none
             )
 
         ExitEditIngredientAt ingredientId ->
-            ( model |> mapIngredientOrUpdateById ingredientId (Either.unpack identity .original >> Left), Cmd.none )
+            ( model |> mapIngredientOrUpdateById ingredientId (Either.andThen (.original >> Left)), Cmd.none )
 
         DeleteIngredient ingredientId ->
             ( model, deleteIngredient fs ingredientId )
@@ -454,11 +454,8 @@ update msg model =
             case result of
                 Ok _ ->
                     ( model
-                        |> lenses.ingredients.set
-                            (model.ingredients
-                                |> List.Extra.filterNot
-                                    (ingredientIdIs ingredientId)
-                            )
+                        |> Lens.modify lenses.ingredients
+                            (List.Extra.filterNot (ingredientIdIs ingredientId))
                     , Cmd.none
                     )
 
@@ -554,7 +551,7 @@ update msg model =
 
         DeselectFood foodId ->
             ( model
-                |> lenses.foodsToAdd.set (List.filter (\f -> f.foodId /= foodId) model.foodsToAdd)
+                |> Lens.modify lenses.foodsToAdd (List.Extra.filterNot (\f -> f.foodId == foodId))
             , Cmd.none
             )
 
@@ -597,9 +594,12 @@ update msg model =
                     ( model, Cmd.none )
 
         UpdateAddFood ingredientCreationClientInput ->
-            ( model.foodsToAdd
-                |> List.Extra.setIf (\f -> f.foodId == ingredientCreationClientInput.foodId) ingredientCreationClientInput
-                |> flip lenses.foodsToAdd.set model
+            ( model
+                |> Lens.modify lenses.foodsToAdd
+                    (List.Extra.setIf
+                        (\f -> f.foodId == ingredientCreationClientInput.foodId)
+                        ingredientCreationClientInput
+                    )
             , Cmd.none
             )
 
@@ -675,7 +675,7 @@ saveIngredient flags ingredientUpdate =
 deleteIngredient : FlagsWithJWT -> IngredientId -> Cmd Msg
 deleteIngredient fs iid =
     HttpUtil.deleteWithJWT fs.jwt
-        { url = Url.Builder.relative [ fs.configuration.backendURL, "recipe", "remove-ingredient", iid ] []
+        { url = Url.Builder.relative [ fs.configuration.backendURL, "recipe", "delete-ingredient", iid ] []
         , expect = HttpUtil.expectWhatever (GotDeleteIngredientResponse iid)
         }
 
