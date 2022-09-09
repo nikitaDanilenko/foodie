@@ -53,7 +53,7 @@ type alias AddMealEntryParams =
 
 addMealEntry : AddMealEntryParams -> Cmd Msg
 addMealEntry ps =
-    HttpUtil.patchJsonWithJWT ps.jwt
+    HttpUtil.postJsonWithJWT ps.jwt
         { url = Url.Builder.relative [ ps.configuration.backendURL, "meal", "add-meal-entry" ] []
         , body = encoderMealEntryCreation ps.mealEntryCreation
         , expect = HttpUtil.expectJson GotAddMealEntryResponse decoderMealEntry
