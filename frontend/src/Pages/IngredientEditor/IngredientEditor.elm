@@ -38,7 +38,7 @@ import Util.ListUtil as ListUtil
 
 type alias Model =
     { configuration : Configuration
-    , jwt : String
+    , jwt : JWT
     , recipeId : RecipeId
     , ingredients : List IngredientOrUpdate
     , foods : FoodMap
