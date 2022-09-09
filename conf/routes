@@ -11,7 +11,7 @@ DELETE /recipe/delete/:id            controllers.recipe.RecipeController.delete(
 GET    /recipe/:id/ingredients       controllers.recipe.RecipeController.getIngredients(id: java.util.UUID)
 PATCH  /recipe/add-ingredient        controllers.recipe.RecipeController.addIngredient
 PATCH  /recipe/update-ingredient     controllers.recipe.RecipeController.updateIngredient
-PATCH  /recipe/remove-ingredient/:id controllers.recipe.RecipeController.removeIngredient(id: java.util.UUID)
+PATCH  /recipe/delete-ingredient/:id controllers.recipe.RecipeController.removeIngredient(id: java.util.UUID)
 
 GET    /meal/all                     controllers.meal.MealController.all
 GET    /meal/:id                     controllers.meal.MealController.get(id: java.util.UUID)
