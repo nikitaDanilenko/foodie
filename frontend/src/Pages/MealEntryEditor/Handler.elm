@@ -1,16 +1,12 @@
-module Pages.MealEntryEditor.Handler exposing (..)
+module Pages.MealEntryEditor.Handler exposing (init, update)
 
 import Api.Auxiliary exposing (JWT, MealEntryId, RecipeId)
-import Api.Types.MealEntry exposing (MealEntry, decoderMealEntry)
-import Api.Types.MealEntryCreation exposing (MealEntryCreation, encoderMealEntryCreation)
-import Api.Types.MealEntryUpdate exposing (MealEntryUpdate, encoderMealEntryUpdate)
-import Api.Types.Recipe exposing (Recipe, decoderRecipe)
+import Api.Types.MealEntry exposing (MealEntry)
+import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Dict
 import Either exposing (Either(..))
 import Http exposing (Error)
-import Json.Decode as Decode
 import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
@@ -18,12 +14,95 @@ import Monocle.Lens as Lens
 import Monocle.Optional as Optional
 import Pages.MealEntryEditor.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntryEditor.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
-import Pages.MealEntryEditor.Page as Page exposing (FlagsWithJWT, Msg(..), RecipeMap)
-import Url.Builder
+import Pages.MealEntryEditor.Page as Page exposing (FlagsWithJWT, Model, Msg(..), RecipeMap)
+import Pages.MealEntryEditor.Requests as Requests
+import Ports
 import Util.Editing as Editing exposing (Editing)
-import Util.HttpUtil as HttpUtil
 import Util.LensUtil as LensUtil
 import Util.ListUtil as ListUtil
+
+
+init : Page.Flags -> ( Model, Cmd Msg )
+init flags =
+    let
+        ( j, cmd ) =
+            case flags.jwt of
+                Just token ->
+                    ( token
+                    , Requests.fetchRecipes
+                        { configuration = flags.configuration
+                        , jwt = token
+                        , mealId = flags.mealId
+                        }
+                    )
+
+                Nothing ->
+                    ( "", Ports.doFetchToken () )
+    in
+    ( { flagsWithJWT =
+            { configuration = flags.configuration
+            , jwt = j
+            , mealId = flags.mealId
+            }
+      , mealEntries = []
+      , recipes = Dict.empty
+      , recipeSearchString = ""
+      , mealEntriesToAdd = []
+      }
+    , cmd
+    )
+
+
+update : Msg -> Page.Model -> ( Page.Model, Cmd Msg )
+update msg model =
+    case msg of
+        UpdateMealEntry mealEntryUpdateClientInput ->
+            updateMealEntry model mealEntryUpdateClientInput
+
+        SaveMealEntryEdit mealEntryId ->
+            saveMealEntryEdit model mealEntryId
+
+        GotSaveMealEntryResponse result ->
+            gotSaveMealEntryResponse model result
+
+        EnterEditMealEntry mealEntryId ->
+            enterEditMealEntry model mealEntryId
+
+        ExitEditMealEntryAt mealEntryId ->
+            exitEditMealEntryAt model mealEntryId
+
+        DeleteMealEntry mealEntryId ->
+            deleteMealEntry model mealEntryId
+
+        GotDeleteMealEntryResponse mealEntryId result ->
+            gotDeleteMealEntryResponse model mealEntryId result
+
+        GotFetchMealEntriesResponse result ->
+            gotFetchMealEntriesResponse model result
+
+        GotFetchRecipesResponse result ->
+            gotFetchRecipesResponse model result
+
+        SelectRecipe recipe ->
+            selectRecipe model recipe
+
+        DeselectRecipe recipeId ->
+            deselectRecipe model recipeId
+
+        AddRecipe recipeId ->
+            addRecipe model recipeId
+
+        GotAddMealEntryResponse result ->
+            gotAddMealEntryResponse model result
+
+        UpdateAddRecipe mealEntryCreationClientInput ->
+            updateAddRecipe model mealEntryCreationClientInput
+
+        UpdateJWT jwt ->
+            updateJWT model jwt
+
+        SetRecipesSearchString string ->
+            setRecipesSearchString model string
 
 
 updateMealEntry : Page.Model -> MealEntryUpdateClientInput -> ( Page.Model, Cmd msg )
@@ -43,7 +122,7 @@ saveMealEntryEdit model mealEntryId =
         |> List.Extra.find (mealEntryIdIs mealEntryId)
         |> Maybe.andThen Either.rightToMaybe
         |> Maybe.Extra.unwrap Cmd.none
-            (.update >> MealEntryUpdateClientInput.to >> saveMealEntryRequest model.flagsWithJWT)
+            (.update >> MealEntryUpdateClientInput.to >> Requests.saveMealEntry model.flagsWithJWT)
     )
 
 
@@ -88,7 +167,7 @@ exitEditMealEntryAt model mealEntryId =
 deleteMealEntry : Page.Model -> MealEntryId -> ( Page.Model, Cmd Msg )
 deleteMealEntry model mealEntryId =
     ( model
-    , deleteMealEntryRequest model.flagsWithJWT mealEntryId
+    , Requests.deleteMealEntry model.flagsWithJWT mealEntryId
     )
 
 
@@ -156,8 +235,8 @@ addRecipe model recipeId =
     , List.Extra.find (\me -> me.recipeId == recipeId) model.mealEntriesToAdd
         |> Maybe.map
             (MealEntryCreationClientInput.toCreation
-                >> AddMealEntryParams model.flagsWithJWT.configuration model.flagsWithJWT.jwt
-                >> addMealEntryRequest
+                >> Requests.AddMealEntryParams model.flagsWithJWT.configuration model.flagsWithJWT.jwt
+                >> Requests.addMealEntry
             )
         |> Maybe.withDefault Cmd.none
     )
@@ -200,25 +279,7 @@ updateAddRecipe model mealEntryCreationClientInput =
 updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Msg )
 updateJWT model jwt =
     ( Page.lenses.jwt.set jwt model
-    , fetchRecipesRequest model.flagsWithJWT
-    )
-
-
-updateRecipes model string =
-    let
-        newModel =
-            (Decode.list decoderRecipe
-                |> Decode.decodeString
-            )
-                >> Either.fromResult
-                >> Either.unwrap model
-                    (List.map (\r -> ( r.id, r ))
-                        >> Dict.fromList
-                        >> flip Page.lenses.recipes.set model
-                    )
-    in
-    ( newModel string
-    , Cmd.none
+    , Requests.fetchRecipes model.flagsWithJWT
     )
 
 
@@ -253,45 +314,3 @@ recipeIdOf =
 recipeNameOrEmpty : RecipeMap -> RecipeId -> String
 recipeNameOrEmpty recipeMap =
     flip Dict.get recipeMap >> Maybe.Extra.unwrap "" .name
-
-
-fetchRecipesRequest : FlagsWithJWT -> Cmd Msg
-fetchRecipesRequest flags =
-    HttpUtil.getJsonWithJWT flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", "all" ] []
-        , expect = HttpUtil.expectJson GotFetchRecipesResponse (Decode.list decoderRecipe)
-        }
-
-
-saveMealEntryRequest : FlagsWithJWT -> MealEntryUpdate -> Cmd Msg
-saveMealEntryRequest flags mealEntryUpdate =
-    HttpUtil.patchJsonWithJWT
-        flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", "update-meal-entry" ] []
-        , body = encoderMealEntryUpdate mealEntryUpdate
-        , expect = HttpUtil.expectJson GotSaveMealEntryResponse decoderMealEntry
-        }
-
-
-deleteMealEntryRequest : FlagsWithJWT -> MealEntryId -> Cmd Msg
-deleteMealEntryRequest fs mealEntryId =
-    HttpUtil.deleteWithJWT fs.jwt
-        { url = Url.Builder.relative [ fs.configuration.backendURL, "meal", "delete-meal-entry", mealEntryId ] []
-        , expect = HttpUtil.expectWhatever (GotDeleteMealEntryResponse mealEntryId)
-        }
-
-
-type alias AddMealEntryParams =
-    { configuration : Configuration
-    , jwt : JWT
-    , mealEntryCreation : MealEntryCreation
-    }
-
-
-addMealEntryRequest : AddMealEntryParams -> Cmd Msg
-addMealEntryRequest ps =
-    HttpUtil.patchJsonWithJWT ps.jwt
-        { url = Url.Builder.relative [ ps.configuration.backendURL, "meal", "add-meal-entry" ] []
-        , body = encoderMealEntryCreation ps.mealEntryCreation
-        , expect = HttpUtil.expectJson GotAddMealEntryResponse decoderMealEntry
-        }
