@@ -183,6 +183,9 @@ update msg model =
         ( MealsMsg mealsMsg, Meals meals ) ->
             stepMeals model (Pages.Meals.Msg.update mealsMsg meals)
 
+        ( MealEntryEditorMsg mealEntryEditorMsg, MealEntryEditor mealEntryEditor ) ->
+            stepMealEntryEditor model (Pages.MealEntryEditor.Handler.update mealEntryEditorMsg mealEntryEditor)
+
         _ ->
             ( model, Cmd.none )
 
