@@ -146,7 +146,7 @@ update msg model =
                     stepRecipes model (Recipes.update (Recipes.updateJWT token) recipes)
 
                 IngredientEditor ingredientEditor ->
-                    stepIngredientEditor model (IngredientEditor.update (IngredientEditor.updateJWT token) ingredientEditor)
+                    stepIngredientEditor model (IngredientEditor.update (IngredientEditor.UpdateJWT token) ingredientEditor)
 
                 Meals meals ->
                     stepMeals model (Pages.Meals.Msg.update (Pages.Meals.Msg.updateJWT token) meals)
@@ -155,10 +155,10 @@ update msg model =
                     ( jwtLens.set (Just token) model, Cmd.none )
 
         ( FetchFoods foods, IngredientEditor ingredientEditor ) ->
-            stepIngredientEditor model (IngredientEditor.update (IngredientEditor.updateFoods foods) ingredientEditor)
+            stepIngredientEditor model (IngredientEditor.update (IngredientEditor.UpdateFoods foods) ingredientEditor)
 
         ( FetchMeasures measures, IngredientEditor ingredientEditor ) ->
-            stepIngredientEditor model (IngredientEditor.update (IngredientEditor.updateMeasures measures) ingredientEditor)
+            stepIngredientEditor model (IngredientEditor.update (IngredientEditor.UpdateMeasures measures) ingredientEditor)
 
         ( OverviewMsg overviewMsg, Overview overview ) ->
             stepOverview model (Overview.update overviewMsg overview)

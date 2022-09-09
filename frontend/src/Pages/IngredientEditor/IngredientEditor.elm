@@ -1,4 +1,4 @@
-module Pages.IngredientEditor.IngredientEditor exposing (Flags, Model, Msg, init, update, updateFoods, updateJWT, updateMeasures, view)
+module Pages.IngredientEditor.IngredientEditor exposing (Flags, Model, Msg(..), init, update, view)
 
 import Api.Auxiliary exposing (FoodId, IngredientId, JWT, MeasureId, RecipeId)
 import Api.Types.AmountUnit exposing (AmountUnit)
@@ -94,25 +94,10 @@ type Msg
     | AddFood FoodId
     | GotAddFoodResponse (Result Error Ingredient)
     | UpdateAddFood IngredientCreationClientInput
-    | UpdateJWT String
+    | UpdateJWT JWT
     | UpdateFoods String
     | UpdateMeasures String
     | SetFoodsSearchString String
-
-
-updateJWT : String -> Msg
-updateJWT =
-    UpdateJWT
-
-
-updateFoods : String -> Msg
-updateFoods =
-    UpdateFoods
-
-
-updateMeasures : String -> Msg
-updateMeasures =
-    UpdateMeasures
 
 
 type alias Flags =
