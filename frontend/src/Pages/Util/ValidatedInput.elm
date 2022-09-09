@@ -49,10 +49,10 @@ emptyText params =
 
 
 isValid : ValidatedInput a -> Bool
-isValid fromInput =
-    case fromInput.parse fromInput.text of
+isValid validatedInput =
+    case validatedInput.parse validatedInput.text of
         Ok v ->
-            v == fromInput.value
+            v == validatedInput.value
 
         Err _ ->
             False
@@ -61,18 +61,18 @@ isValid fromInput =
 setWithLens : Lens model (ValidatedInput a) -> String -> model -> model
 setWithLens lens txt model =
     let
-        fromInput =
+        validatedInput =
             lens.get model
 
         possiblyValid =
-            if String.isEmpty txt || fromInput.partial txt then
-                fromInput
+            if String.isEmpty txt || validatedInput.partial txt then
+                validatedInput
                     |> text.set txt
 
             else
-                fromInput
+                validatedInput
     in
-    case fromInput.parse txt of
+    case validatedInput.parse txt of
         Ok v ->
             possiblyValid
                 |> value.set v

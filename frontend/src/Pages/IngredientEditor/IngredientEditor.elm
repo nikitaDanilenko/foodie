@@ -27,6 +27,7 @@ import Monocle.Optional as Optional
 import Pages.IngredientEditor.AmountUnitClientInput as AmountUnitClientInput
 import Pages.IngredientEditor.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.IngredientEditor.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
+import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
 import Ports exposing (doFetchFoods, doFetchMeasures, doFetchToken, storeFoods, storeMeasures)
 import Url.Builder
@@ -184,7 +185,7 @@ view model =
         , div [ id "addIngredientView" ]
             (div [ id "addIngredient" ]
                 [ div [ id "searchField" ]
-                    [ label [] [ text lookingGlass ]
+                    [ label [] [ text Links.lookingGlass ]
                     , input [ onInput SetFoodsSearchString ] []
                     ]
                 ]
@@ -678,13 +679,3 @@ deleteIngredient fs iid =
         { url = Url.Builder.relative [ fs.configuration.backendURL, "recipe", "delete-ingredient", iid ] []
         , expect = HttpUtil.expectWhatever (GotDeleteIngredientResponse iid)
         }
-
-
-special : Int -> String
-special =
-    Char.fromCode >> String.fromChar
-
-
-lookingGlass : String
-lookingGlass =
-    special 128269

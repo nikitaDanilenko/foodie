@@ -46,7 +46,7 @@ init flags =
             }
       , mealEntries = []
       , recipes = Dict.empty
-      , recipeSearchString = ""
+      , recipesSearchString = ""
       , mealEntriesToAdd = []
       }
     , cmd
@@ -211,8 +211,8 @@ selectRecipe model recipeId =
     ( model
         |> Lens.modify Page.lenses.mealEntriesToAdd
             (ListUtil.insertBy
-                { compareA = .recipeId >> recipeNameOrEmpty model.recipes
-                , compareB = .recipeId >> recipeNameOrEmpty model.recipes
+                { compareA = .recipeId >> Page.recipeNameOrEmpty model.recipes
+                , compareB = .recipeId >> Page.recipeNameOrEmpty model.recipes
                 , mapAB = identity
                 }
                 (MealEntryCreationClientInput.default model.flagsWithJWT.mealId recipeId)
@@ -251,8 +251,8 @@ gotAddMealEntryResponse model result =
                 model
                     |> Lens.modify Page.lenses.mealEntries
                         (ListUtil.insertBy
-                            { compareA = .recipeId >> recipeNameOrEmpty model.recipes
-                            , compareB = recipeIdOf >> recipeNameOrEmpty model.recipes
+                            { compareA = .recipeId >> Page.recipeNameOrEmpty model.recipes
+                            , compareB = recipeIdOf >> Page.recipeNameOrEmpty model.recipes
                             , mapAB = Left
                             }
                             mealEntry
@@ -278,14 +278,18 @@ updateAddRecipe model mealEntryCreationClientInput =
 
 updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Msg )
 updateJWT model jwt =
-    ( Page.lenses.jwt.set jwt model
-    , Requests.fetchRecipes model.flagsWithJWT
+    let
+        newModel =
+            Page.lenses.jwt.set jwt model
+    in
+    ( newModel
+    , Requests.fetchRecipes newModel.flagsWithJWT
     )
 
 
 setRecipesSearchString : Page.Model -> String -> ( Page.Model, Cmd msg )
 setRecipesSearchString model string =
-    ( model |> Page.lenses.recipeSearchString.set string
+    ( model |> Page.lenses.recipesSearchString.set string
     , Cmd.none
     )
 
@@ -309,8 +313,3 @@ recipeIdOf =
     Either.unpack
         .recipeId
         (.original >> .recipeId)
-
-
-recipeNameOrEmpty : RecipeMap -> RecipeId -> String
-recipeNameOrEmpty recipeMap =
-    flip Dict.get recipeMap >> Maybe.Extra.unwrap "" .name

@@ -3,12 +3,12 @@ module Pages.MealEntryEditor.Page exposing (..)
 import Api.Auxiliary exposing (JWT, MealEntryId, MealId, RecipeId)
 import Api.Types.MealEntry exposing (MealEntry)
 import Api.Types.Recipe exposing (Recipe)
+import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
 import Dict exposing (Dict)
 import Either exposing (Either)
-import Html exposing (Html, div)
-import Html.Attributes exposing (id)
 import Http exposing (Error)
+import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.MealEntryEditor.MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
@@ -20,7 +20,7 @@ type alias Model =
     { flagsWithJWT : FlagsWithJWT
     , mealEntries : List MealEntryOrUpdate
     , recipes : RecipeMap
-    , recipeSearchString : String
+    , recipesSearchString : String
     , mealEntriesToAdd : List MealEntryCreationClientInput
     }
 
@@ -52,7 +52,7 @@ lenses :
     , mealEntries : Lens Model (List MealEntryOrUpdate)
     , mealEntriesToAdd : Lens Model (List MealEntryCreationClientInput)
     , recipes : Lens Model RecipeMap
-    , recipeSearchString : Lens Model String
+    , recipesSearchString : Lens Model String
     }
 lenses =
     { jwt =
@@ -67,9 +67,12 @@ lenses =
     , mealEntries = Lens .mealEntries (\b a -> { a | mealEntries = b })
     , mealEntriesToAdd = Lens .mealEntriesToAdd (\b a -> { a | mealEntriesToAdd = b })
     , recipes = Lens .recipes (\b a -> { a | recipes = b })
-    , recipeSearchString = Lens .recipeSearchString (\b a -> { a | recipeSearchString = b })
+    , recipesSearchString = Lens .recipesSearchString (\b a -> { a | recipesSearchString = b })
     }
 
+recipeNameOrEmpty : RecipeMap -> RecipeId -> String
+recipeNameOrEmpty recipeMap =
+    flip Dict.get recipeMap >> Maybe.Extra.unwrap "" .name
 
 type Msg
     = UpdateMealEntry MealEntryUpdateClientInput

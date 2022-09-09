@@ -21,7 +21,7 @@ import Util.HttpUtil as HttpUtil
 fetchRecipes : FlagsWithJWT -> Cmd Msg
 fetchRecipes flags =
     HttpUtil.getJsonWithJWT flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", "all" ] []
+        { url = Url.Builder.relative [ flags.configuration.backendURL, "recipe", "all" ] []
         , expect = HttpUtil.expectJson GotFetchRecipesResponse (Decode.list decoderRecipe)
         }
 
