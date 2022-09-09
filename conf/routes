@@ -18,6 +18,7 @@ GET    /meal/:id                     controllers.meal.MealController.get(id: jav
 POST   /meal/create                  controllers.meal.MealController.create
 PATCH  /meal/update                  controllers.meal.MealController.update
 DELETE /meal/delete/:id              controllers.meal.MealController.delete(id: java.util.UUID)
+GET    /meal/:id/meal-entries        controllers.meal.MealController.getMealEntries(id: java.util.UUID)
 POST   /meal/add-meal-entry          controllers.meal.MealController.addMealEntry
 PATCH  /meal/update-meal-entry       controllers.meal.MealController.updateMealEntry
 PATCH  /meal/delete-meal-entry/:id   controllers.meal.MealController.deleteMealEntry(id: java.util.UUID)

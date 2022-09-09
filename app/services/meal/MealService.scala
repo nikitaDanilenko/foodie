@@ -26,6 +26,7 @@ trait MealService {
   def updateMeal(userId: UserId, mealUpdate: MealUpdate): Future[ServerError.Or[Meal]]
   def deleteMeal(userId: UserId, id: MealId): Future[Boolean]
 
+  def getMealEntries(userId: UserId, id: MealId): Future[Seq[MealEntry]]
   def addMealEntry(userId: UserId, mealEntryCreation: MealEntryCreation): Future[ServerError.Or[MealEntry]]
   def updateMealEntry(userId: UserId, mealEntryUpdate: MealEntryUpdate): Future[ServerError.Or[MealEntry]]
   def removeMealEntry(userId: UserId, mealEntryId: MealEntryId): Future[Boolean]
@@ -40,6 +41,8 @@ object MealService {
     def createMeal(userId: UserId, id: MealId, mealCreation: MealCreation)(implicit ec: ExecutionContext): DBIO[Meal]
     def updateMeal(userId: UserId, mealUpdate: MealUpdate)(implicit ec: ExecutionContext): DBIO[Meal]
     def deleteMeal(userId: UserId, id: MealId)(implicit ec: ExecutionContext): DBIO[Boolean]
+
+    def getMealEntries(userId: UserId, id: MealId)(implicit ec: ExecutionContext): DBIO[Seq[MealEntry]]
 
     def addMealEntry(
         userId: UserId,
@@ -96,6 +99,9 @@ object MealService {
 
     override def deleteMeal(userId: UserId, id: MealId): Future[Boolean] = db.run(companion.deleteMeal(userId, id))
 
+    override def getMealEntries(userId: UserId, id: MealId): Future[Seq[MealEntry]] =
+      db.run(companion.getMealEntries(userId, id))
+
     override def addMealEntry(userId: UserId, mealEntryCreation: MealEntryCreation): Future[ServerError.Or[MealEntry]] =
       db.run(companion.addMealEntry(userId, UUID.randomUUID().transformInto[MealEntryId], mealEntryCreation))
         .map(Right(_))
@@ -140,39 +146,20 @@ object MealService {
     override def getMeal(
         userId: UserId,
         id: MealId
-    )(implicit ec: ExecutionContext): DBIO[Option[Meal]] = {
-      val transformer = for {
-        mealRow <- OptionT(
-          mealQuery(userId, id).result.headOption: DBIO[Option[Tables.MealRow]]
-        )
-        mealEntryRows <- OptionT.liftF(
-          Tables.MealEntry
-            .filter(_.mealId === id.transformInto[UUID])
-            .result: DBIO[Seq[Tables.MealEntryRow]]
-        )
-      } yield Meal
-        .DBRepresentation(
-          mealRow = mealRow,
-          mealEntryRows = mealEntryRows
-        )
-        .transformInto[Meal]
-
-      transformer.value
-    }
+    )(implicit ec: ExecutionContext): DBIO[Option[Meal]] =
+      OptionT(
+        mealQuery(userId, id).result.headOption: DBIO[Option[Tables.MealRow]]
+      ).map(_.transformInto[Meal]).value
 
     override def createMeal(
         userId: UserId,
         id: MealId,
         mealCreation: MealCreation
     )(implicit ec: ExecutionContext): DBIO[Meal] = {
-      val meal             = MealCreation.create(id, mealCreation)
-      val dbRepresentation = (meal, userId).transformInto[Meal.DBRepresentation]
-      (Tables.Meal.returning(Tables.Meal) += dbRepresentation.mealRow)
-        .map { mealRow =>
-          dbRepresentation
-            .copy(mealRow = mealRow)
-            .transformInto[Meal]
-        }
+      val meal    = MealCreation.create(id, mealCreation)
+      val mealRow = (meal, userId).transformInto[Tables.MealRow]
+      (Tables.Meal.returning(Tables.Meal) += mealRow)
+        .map(_.transformInto[Meal])
     }
 
     override def updateMeal(
@@ -190,8 +177,7 @@ object MealService {
               .update(meal, mealUpdate),
             userId
           )
-            .transformInto[Meal.DBRepresentation]
-            .mealRow
+            .transformInto[Tables.MealRow]
         )
         updatedMeal <- findAction
       } yield updatedMeal
@@ -203,6 +189,12 @@ object MealService {
     )(implicit ec: ExecutionContext): DBIO[Boolean] =
       mealQuery(userId, id).delete
         .map(_ > 0)
+
+    override def getMealEntries(userId: UserId, id: MealId)(implicit ec: ExecutionContext): DBIO[Seq[MealEntry]] =
+      Tables.MealEntry
+        .filter(_.mealId === id.transformInto[UUID])
+        .result
+        .map(_.map(_.transformInto[MealEntry]))
 
     override def addMealEntry(
         userId: UserId,

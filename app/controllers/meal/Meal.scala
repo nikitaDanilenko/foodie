@@ -10,5 +10,4 @@ case class Meal(
     id: UUID,
     date: SimpleDate,
     name: Option[String],
-    entries: Seq[MealEntry]
 )

@@ -91,6 +91,19 @@ class MealController @Inject() (
         )
     }
 
+  def getMealEntries(id: UUID): Action[AnyContent] = jwtAction.async { request =>
+    mealService
+      .getMealEntries(
+        request.user.id,
+        id.transformInto[MealId]
+      )
+      .map(
+        _.pipe(_.map(_.transformInto[MealEntry]).asJson)
+          .pipe(Ok(_))
+      )
+      .recover(mealErrorHandler)
+  }
+
   def addMealEntry: Action[MealEntryCreation] =
     jwtAction.async(circe.tolerantJson[MealEntryCreation]) { request =>
       EitherT(

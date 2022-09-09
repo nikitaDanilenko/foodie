@@ -15,7 +15,6 @@ object MealCreation {
       id = id,
       date = mealCreation.date,
       name = mealCreation.name,
-      entries = Seq.empty
     )
 
 }

@@ -5,7 +5,7 @@ import db.generated.Tables
 import io.scalaland.chimney.dsl.TransformerOps
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
 import services.{ MealId, RecipeId, UserId }
-import services.meal.MealService
+import services.meal.{ MealEntry, MealService }
 import services.nutrient.{ NutrientMap, NutrientService }
 import services.recipe.{ Ingredient, RecipeService }
 import slick.dbio.DBIO
@@ -57,9 +57,17 @@ object StatsService {
         mealIdsPlain <- Tables.Meal.filter(m => dateFilter(m.consumedOnDate)).map(_.id).result
         mealIds = mealIdsPlain.map(_.transformInto[MealId])
         meals <- mealIds.traverse(MealService.Live.getMeal(userId, _)).map(_.flatten)
+        mealEntries <-
+          mealIds
+            .traverse(mealId =>
+              MealService.Live
+                .getMealEntries(userId, mealId)
+                .map(mealId -> _): DBIO[(MealId, Seq[MealEntry])]
+            )
+            .map(_.toMap)
         nutrientsPerRecipe <-
-          meals
-            .flatMap(_.entries.map(_.recipeId))
+          mealIds
+            .flatMap(mealEntries(_).map(_.recipeId))
             .distinct
             .traverse(recipeId =>
               RecipeService.Live
@@ -70,7 +78,7 @@ object StatsService {
             .map(_.toMap)
       } yield {
         val nutrientMap = meals
-          .flatMap(_.entries)
+          .flatMap(m => mealEntries(m.id))
           .map(me => me.factor *: nutrientsPerRecipe(me.recipeId))
           .qsum
         Stats(
