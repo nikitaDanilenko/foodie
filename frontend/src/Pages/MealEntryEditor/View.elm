@@ -14,6 +14,7 @@ import Maybe.Extra
 import Pages.MealEntryEditor.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntryEditor.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
 import Pages.MealEntryEditor.Page as Page exposing (RecipeMap)
+import Pages.Util.DateUtil as DateUtil
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
 
@@ -33,10 +34,16 @@ view model =
                 |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
                 |> Dict.values
                 |> List.sortBy .name
-                |> List.map (viewRecipeLine model.recipes model.mealEntriesToAdd)
+                |> List.map (viewRecipeLine model.mealEntriesToAdd)
     in
     div [ id "mealEntryEditor" ]
-        [ div [ id "mealEntryView" ]
+        [ div [ id "mealInfo" ]
+            [ label [] [ text "Date" ]
+            , label [] [ text <| Maybe.Extra.unwrap "" (.date >> DateUtil.toString) <| model.mealInfo ]
+            , label [] [ text "Name" ]
+            , label [] [ text <| Maybe.withDefault "" <| Maybe.andThen .name <| model.mealInfo ]
+            ]
+        , div [ id "mealEntryView" ]
             (thead []
                 [ tr []
                     [ td [] [ label [] [ text "Name" ] ]
@@ -55,6 +62,7 @@ view model =
                 :: thead []
                     [ tr []
                         [ td [] [ label [] [ text "Name" ] ]
+                        , td [] [ label [] [ text "Description" ] ]
                         ]
                     ]
                 :: viewRecipes model.recipesSearchString
@@ -105,8 +113,8 @@ editMealEntryLine recipeMap mealEntry mealEntryUpdateClientInput =
         ]
 
 
-viewRecipeLine : RecipeMap -> List MealEntryCreationClientInput -> Recipe -> Html Page.Msg
-viewRecipeLine recipeMap mealEntriesToAdd recipe =
+viewRecipeLine : List MealEntryCreationClientInput -> Recipe -> Html Page.Msg
+viewRecipeLine mealEntriesToAdd recipe =
     let
         addMsg =
             Page.AddRecipe recipe.id
@@ -151,5 +159,6 @@ viewRecipeLine recipeMap mealEntriesToAdd recipe =
     in
     tr [ id "addingRecipeLine" ]
         (td [] [ label [] [ text recipe.name ] ]
+            :: td [] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
             :: process
         )

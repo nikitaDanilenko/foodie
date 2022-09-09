@@ -1,6 +1,7 @@
 module Pages.MealEntryEditor.Handler exposing (init, update)
 
 import Api.Auxiliary exposing (JWT, MealEntryId, RecipeId)
+import Api.Types.Meal exposing (Meal)
 import Api.Types.MealEntry exposing (MealEntry)
 import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
@@ -14,7 +15,7 @@ import Monocle.Lens as Lens
 import Monocle.Optional as Optional
 import Pages.MealEntryEditor.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntryEditor.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
-import Pages.MealEntryEditor.Page as Page exposing (FlagsWithJWT, Model, Msg(..), RecipeMap)
+import Pages.MealEntryEditor.Page as Page exposing (Msg(..))
 import Pages.MealEntryEditor.Requests as Requests
 import Ports
 import Util.Editing as Editing exposing (Editing)
@@ -22,14 +23,14 @@ import Util.LensUtil as LensUtil
 import Util.ListUtil as ListUtil
 
 
-init : Page.Flags -> ( Model, Cmd Msg )
+init : Page.Flags -> ( Page.Model, Cmd Msg )
 init flags =
     let
         ( j, cmd ) =
             case flags.jwt of
                 Just token ->
                     ( token
-                    , Requests.fetchRecipes
+                    , initialFetch
                         { configuration = flags.configuration
                         , jwt = token
                         , mealId = flags.mealId
@@ -44,6 +45,7 @@ init flags =
             , jwt = j
             , mealId = flags.mealId
             }
+      , mealInfo = Nothing
       , mealEntries = []
       , recipes = Dict.empty
       , recipesSearchString = ""
@@ -51,6 +53,18 @@ init flags =
       }
     , cmd
     )
+
+
+initialFetch : Page.FlagsWithJWT -> Cmd Msg
+initialFetch flags =
+    Cmd.batch
+        [ Requests.fetchMeal flags
+        , Requests.fetchRecipes
+            { configuration = flags.configuration
+            , jwt = flags.jwt
+            }
+        , Requests.fetchMealEntries flags
+        ]
 
 
 update : Msg -> Page.Model -> ( Page.Model, Cmd Msg )
@@ -82,6 +96,9 @@ update msg model =
 
         GotFetchRecipesResponse result ->
             gotFetchRecipesResponse model result
+
+        GotFetchMealResponse result ->
+            gotFetchMealResponse model result
 
         SelectRecipe recipe ->
             selectRecipe model recipe
@@ -206,6 +223,19 @@ gotFetchRecipesResponse model result =
     )
 
 
+gotFetchMealResponse : Page.Model -> Result Error Meal -> ( Page.Model, Cmd Msg )
+gotFetchMealResponse model result =
+    ( result
+        |> Either.fromResult
+        |> Either.unwrap model
+            ((\m -> { name = m.name, date = m.date })
+                >> Just
+                >> flip Page.lenses.mealInfo.set model
+            )
+    , Cmd.none
+    )
+
+
 selectRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd msg )
 selectRecipe model recipeId =
     ( model
@@ -283,7 +313,7 @@ updateJWT model jwt =
             Page.lenses.jwt.set jwt model
     in
     ( newModel
-    , Requests.fetchRecipes newModel.flagsWithJWT
+    , initialFetch newModel.flagsWithJWT
     )
 
 

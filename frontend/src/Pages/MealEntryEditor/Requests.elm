@@ -2,11 +2,14 @@ module Pages.MealEntryEditor.Requests exposing
     ( AddMealEntryParams
     , addMealEntry
     , deleteMealEntry
+    , fetchMeal
+    , fetchMealEntries
     , fetchRecipes
     , saveMealEntry
     )
 
 import Api.Auxiliary exposing (JWT, MealEntryId, RecipeId)
+import Api.Types.Meal exposing (decoderMeal)
 import Api.Types.MealEntry exposing (MealEntry, decoderMealEntry)
 import Api.Types.MealEntryCreation exposing (MealEntryCreation, encoderMealEntryCreation)
 import Api.Types.MealEntryUpdate exposing (MealEntryUpdate, encoderMealEntryUpdate)
@@ -18,7 +21,23 @@ import Url.Builder
 import Util.HttpUtil as HttpUtil
 
 
-fetchRecipes : FlagsWithJWT -> Cmd Msg
+fetchMeal : FlagsWithJWT -> Cmd Msg
+fetchMeal flags =
+    HttpUtil.getJsonWithJWT flags.jwt
+        { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", flags.mealId ] []
+        , expect = HttpUtil.expectJson GotFetchMealResponse decoderMeal
+        }
+
+
+fetchMealEntries : FlagsWithJWT -> Cmd Msg
+fetchMealEntries flags =
+    HttpUtil.getJsonWithJWT flags.jwt
+        { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", flags.mealId, "meal-entries" ] []
+        , expect = HttpUtil.expectJson GotFetchMealEntriesResponse (Decode.list decoderMealEntry)
+        }
+
+
+fetchRecipes : { configuration : Configuration, jwt : JWT } -> Cmd Msg
 fetchRecipes flags =
     HttpUtil.getJsonWithJWT flags.jwt
         { url = Url.Builder.relative [ flags.configuration.backendURL, "recipe", "all" ] []

@@ -1,6 +1,5 @@
 module Pages.Meals.View exposing (view)
 
-import Api.Auxiliary exposing (MealId)
 import Api.Lenses.MealUpdateLens as MealUpdateLens
 import Api.Lenses.SimpleDateLens as SimpleDateLens
 import Api.Types.Meal exposing (Meal)
