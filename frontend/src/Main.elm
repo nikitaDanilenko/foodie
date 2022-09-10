@@ -18,7 +18,9 @@ import Pages.MealEntryEditor.View
 import Pages.Meals.Handler
 import Pages.Meals.Page
 import Pages.Meals.View
-import Pages.Overview as Overview
+import Pages.Overview.Handler
+import Pages.Overview.Page
+import Pages.Overview.View
 import Pages.Recipes.Handler
 import Pages.Recipes.Page
 import Pages.Recipes.View
@@ -64,7 +66,7 @@ jwtLens =
 
 type Page
     = Login Pages.Login.Page.Model
-    | Overview Overview.Model
+    | Overview Pages.Overview.Page.Model
     | Recipes Pages.Recipes.Page.Model
     | IngredientEditor Pages.IngredientEditor.Page.Model
     | Meals Pages.Meals.Page.Model
@@ -79,7 +81,7 @@ type Msg
     | FetchFoods String
     | FetchMeasures String
     | LoginMsg Pages.Login.Page.Msg
-    | OverviewMsg Overview.Msg
+    | OverviewMsg Pages.Overview.Page.Msg
     | RecipesMsg Pages.Recipes.Page.Msg
     | IngredientEditorMsg Pages.IngredientEditor.Page.Msg
     | MealsMsg Pages.Meals.Page.Msg
@@ -112,7 +114,7 @@ view model =
             Html.map LoginMsg (Pages.Login.View.view login)
 
         Overview overview ->
-            Html.map OverviewMsg (Overview.view overview)
+            Html.map OverviewMsg (Pages.Overview.View.view overview)
 
         Recipes recipes ->
             Html.map RecipesMsg (Pages.Recipes.View.view recipes)
@@ -154,7 +156,7 @@ update msg model =
                     ( jwtLens.set (Just token) model, Cmd.none )
 
                 Overview overview ->
-                    stepOverview model (Overview.update (Overview.updateJWT token) overview)
+                    stepOverview model (Pages.Overview.Handler.update (Pages.Overview.Page.UpdateJWT token) overview)
 
                 Recipes recipes ->
                     stepRecipes model (Pages.Recipes.Handler.update (Pages.Recipes.Page.UpdateJWT token) recipes)
@@ -178,7 +180,7 @@ update msg model =
             stepIngredientEditor model (Pages.IngredientEditor.Handler.update (Pages.IngredientEditor.Page.UpdateMeasures measures) ingredientEditor)
 
         ( OverviewMsg overviewMsg, Overview overview ) ->
-            stepOverview model (Overview.update overviewMsg overview)
+            stepOverview model (Pages.Overview.Handler.update overviewMsg overview)
 
         ( RecipesMsg recipesMsg, Recipes recipes ) ->
             stepRecipes model (Pages.Recipes.Handler.update recipesMsg recipes)
@@ -205,7 +207,7 @@ stepTo url model =
                     Pages.Login.Handler.init flags |> stepLogin model
 
                 OverviewRoute flags ->
-                    Overview.init flags |> stepOverview model
+                    Pages.Overview.Handler.init flags |> stepOverview model
 
                 RecipesRoute flags ->
                     Pages.Recipes.Handler.init flags |> stepRecipes model
@@ -228,7 +230,7 @@ stepLogin model ( login, cmd ) =
     ( { model | page = Login login }, Cmd.map LoginMsg cmd )
 
 
-stepOverview : Model -> ( Overview.Model, Cmd Overview.Msg ) -> ( Model, Cmd Msg )
+stepOverview : Model -> ( Pages.Overview.Page.Model, Cmd Pages.Overview.Page.Msg ) -> ( Model, Cmd Msg )
 stepOverview model ( overview, cmd ) =
     ( { model | page = Overview overview }, Cmd.map OverviewMsg cmd )
 
@@ -255,7 +257,7 @@ stepMeals model ( recipes, cmd ) =
 
 type Route
     = LoginRoute Pages.Login.Page.Flags
-    | OverviewRoute Overview.Flags
+    | OverviewRoute Pages.Overview.Page.Flags
     | RecipesRoute Pages.Recipes.Page.Flags
     | IngredientEditorRoute Pages.IngredientEditor.Page.Flags
     | MealsRoute Pages.Meals.Page.Flags
