@@ -40,25 +40,23 @@ initialFetch flags =
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
-        ( j, cmd ) =
-            case flags.jwt of
-                Just token ->
-                    ( token
-                    , initialFetch
-                        { configuration = flags.configuration
-                        , jwt = token
-                        , recipeId = flags.recipeId
-                        }
-                    )
-
-                Nothing ->
-                    ( ""
-                    , doFetchToken ()
+        ( jwt, cmd ) =
+            flags.jwt
+                |> Maybe.Extra.unwrap
+                    ( "", doFetchToken () )
+                    (\token ->
+                        ( token
+                        , initialFetch
+                            { configuration = flags.configuration
+                            , jwt = token
+                            , recipeId = flags.recipeId
+                            }
+                        )
                     )
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration
-            , jwt = j
+            , jwt = jwt
             , recipeId = flags.recipeId
             }
       , ingredients = []

@@ -27,23 +27,22 @@ import Util.ListUtil as ListUtil
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
-        ( j, cmd ) =
-            case flags.jwt of
-                Just token ->
-                    ( token
-                    , initialFetch
-                        { configuration = flags.configuration
-                        , jwt = token
-                        , mealId = flags.mealId
-                        }
+        ( jwt, cmd ) =
+            flags.jwt
+                |> Maybe.Extra.unwrap ( "", Ports.doFetchToken () )
+                    (\token ->
+                        ( token
+                        , initialFetch
+                            { configuration = flags.configuration
+                            , jwt = token
+                            , mealId = flags.mealId
+                            }
+                        )
                     )
-
-                Nothing ->
-                    ( "", Ports.doFetchToken () )
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration
-            , jwt = j
+            , jwt = jwt
             , mealId = flags.mealId
             }
       , mealInfo = Nothing

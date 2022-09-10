@@ -199,7 +199,7 @@ updateJWT model jwt =
             Page.lenses.jwt.set jwt model
     in
     ( newModel
-    , Requests.fetchMeals model.flagsWithJWT
+    , Requests.fetchMeals newModel.flagsWithJWT
     )
 
 

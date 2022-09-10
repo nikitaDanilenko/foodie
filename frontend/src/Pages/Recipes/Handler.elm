@@ -22,17 +22,17 @@ init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
         ( jwt, cmd ) =
-            case flags.jwt of
-                Just token ->
-                    ( token
-                    , Requests.fetchRecipes
-                        { configuration = flags.configuration
-                        , jwt = token
-                        }
-                    )
-
-                Nothing ->
+            flags.jwt
+                |> Maybe.Extra.unwrap
                     ( "", doFetchToken () )
+                    (\token ->
+                        ( token
+                        , Requests.fetchRecipes
+                            { configuration = flags.configuration
+                            , jwt = token
+                            }
+                        )
+                    )
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration
