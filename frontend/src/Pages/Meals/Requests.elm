@@ -1,4 +1,4 @@
-module Pages.Meals.Requests exposing (..)
+module Pages.Meals.Requests exposing (createMeal, deleteMeal, fetchMeals, saveMeal)
 
 import Api.Auxiliary exposing (JWT, MealId)
 import Api.Types.Meal exposing (Meal, decoderMeal)
@@ -11,12 +11,14 @@ import Pages.Meals.Page as Page
 import Url.Builder
 import Util.HttpUtil as HttpUtil
 
+
 fetchMeals : Page.FlagsWithJWT -> Cmd Page.Msg
 fetchMeals flags =
     HttpUtil.getJsonWithJWT flags.jwt
         { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", "all" ] []
         , expect = HttpUtil.expectJson Page.GotFetchMealsResponse (Decode.list decoderMeal)
         }
+
 
 createMeal : Page.FlagsWithJWT -> Cmd Page.Msg
 createMeal flags =
@@ -29,6 +31,7 @@ createMeal flags =
         , expect = HttpUtil.expectJson Page.GotCreateMealResponse decoderMeal
         }
 
+
 saveMeal : Page.FlagsWithJWT -> MealUpdate -> Cmd Page.Msg
 saveMeal flags mealUpdate =
     HttpUtil.patchJsonWithJWT flags.jwt
@@ -36,6 +39,7 @@ saveMeal flags mealUpdate =
         , body = encoderMealUpdate mealUpdate
         , expect = HttpUtil.expectJson Page.GotSaveMealResponse decoderMeal
         }
+
 
 deleteMeal : Page.FlagsWithJWT -> MealId -> Cmd Page.Msg
 deleteMeal flags mealId =
