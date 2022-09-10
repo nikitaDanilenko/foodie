@@ -231,14 +231,10 @@ editOrDeleteIngredientLine measureMap foodMap ingredient =
 
 editIngredientLine : MeasureMap -> FoodMap -> Ingredient -> IngredientUpdateClientInput -> Html Msg
 editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
-    div [ class "ingredientLine" ]
-        [ div [ class "name" ]
-            [ label [] [ text "Name" ]
-            , label [] [ text (ingredient.foodId |> ingredientNameOrEmpty foodMap) ]
-            ]
-        , div [ class "amount" ]
-            [ label [] [ text "Amount" ]
-            , input
+    tr [ id "ingredientLine" ]
+        [ td [] [ label [] [ text (ingredient.foodId |> ingredientNameOrEmpty foodMap) ] ]
+        , td []
+            [ input
                 [ value
                     (ingredientUpdateClientInput.amountUnit.factor.value
                         |> String.fromFloat
@@ -257,27 +253,24 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                 ]
                 []
             ]
-        , div [ class "unit" ]
-            [ label [] [ text "Unit" ]
-            , div [ class "unit" ]
-                [ dropdown
-                    { items = unitDropdown foodMap ingredient.foodId
-                    , emptyItem =
-                        Just <| startingDropdownUnit measureMap ingredient.amountUnit.measureId
-                    , onChange =
-                        onChangeDropdown
-                            { amountUnitLens = IngredientUpdateClientInput.amountUnit
-                            , measureIdOf = .amountUnit >> .measureId
-                            , mkMsg = UpdateIngredient
-                            , input = ingredientUpdateClientInput
-                            }
-                    }
-                    []
-                    (ingredient.amountUnit.measureId
-                        |> flip Dict.get measureMap
-                        |> Maybe.map .name
-                    )
-                ]
+        , td []
+            [ dropdown
+                { items = unitDropdown foodMap ingredient.foodId
+                , emptyItem =
+                    Just <| startingDropdownUnit measureMap ingredient.amountUnit.measureId
+                , onChange =
+                    onChangeDropdown
+                        { amountUnitLens = IngredientUpdateClientInput.amountUnit
+                        , measureIdOf = .amountUnit >> .measureId
+                        , mkMsg = UpdateIngredient
+                        , input = ingredientUpdateClientInput
+                        }
+                }
+                []
+                (ingredient.amountUnit.measureId
+                    |> flip Dict.get measureMap
+                    |> Maybe.map .name
+                )
             ]
         , button [ class "button", onClick (SaveIngredientEdit ingredient.id) ]
             [ text "Save" ]
