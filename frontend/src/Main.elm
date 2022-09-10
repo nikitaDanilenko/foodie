@@ -9,7 +9,9 @@ import Monocle.Lens exposing (Lens)
 import Pages.IngredientEditor.Handler
 import Pages.IngredientEditor.Page
 import Pages.IngredientEditor.View
-import Pages.Login as Login
+import Pages.Login.Handler
+import Pages.Login.Page
+import Pages.Login.View
 import Pages.MealEntryEditor.Handler
 import Pages.MealEntryEditor.Page
 import Pages.MealEntryEditor.View
@@ -61,7 +63,7 @@ jwtLens =
 
 
 type Page
-    = Login Login.Model
+    = Login Pages.Login.Page.Model
     | Overview Overview.Model
     | Recipes Pages.Recipes.Page.Model
     | IngredientEditor Pages.IngredientEditor.Page.Model
@@ -76,7 +78,7 @@ type Msg
     | FetchToken String
     | FetchFoods String
     | FetchMeasures String
-    | LoginMsg Login.Msg
+    | LoginMsg Pages.Login.Page.Msg
     | OverviewMsg Overview.Msg
     | RecipesMsg Pages.Recipes.Page.Msg
     | IngredientEditorMsg Pages.IngredientEditor.Page.Msg
@@ -107,7 +109,7 @@ view : Model -> Html Msg
 view model =
     case model.page of
         Login login ->
-            Html.map LoginMsg (Login.view login)
+            Html.map LoginMsg (Pages.Login.View.view login)
 
         Overview overview ->
             Html.map OverviewMsg (Overview.view overview)
@@ -143,7 +145,7 @@ update msg model =
             stepTo url model
 
         ( LoginMsg loginMsg, Login login ) ->
-            stepLogin model (Login.update loginMsg login)
+            stepLogin model (Pages.Login.Handler.update loginMsg login)
 
         -- todo: Check all cases, and possibly refactor to have less duplication.
         ( FetchToken token, page ) ->
@@ -200,7 +202,7 @@ stepTo url model =
         Just answer ->
             case answer of
                 LoginRoute flags ->
-                    Login.init flags |> stepLogin model
+                    Pages.Login.Handler.init flags |> stepLogin model
 
                 OverviewRoute flags ->
                     Overview.init flags |> stepOverview model
@@ -221,7 +223,7 @@ stepTo url model =
             ( { model | page = NotFound }, Cmd.none )
 
 
-stepLogin : Model -> ( Login.Model, Cmd Login.Msg ) -> ( Model, Cmd Msg )
+stepLogin : Model -> ( Pages.Login.Page.Model, Cmd Pages.Login.Page.Msg ) -> ( Model, Cmd Msg )
 stepLogin model ( login, cmd ) =
     ( { model | page = Login login }, Cmd.map LoginMsg cmd )
 
@@ -252,7 +254,7 @@ stepMeals model ( recipes, cmd ) =
 
 
 type Route
-    = LoginRoute Login.Flags
+    = LoginRoute Pages.Login.Page.Flags
     | OverviewRoute Overview.Flags
     | RecipesRoute Pages.Recipes.Page.Flags
     | IngredientEditorRoute Pages.IngredientEditor.Page.Flags
