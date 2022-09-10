@@ -23,7 +23,7 @@ import Util.LensUtil as LensUtil
 import Util.ListUtil as ListUtil
 
 
-init : Page.Flags -> ( Page.Model, Cmd Msg )
+init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
         ( j, cmd ) =
@@ -55,7 +55,7 @@ init flags =
     )
 
 
-initialFetch : Page.FlagsWithJWT -> Cmd Msg
+initialFetch : Page.FlagsWithJWT -> Cmd Page.Msg
 initialFetch flags =
     Cmd.batch
         [ Requests.fetchMeal flags
@@ -67,7 +67,7 @@ initialFetch flags =
         ]
 
 
-update : Msg -> Page.Model -> ( Page.Model, Cmd Msg )
+update : Page.Msg -> Page.Model -> ( Page.Model, Cmd Page.Msg )
 update msg model =
     case msg of
         UpdateMealEntry mealEntryUpdateClientInput ->
@@ -131,7 +131,7 @@ updateMealEntry model mealEntryUpdateClientInput =
     )
 
 
-saveMealEntryEdit : Page.Model -> MealEntryId -> ( Page.Model, Cmd Msg )
+saveMealEntryEdit : Page.Model -> MealEntryId -> ( Page.Model, Cmd Page.Msg )
 saveMealEntryEdit model mealEntryId =
     ( model
     , model
@@ -143,7 +143,7 @@ saveMealEntryEdit model mealEntryId =
     )
 
 
-gotSaveMealEntryResponse : Page.Model -> Result Error MealEntry -> ( Page.Model, Cmd Msg )
+gotSaveMealEntryResponse : Page.Model -> Result Error MealEntry -> ( Page.Model, Cmd Page.Msg )
 gotSaveMealEntryResponse model result =
     ( result
         |> Either.fromResult
@@ -157,7 +157,7 @@ gotSaveMealEntryResponse model result =
     )
 
 
-enterEditMealEntry : Page.Model -> MealEntryId -> ( Page.Model, Cmd Msg )
+enterEditMealEntry : Page.Model -> MealEntryId -> ( Page.Model, Cmd Page.Msg )
 enterEditMealEntry model mealEntryId =
     ( model
         |> mapMealEntryOrUpdateById mealEntryId
@@ -173,7 +173,7 @@ enterEditMealEntry model mealEntryId =
     )
 
 
-exitEditMealEntryAt : Page.Model -> MealEntryId -> ( Page.Model, Cmd Msg )
+exitEditMealEntryAt : Page.Model -> MealEntryId -> ( Page.Model, Cmd Page.Msg )
 exitEditMealEntryAt model mealEntryId =
     ( model
         |> mapMealEntryOrUpdateById mealEntryId (Either.andThen (.original >> Left))
@@ -181,7 +181,7 @@ exitEditMealEntryAt model mealEntryId =
     )
 
 
-deleteMealEntry : Page.Model -> MealEntryId -> ( Page.Model, Cmd Msg )
+deleteMealEntry : Page.Model -> MealEntryId -> ( Page.Model, Cmd Page.Msg )
 deleteMealEntry model mealEntryId =
     ( model
     , Requests.deleteMealEntry model.flagsWithJWT mealEntryId
@@ -200,7 +200,7 @@ gotDeleteMealEntryResponse model mealEntryId result =
     )
 
 
-gotFetchMealEntriesResponse : Page.Model -> Result Error (List MealEntry) -> ( Page.Model, Cmd Msg )
+gotFetchMealEntriesResponse : Page.Model -> Result Error (List MealEntry) -> ( Page.Model, Cmd Page.Msg )
 gotFetchMealEntriesResponse model result =
     ( result
         |> Either.fromResult
@@ -223,7 +223,7 @@ gotFetchRecipesResponse model result =
     )
 
 
-gotFetchMealResponse : Page.Model -> Result Error Meal -> ( Page.Model, Cmd Msg )
+gotFetchMealResponse : Page.Model -> Result Error Meal -> ( Page.Model, Cmd Page.Msg )
 gotFetchMealResponse model result =
     ( result
         |> Either.fromResult
@@ -251,7 +251,7 @@ selectRecipe model recipeId =
     )
 
 
-deselectRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd Msg )
+deselectRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd Page.Msg )
 deselectRecipe model recipeId =
     ( model
         |> Lens.modify Page.lenses.mealEntriesToAdd (List.Extra.filterNot (\me -> me.recipeId == recipeId))
@@ -259,7 +259,7 @@ deselectRecipe model recipeId =
     )
 
 
-addRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd Msg )
+addRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd Page.Msg )
 addRecipe model recipeId =
     ( model
     , List.Extra.find (\me -> me.recipeId == recipeId) model.mealEntriesToAdd
@@ -306,7 +306,7 @@ updateAddRecipe model mealEntryCreationClientInput =
     )
 
 
-updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Msg )
+updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model jwt =
     let
         newModel =
