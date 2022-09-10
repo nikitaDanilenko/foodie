@@ -326,43 +326,39 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
 
                 Just ingredientToAdd ->
                     [ td []
-                        [ div [ class "amount" ]
-                            [ label [] [ text "Amount" ]
-                            , input
-                                [ value ingredientToAdd.amountUnit.factor.text
-                                , onInput
-                                    (flip
-                                        (ValidatedInput.lift
-                                            (IngredientCreationClientInput.amountUnit
-                                                |> Compose.lensWithLens AmountUnitClientInput.factor
-                                            )
-                                        ).set
-                                        ingredientToAdd
-                                        >> UpdateAddFood
-                                    )
-                                , onEnter addMsg
-                                ]
-                                []
+                        [ label [] [ text "Amount" ]
+                        , input
+                            [ value ingredientToAdd.amountUnit.factor.text
+                            , onInput
+                                (flip
+                                    (ValidatedInput.lift
+                                        (IngredientCreationClientInput.amountUnit
+                                            |> Compose.lensWithLens AmountUnitClientInput.factor
+                                        )
+                                    ).set
+                                    ingredientToAdd
+                                    >> UpdateAddFood
+                                )
+                            , onEnter addMsg
                             ]
+                            []
                         ]
-                    , div [ class "unit" ]
+                    , td []
                         [ label [] [ text "Unit" ]
-                        , div [ class "unit" ]
-                            [ dropdown
-                                { items = unitDropdown foodMap food.id
-                                , emptyItem =
-                                    Just <| startingDropdownUnit measureMap ingredientToAdd.amountUnit.measureId
-                                , onChange =
-                                    onChangeDropdown
-                                        { amountUnitLens = IngredientCreationClientInput.amountUnit
-                                        , measureIdOf = .amountUnit >> .measureId
-                                        , mkMsg = UpdateAddFood
-                                        , input = ingredientToAdd
-                                        }
-                                }
-                                []
-                                (ingredientToAdd.amountUnit.measureId |> String.fromInt |> Just)
-                            ]
+                        , dropdown
+                            { items = unitDropdown foodMap food.id
+                            , emptyItem =
+                                Just <| startingDropdownUnit measureMap ingredientToAdd.amountUnit.measureId
+                            , onChange =
+                                onChangeDropdown
+                                    { amountUnitLens = IngredientCreationClientInput.amountUnit
+                                    , measureIdOf = .amountUnit >> .measureId
+                                    , mkMsg = UpdateAddFood
+                                    , input = ingredientToAdd
+                                    }
+                            }
+                            []
+                            (ingredientToAdd.amountUnit.measureId |> String.fromInt |> Just)
                         ]
                     , td []
                         [ button
