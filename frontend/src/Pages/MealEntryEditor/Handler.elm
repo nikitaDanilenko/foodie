@@ -15,6 +15,7 @@ import Monocle.Lens as Lens
 import Monocle.Optional as Optional
 import Pages.MealEntryEditor.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntryEditor.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
+import Pages.MealEntryEditor.MealInfo as MealInfo
 import Pages.MealEntryEditor.Page as Page exposing (Msg(..))
 import Pages.MealEntryEditor.Requests as Requests
 import Ports
@@ -228,7 +229,7 @@ gotFetchMealResponse model result =
     ( result
         |> Either.fromResult
         |> Either.unwrap model
-            ((\m -> { name = m.name, date = m.date })
+            (MealInfo.from
                 >> Just
                 >> flip Page.lenses.mealInfo.set model
             )

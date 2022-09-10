@@ -7,6 +7,7 @@ import Api.Types.Ingredient exposing (Ingredient, decoderIngredient)
 import Api.Types.IngredientCreation exposing (IngredientCreation, encoderIngredientCreation)
 import Api.Types.IngredientUpdate exposing (IngredientUpdate, encoderIngredientUpdate)
 import Api.Types.Measure exposing (Measure, decoderMeasure, encoderMeasure)
+import Api.Types.Recipe exposing (Recipe, decoderRecipe)
 import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
 import Dict exposing (Dict)
@@ -27,6 +28,7 @@ import Monocle.Optional as Optional
 import Pages.IngredientEditor.AmountUnitClientInput as AmountUnitClientInput
 import Pages.IngredientEditor.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.IngredientEditor.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
+import Pages.IngredientEditor.RecipeInfo as RecipeInfo exposing (RecipeInfo)
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
 import Ports exposing (doFetchFoods, doFetchMeasures, doFetchToken, storeFoods, storeMeasures)
@@ -41,6 +43,7 @@ type alias Model =
     { configuration : Configuration
     , jwt : JWT
     , recipeId : RecipeId
+    , recipeInfo : Maybe RecipeInfo
     , ingredients : List IngredientOrUpdate
     , foods : FoodMap
     , measures : MeasureMap
@@ -68,6 +71,7 @@ lenses :
     , ingredients : Lens Model (List IngredientOrUpdate)
     , foodsToAdd : Lens Model (List IngredientCreationClientInput)
     , foodsSearchString : Lens Model String
+    , recipeInfo : Lens Model (Maybe RecipeInfo)
     }
 lenses =
     { jwt = Lens .jwt (\b a -> { a | jwt = b })
@@ -76,6 +80,7 @@ lenses =
     , ingredients = Lens .ingredients (\b a -> { a | ingredients = b })
     , foodsToAdd = Lens .foodsToAdd (\b a -> { a | foodsToAdd = b })
     , foodsSearchString = Lens .foodsSearchString (\b a -> { a | foodsSearchString = b })
+    , recipeInfo = Lens .recipeInfo (\b a -> { a | recipeInfo = b })
     }
 
 
@@ -90,6 +95,7 @@ type Msg
     | GotFetchIngredientsResponse (Result Error (List Ingredient))
     | GotFetchFoodsResponse (Result Error (List Food))
     | GotFetchMeasuresResponse (Result Error (List Measure))
+    | GotFetchRecipeResponse (Result Error Recipe)
     | SelectFood Food
     | DeselectFood FoodId
     | AddFood FoodId
@@ -119,6 +125,7 @@ initialFetch : FlagsWithJWT -> Cmd Msg
 initialFetch flags =
     Cmd.batch
         [ fetchIngredients flags
+        , fetchRecipe flags
         , doFetchFoods ()
         , doFetchMeasures ()
         ]
@@ -149,6 +156,7 @@ init flags =
       , measures = Dict.empty
       , foodsSearchString = ""
       , foodsToAdd = []
+      , recipeInfo = Nothing
       }
     , cmd
     )
@@ -172,7 +180,13 @@ view model =
                 |> List.map (viewFoodLine model.foods model.measures model.foodsToAdd)
     in
     div [ id "editor" ]
-        [ div [ id "ingredientsView" ]
+        [ div [ id "recipeInfo" ]
+            [ label [] [ text "Name" ]
+            , label [] [ text <| Maybe.Extra.unwrap "" .name <| model.recipeInfo ]
+            , label [] [ text "Description" ]
+            , label [] [ text <| Maybe.withDefault "" <| Maybe.andThen .description <| model.recipeInfo ]
+            ]
+        , div [ id "ingredientsView" ]
             (thead []
                 [ tr []
                     [ td [] [ label [] [ text "Name" ] ]
@@ -501,6 +515,17 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        GotFetchRecipeResponse result ->
+            ( result
+                |> Result.map
+                    (RecipeInfo.from
+                        >> Just
+                        >> flip lenses.recipeInfo.set model
+                    )
+                |> Result.withDefault model
+            , Cmd.none
+            )
+
         UpdateJWT token ->
             ( lenses.jwt.set token model
             , initialFetch fs
@@ -620,6 +645,14 @@ fetchIngredients flags =
         , gotMsg = GotFetchIngredientsResponse
         }
         flags
+
+
+fetchRecipe : FlagsWithJWT -> Cmd Msg
+fetchRecipe flags =
+    HttpUtil.getJsonWithJWT flags.jwt
+        { url = Url.Builder.relative [ flags.configuration.backendURL, "recipe", flags.recipeId ] []
+        , expect = HttpUtil.expectJson GotFetchRecipeResponse decoderRecipe
+        }
 
 
 fetchFoods : FlagsWithJWT -> Cmd Msg
