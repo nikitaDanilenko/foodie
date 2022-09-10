@@ -82,14 +82,10 @@ editOrDeleteMealEntryLine recipeMap mealEntry =
 
 editMealEntryLine : Page.RecipeMap -> MealEntry -> MealEntryUpdateClientInput -> Html Page.Msg
 editMealEntryLine recipeMap mealEntry mealEntryUpdateClientInput =
-    div [ class "mealEntryLine" ]
-        [ div [ class "name" ]
-            [ label [] [ text "Name" ]
-            , label [] [ text (mealEntry.recipeId |> Page.recipeNameOrEmpty recipeMap) ]
-            ]
-        , div [ class "amount" ]
-            [ label [] [ text "Amount" ]
-            , input
+    tr [ id "mealEntryLine" ]
+        [ td [] [ label [] [ text (mealEntry.recipeId |> Page.recipeNameOrEmpty recipeMap) ] ]
+        , td []
+            [ input
                 [ value
                     (mealEntryUpdateClientInput.factor.value
                         |> String.fromFloat
@@ -106,10 +102,14 @@ editMealEntryLine recipeMap mealEntry mealEntryUpdateClientInput =
                 ]
                 []
             ]
-        , button [ class "button", onClick (Page.SaveMealEntryEdit mealEntry.id) ]
-            [ text "Save" ]
-        , button [ class "button", onClick (Page.ExitEditMealEntryAt mealEntry.id) ]
-            [ text "Cancel" ]
+        , td []
+            [ button [ class "button", onClick (Page.SaveMealEntryEdit mealEntry.id) ]
+                [ text "Save" ]
+            ]
+        , td []
+            [ button [ class "button", onClick (Page.ExitEditMealEntryAt mealEntry.id) ]
+                [ text "Cancel" ]
+            ]
         ]
 
 
@@ -126,22 +126,20 @@ viewRecipeLine mealEntriesToAdd recipe =
 
                 Just mealEntryToAdd ->
                     [ td []
-                        [ div [ class "amount" ]
-                            [ label [] [ text "Amount" ]
-                            , input
-                                [ value mealEntryToAdd.factor.text
-                                , onInput
-                                    (flip
-                                        (ValidatedInput.lift
-                                            MealEntryCreationClientInput.lenses.factor
-                                        ).set
-                                        mealEntryToAdd
-                                        >> Page.UpdateAddRecipe
-                                    )
-                                , onEnter addMsg
-                                ]
-                                []
+                        [ label [] [ text "Amount" ]
+                        , input
+                            [ value mealEntryToAdd.factor.text
+                            , onInput
+                                (flip
+                                    (ValidatedInput.lift
+                                        MealEntryCreationClientInput.lenses.factor
+                                    ).set
+                                    mealEntryToAdd
+                                    >> Page.UpdateAddRecipe
+                                )
+                            , onEnter addMsg
                             ]
+                            []
                         ]
                     , td []
                         [ button

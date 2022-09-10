@@ -272,10 +272,14 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                     |> Maybe.map .name
                 )
             ]
-        , button [ class "button", onClick (SaveIngredientEdit ingredient.id) ]
-            [ text "Save" ]
-        , button [ class "button", onClick (ExitEditIngredientAt ingredient.id) ]
-            [ text "Cancel" ]
+        , td []
+            [ button [ class "button", onClick (SaveIngredientEdit ingredient.id) ]
+                [ text "Save" ]
+            ]
+        , td []
+            [ button [ class "button", onClick (ExitEditIngredientAt ingredient.id) ]
+                [ text "Cancel" ]
+            ]
         ]
 
 
