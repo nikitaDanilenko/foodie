@@ -13,26 +13,25 @@ import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Maybe.Extra
 import Monocle.Compose as Compose
-import Pages.Meals.Model
-import Pages.Meals.Msg exposing (Msg(..))
+import Pages.Meals.Page as Page
 import Pages.Util.DateUtil as DateUtil
 import Pages.Util.Links as Links
 import Parser
 import Url.Builder
 
 
-view : Pages.Meals.Model.Model -> Html Pages.Meals.Msg.Msg
+view : Page.Model -> Html Page.Msg
 view model =
     let
         viewEditMeals =
             List.map
                 (Either.unpack
-                    (editOrDeleteMealLine model.configuration)
+                    (editOrDeleteMealLine model.flagsWithJWT.configuration)
                     (\e -> e.update |> editMealLine)
                 )
     in
     div [ id "addMealView" ]
-        (div [ id "addMeal" ] [ button [ class "button", onClick CreateMeal ] [ text "New meal" ] ]
+        (div [ id "addMeal" ] [ button [ class "button", onClick Page.CreateMeal ] [ text "New meal" ] ]
             :: thead []
                 [ tr []
                     [ td [] [ label [] [ text "Name" ] ]
@@ -43,12 +42,12 @@ view model =
         )
 
 
-editOrDeleteMealLine : Configuration -> Meal -> Html Msg
+editOrDeleteMealLine : Configuration -> Meal -> Html Page.Msg
 editOrDeleteMealLine configuration meal =
     tr [ id "editingMeal" ]
         [ td [] [ label [] [ text <| DateUtil.toString <| meal.date ] ]
         , td [] [ label [] [ text <| Maybe.withDefault "" <| meal.name ] ]
-        , td [] [ button [ class "button", onClick (EnterEditMeal meal.id) ] [ text "Edit" ] ]
+        , td [] [ button [ class "button", onClick (Page.EnterEditMeal meal.id) ] [ text "Edit" ] ]
         , td []
             [ Links.linkButton
                 { url =
@@ -64,15 +63,15 @@ editOrDeleteMealLine configuration meal =
                 , isDisabled = False
                 }
             ]
-        , td [] [ button [ class "button", onClick (DeleteMeal meal.id) ] [ text "Delete" ] ]
+        , td [] [ button [ class "button", onClick (Page.DeleteMeal meal.id) ] [ text "Delete" ] ]
         ]
 
 
-editMealLine : MealUpdate -> Html Msg
+editMealLine : MealUpdate -> Html Page.Msg
 editMealLine mealUpdate =
     let
         saveMsg =
-            SaveMealEdit mealUpdate.id
+            Page.SaveMealEdit mealUpdate.id
     in
     div [ class "mealLine" ]
         [ div [ class "mealDateArea" ]
@@ -89,7 +88,7 @@ editMealLine mealUpdate =
                                     |> Compose.lensWithLens SimpleDateLens.date
                                 ).set
                                 mealUpdate
-                            >> UpdateMeal
+                            >> Page.UpdateMeal
                         )
                     , onEnter saveMsg
                     ]
@@ -107,7 +106,7 @@ editMealLine mealUpdate =
                                     |> Compose.lensWithLens SimpleDateLens.time
                                 ).set
                                 mealUpdate
-                            >> UpdateMeal
+                            >> Page.UpdateMeal
                         )
                     , onEnter saveMsg
                     ]
@@ -122,14 +121,14 @@ editMealLine mealUpdate =
                     (Just
                         >> Maybe.Extra.filter (String.isEmpty >> not)
                         >> flip MealUpdateLens.name.set mealUpdate
-                        >> UpdateMeal
+                        >> Page.UpdateMeal
                     )
                 , onEnter saveMsg
                 ]
                 []
             ]
-        , button [ class "button", onClick (SaveMealEdit mealUpdate.id) ]
+        , button [ class "button", onClick (Page.SaveMealEdit mealUpdate.id) ]
             [ text "Save" ]
-        , button [ class "button", onClick (ExitEditMealAt mealUpdate.id) ]
+        , button [ class "button", onClick (Page.ExitEditMealAt mealUpdate.id) ]
             [ text "Cancel" ]
         ]

@@ -10,12 +10,12 @@ import Dict exposing (Dict)
 import Either exposing (Either(..))
 import Http exposing (Error)
 import Maybe.Extra
-import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.IngredientEditor.IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.IngredientEditor.IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
 import Pages.IngredientEditor.RecipeInfo exposing (RecipeInfo)
 import Util.Editing exposing (Editing)
+import Util.LensUtil as LensUtil
 
 
 type alias Model =
@@ -51,15 +51,7 @@ lenses :
     , recipeInfo : Lens Model (Maybe RecipeInfo)
     }
 lenses =
-    { jwt =
-        let
-            flagsLens =
-                Lens .flagsWithJWT (\b a -> { a | flagsWithJWT = b })
-
-            jwtLens =
-                Lens .jwt (\b a -> { a | jwt = b })
-        in
-        flagsLens |> Compose.lensWithLens jwtLens
+    { jwt = LensUtil.jwtSubLens
     , foods = Lens .foods (\b a -> { a | foods = b })
     , measures = Lens .measures (\b a -> { a | measures = b })
     , ingredients = Lens .ingredients (\b a -> { a | ingredients = b })

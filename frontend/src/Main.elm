@@ -13,8 +13,8 @@ import Pages.Login as Login
 import Pages.MealEntryEditor.Handler
 import Pages.MealEntryEditor.Page
 import Pages.MealEntryEditor.View
-import Pages.Meals.Model
-import Pages.Meals.Msg
+import Pages.Meals.Handler
+import Pages.Meals.Page
 import Pages.Meals.View
 import Pages.Overview as Overview
 import Pages.Recipes as Recipes
@@ -63,7 +63,7 @@ type Page
     | Overview Overview.Model
     | Recipes Recipes.Model
     | IngredientEditor Pages.IngredientEditor.Page.Model
-    | Meals Pages.Meals.Model.Model
+    | Meals Pages.Meals.Page.Model
     | MealEntryEditor Pages.MealEntryEditor.Page.Model
     | NotFound
 
@@ -78,7 +78,7 @@ type Msg
     | OverviewMsg Overview.Msg
     | RecipesMsg Recipes.Msg
     | IngredientEditorMsg Pages.IngredientEditor.Page.Msg
-    | MealsMsg Pages.Meals.Msg.Msg
+    | MealsMsg Pages.Meals.Page.Msg
     | MealEntryEditorMsg Pages.MealEntryEditor.Page.Msg
 
 
@@ -159,7 +159,7 @@ update msg model =
                     stepIngredientEditor model (Pages.IngredientEditor.Handler.update (Pages.IngredientEditor.Page.UpdateJWT token) ingredientEditor)
 
                 Meals meals ->
-                    stepMeals model (Pages.Meals.Msg.update (Pages.Meals.Msg.updateJWT token) meals)
+                    stepMeals model (Pages.Meals.Handler.update (Pages.Meals.Page.UpdateJWT token) meals)
 
                 MealEntryEditor mealEntryEditor ->
                     stepMealEntryEditor model (Pages.MealEntryEditor.Handler.update (Pages.MealEntryEditor.Page.UpdateJWT token) mealEntryEditor)
@@ -183,7 +183,7 @@ update msg model =
             stepIngredientEditor model (Pages.IngredientEditor.Handler.update ingredientEditorMsg ingredientEditor)
 
         ( MealsMsg mealsMsg, Meals meals ) ->
-            stepMeals model (Pages.Meals.Msg.update mealsMsg meals)
+            stepMeals model (Pages.Meals.Handler.update mealsMsg meals)
 
         ( MealEntryEditorMsg mealEntryEditorMsg, MealEntryEditor mealEntryEditor ) ->
             stepMealEntryEditor model (Pages.MealEntryEditor.Handler.update mealEntryEditorMsg mealEntryEditor)
@@ -210,7 +210,7 @@ stepTo url model =
                     Pages.IngredientEditor.Handler.init flags |> stepIngredientEditor model
 
                 MealsRoute flags ->
-                    Pages.Meals.Msg.init flags |> stepMeals model
+                    Pages.Meals.Handler.init flags |> stepMeals model
 
                 MealEntryEditorRoute flags ->
                     Pages.MealEntryEditor.Handler.init flags |> stepMealEntryEditor model
@@ -244,7 +244,7 @@ stepMealEntryEditor model ( mealEntryEditor, cmd ) =
     ( { model | page = MealEntryEditor mealEntryEditor }, Cmd.map MealEntryEditorMsg cmd )
 
 
-stepMeals : Model -> ( Pages.Meals.Model.Model, Cmd Pages.Meals.Msg.Msg ) -> ( Model, Cmd Msg )
+stepMeals : Model -> ( Pages.Meals.Page.Model, Cmd Pages.Meals.Page.Msg ) -> ( Model, Cmd Msg )
 stepMeals model ( recipes, cmd ) =
     ( { model | page = Meals recipes }, Cmd.map MealsMsg cmd )
 
@@ -254,7 +254,7 @@ type Route
     | OverviewRoute Overview.Flags
     | RecipesRoute Recipes.Flags
     | IngredientEditorRoute Pages.IngredientEditor.Page.Flags
-    | MealsRoute Pages.Meals.Model.Flags
+    | MealsRoute Pages.Meals.Page.Flags
     | MealEntryEditorRoute Pages.MealEntryEditor.Page.Flags
 
 
