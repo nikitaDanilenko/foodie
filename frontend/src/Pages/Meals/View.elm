@@ -73,49 +73,43 @@ editMealLine mealUpdate =
         saveMsg =
             Page.SaveMealEdit mealUpdate.id
     in
-    div [ class "mealLine" ]
-        [ div [ class "mealDateArea" ]
-            [ label [] [ text "Date" ]
-            , div [ class "date" ]
-                [ input
-                    [ type_ "date"
-                    , value <| DateUtil.dateToString <| mealUpdate.date.date
-                    , onInput
-                        (Parser.run DateUtil.dateParser
-                            >> Result.withDefault mealUpdate.date.date
-                            >> flip
-                                (MealUpdateLens.date
-                                    |> Compose.lensWithLens SimpleDateLens.date
-                                ).set
-                                mealUpdate
-                            >> Page.UpdateMeal
-                        )
-                    , onEnter saveMsg
-                    ]
-                    []
+    tr [ id "mealLine" ]
+        [ td []
+            [ input
+                [ type_ "date"
+                , value <| DateUtil.dateToString <| mealUpdate.date.date
+                , onInput
+                    (Parser.run DateUtil.dateParser
+                        >> Result.withDefault mealUpdate.date.date
+                        >> flip
+                            (MealUpdateLens.date
+                                |> Compose.lensWithLens SimpleDateLens.date
+                            ).set
+                            mealUpdate
+                        >> Page.UpdateMeal
+                    )
+                , onEnter saveMsg
                 ]
-            , div [ class "time" ]
-                [ input
-                    [ type_ "time"
-                    , value <| Maybe.Extra.unwrap "" DateUtil.timeToString <| mealUpdate.date.time
-                    , onInput
-                        (Parser.run DateUtil.timeParser
-                            >> Result.toMaybe
-                            >> flip
-                                (MealUpdateLens.date
-                                    |> Compose.lensWithLens SimpleDateLens.time
-                                ).set
-                                mealUpdate
-                            >> Page.UpdateMeal
-                        )
-                    , onEnter saveMsg
-                    ]
-                    []
-                ]
-            ]
-        , div [ class "name" ]
-            [ label [] [ text "Name" ]
+                []
             , input
+                [ type_ "time"
+                , value <| Maybe.Extra.unwrap "" DateUtil.timeToString <| mealUpdate.date.time
+                , onInput
+                    (Parser.run DateUtil.timeParser
+                        >> Result.toMaybe
+                        >> flip
+                            (MealUpdateLens.date
+                                |> Compose.lensWithLens SimpleDateLens.time
+                            ).set
+                            mealUpdate
+                        >> Page.UpdateMeal
+                    )
+                , onEnter saveMsg
+                ]
+                []
+            ]
+        , td []
+            [ input
                 [ value <| Maybe.withDefault "" mealUpdate.name
                 , onInput
                     (Just
@@ -127,8 +121,12 @@ editMealLine mealUpdate =
                 ]
                 []
             ]
-        , button [ class "button", onClick (Page.SaveMealEdit mealUpdate.id) ]
-            [ text "Save" ]
-        , button [ class "button", onClick (Page.ExitEditMealAt mealUpdate.id) ]
-            [ text "Cancel" ]
+        , td []
+            [ button [ class "button", onClick (Page.SaveMealEdit mealUpdate.id) ]
+                [ text "Save" ]
+            ]
+        , td []
+            [ button [ class "button", onClick (Page.ExitEditMealAt mealUpdate.id) ]
+                [ text "Cancel" ]
+            ]
         ]

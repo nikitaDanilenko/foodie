@@ -74,37 +74,37 @@ editRecipeLine recipeId recipeUpdate =
     in
     -- todo: Check whether the update behaviour is correct. There is the implicit assumption that the update originates from the recipe.
     --       cf. name, description
-    div [ class "recipeLine" ]
-        [ div [ class "name" ]
-            [ label [] [ text "Name" ]
-            , input
+    tr [ id "recipeLine" ]
+        [ td []
+            [ input
                 [ value recipeUpdate.name
                 , onInput (flip RecipeUpdateLens.name.set recipeUpdate >> Page.UpdateRecipe)
                 , saveOnEnter
                 ]
                 []
             ]
-        , div [ class "recipeDescriptionArea" ]
-            [ label [] [ text "Description" ]
-            , div [ class "recipeDescription" ]
-                [ input
-                    [ Maybe.withDefault "" recipeUpdate.description |> value
-                    , onInput
-                        (flip
-                            (Just
-                                >> Maybe.Extra.filter (String.isEmpty >> not)
-                                >> RecipeUpdateLens.description.set
-                            )
-                            recipeUpdate
-                            >> Page.UpdateRecipe
+        , td []
+            [ input
+                [ Maybe.withDefault "" recipeUpdate.description |> value
+                , onInput
+                    (flip
+                        (Just
+                            >> Maybe.Extra.filter (String.isEmpty >> not)
+                            >> RecipeUpdateLens.description.set
                         )
-                    , saveOnEnter
-                    ]
-                    []
+                        recipeUpdate
+                        >> Page.UpdateRecipe
+                    )
+                , saveOnEnter
                 ]
+                []
             ]
-        , button [ class "button", onClick (Page.SaveRecipeEdit recipeId) ]
-            [ text "Save" ]
-        , button [ class "button", onClick (Page.ExitEditRecipeAt recipeId) ]
-            [ text "Cancel" ]
+        , td []
+            [ button [ class "button", onClick (Page.SaveRecipeEdit recipeId) ]
+                [ text "Save" ]
+            ]
+        , td []
+            [ button [ class "button", onClick (Page.ExitEditRecipeAt recipeId) ]
+                [ text "Cancel" ]
+            ]
         ]
