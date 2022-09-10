@@ -6,7 +6,9 @@ import Browser.Navigation as Nav
 import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
 import Monocle.Lens exposing (Lens)
-import Pages.IngredientEditor.IngredientEditor as IngredientEditor
+import Pages.IngredientEditor.Handler
+import Pages.IngredientEditor.Page
+import Pages.IngredientEditor.View
 import Pages.Login as Login
 import Pages.MealEntryEditor.Handler
 import Pages.MealEntryEditor.Page
@@ -60,7 +62,7 @@ type Page
     = Login Login.Model
     | Overview Overview.Model
     | Recipes Recipes.Model
-    | IngredientEditor IngredientEditor.Model
+    | IngredientEditor Pages.IngredientEditor.Page.Model
     | Meals Pages.Meals.Model.Model
     | MealEntryEditor Pages.MealEntryEditor.Page.Model
     | NotFound
@@ -75,7 +77,7 @@ type Msg
     | LoginMsg Login.Msg
     | OverviewMsg Overview.Msg
     | RecipesMsg Recipes.Msg
-    | IngredientEditorMsg IngredientEditor.Msg
+    | IngredientEditorMsg Pages.IngredientEditor.Page.Msg
     | MealsMsg Pages.Meals.Msg.Msg
     | MealEntryEditorMsg Pages.MealEntryEditor.Page.Msg
 
@@ -112,7 +114,7 @@ view model =
             Html.map RecipesMsg (Recipes.view recipes)
 
         IngredientEditor ingredientEditor ->
-            Html.map IngredientEditorMsg (IngredientEditor.view ingredientEditor)
+            Html.map IngredientEditorMsg (Pages.IngredientEditor.View.view ingredientEditor)
 
         Meals meals ->
             Html.map MealsMsg (Pages.Meals.View.view meals)
@@ -154,7 +156,7 @@ update msg model =
                     stepRecipes model (Recipes.update (Recipes.updateJWT token) recipes)
 
                 IngredientEditor ingredientEditor ->
-                    stepIngredientEditor model (IngredientEditor.update (IngredientEditor.UpdateJWT token) ingredientEditor)
+                    stepIngredientEditor model (Pages.IngredientEditor.Handler.update (Pages.IngredientEditor.Page.UpdateJWT token) ingredientEditor)
 
                 Meals meals ->
                     stepMeals model (Pages.Meals.Msg.update (Pages.Meals.Msg.updateJWT token) meals)
@@ -166,10 +168,10 @@ update msg model =
                     ( jwtLens.set (Just token) model, Cmd.none )
 
         ( FetchFoods foods, IngredientEditor ingredientEditor ) ->
-            stepIngredientEditor model (IngredientEditor.update (IngredientEditor.UpdateFoods foods) ingredientEditor)
+            stepIngredientEditor model (Pages.IngredientEditor.Handler.update (Pages.IngredientEditor.Page.UpdateFoods foods) ingredientEditor)
 
         ( FetchMeasures measures, IngredientEditor ingredientEditor ) ->
-            stepIngredientEditor model (IngredientEditor.update (IngredientEditor.UpdateMeasures measures) ingredientEditor)
+            stepIngredientEditor model (Pages.IngredientEditor.Handler.update (Pages.IngredientEditor.Page.UpdateMeasures measures) ingredientEditor)
 
         ( OverviewMsg overviewMsg, Overview overview ) ->
             stepOverview model (Overview.update overviewMsg overview)
@@ -178,7 +180,7 @@ update msg model =
             stepRecipes model (Recipes.update recipesMsg recipes)
 
         ( IngredientEditorMsg ingredientEditorMsg, IngredientEditor ingredientEditor ) ->
-            stepIngredientEditor model (IngredientEditor.update ingredientEditorMsg ingredientEditor)
+            stepIngredientEditor model (Pages.IngredientEditor.Handler.update ingredientEditorMsg ingredientEditor)
 
         ( MealsMsg mealsMsg, Meals meals ) ->
             stepMeals model (Pages.Meals.Msg.update mealsMsg meals)
@@ -205,7 +207,7 @@ stepTo url model =
                     Recipes.init flags |> stepRecipes model
 
                 IngredientEditorRoute flags ->
-                    IngredientEditor.init flags |> stepIngredientEditor model
+                    Pages.IngredientEditor.Handler.init flags |> stepIngredientEditor model
 
                 MealsRoute flags ->
                     Pages.Meals.Msg.init flags |> stepMeals model
@@ -232,7 +234,7 @@ stepRecipes model ( recipes, cmd ) =
     ( { model | page = Recipes recipes }, Cmd.map RecipesMsg cmd )
 
 
-stepIngredientEditor : Model -> ( IngredientEditor.Model, Cmd IngredientEditor.Msg ) -> ( Model, Cmd Msg )
+stepIngredientEditor : Model -> ( Pages.IngredientEditor.Page.Model, Cmd Pages.IngredientEditor.Page.Msg ) -> ( Model, Cmd Msg )
 stepIngredientEditor model ( ingredientEditor, cmd ) =
     ( { model | page = IngredientEditor ingredientEditor }, Cmd.map IngredientEditorMsg cmd )
 
@@ -251,7 +253,7 @@ type Route
     = LoginRoute Login.Flags
     | OverviewRoute Overview.Flags
     | RecipesRoute Recipes.Flags
-    | IngredientEditorRoute IngredientEditor.Flags
+    | IngredientEditorRoute Pages.IngredientEditor.Page.Flags
     | MealsRoute Pages.Meals.Model.Flags
     | MealEntryEditorRoute Pages.MealEntryEditor.Page.Flags
 
