@@ -90,7 +90,6 @@ object Bridge {
     mkAndWrite[RecipeUpdate]
     mkAndWrite[Amounts]
     mkAndWrite[NutrientInformation]
-    mkAndWrite[NutrientUnit]
     mkAndWrite[Stats]
   }
 

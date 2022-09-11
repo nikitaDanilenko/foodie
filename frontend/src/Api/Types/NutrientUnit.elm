@@ -5,32 +5,74 @@ import Json.Decode.Pipeline exposing (..)
 import Json.Encode as Encode
 
 
-type NutrientUnit = Gram | IU | Kilocalorie | Kilojoule | Microgram | Milligram | NiacinEquivalent
+type NutrientUnit
+    = Gram
+    | IU
+    | Kilocalorie
+    | Kilojoule
+    | Microgram
+    | Milligram
+    | NiacinEquivalent
 
 
 decoderNutrientUnit : Decode.Decoder NutrientUnit
-decoderNutrientUnit = Decode.field "type" Decode.string |> Decode.andThen decoderNutrientUnitTpe
+decoderNutrientUnit =
+    Decode.string |> Decode.andThen decoderNutrientUnitByString
 
-decoderNutrientUnitTpe : String -> Decode.Decoder NutrientUnit
-decoderNutrientUnitTpe tpe =
-   case tpe of
-      "Gram" -> Decode.succeed Gram
-      "IU" -> Decode.succeed IU
-      "Kilocalorie" -> Decode.succeed Kilocalorie
-      "Kilojoule" -> Decode.succeed Kilojoule
-      "Microgram" -> Decode.succeed Microgram
-      "Milligram" -> Decode.succeed Milligram
-      "NiacinEquivalent" -> Decode.succeed NiacinEquivalent
-      _ -> Decode.fail ("Unexpected type for NutrientUnit: " ++ tpe)
+
+decoderNutrientUnitByString : String -> Decode.Decoder NutrientUnit
+decoderNutrientUnitByString tpe =
+    case tpe of
+        "g" ->
+            Decode.succeed Gram
+
+        "IU" ->
+            Decode.succeed IU
+
+        "kCal" ->
+            Decode.succeed Kilocalorie
+
+        "kJ" ->
+            Decode.succeed Kilojoule
+
+        "µg" ->
+            Decode.succeed Microgram
+
+        "mg" ->
+            Decode.succeed Milligram
+
+        "NE" ->
+            Decode.succeed NiacinEquivalent
+
+        _ ->
+            Decode.fail ("Unexpected type for NutrientUnit: " ++ tpe)
 
 
 encoderNutrientUnit : NutrientUnit -> Encode.Value
-encoderNutrientUnit tpe =
-   case tpe of
-      Gram -> Encode.object [ ("type", Encode.string "Gram") ]
-      IU -> Encode.object [ ("type", Encode.string "IU") ]
-      Kilocalorie -> Encode.object [ ("type", Encode.string "Kilocalorie") ]
-      Kilojoule -> Encode.object [ ("type", Encode.string "Kilojoule") ]
-      Microgram -> Encode.object [ ("type", Encode.string "Microgram") ]
-      Milligram -> Encode.object [ ("type", Encode.string "Milligram") ]
-      NiacinEquivalent -> Encode.object [ ("type", Encode.string "NiacinEquivalent") ]
+encoderNutrientUnit =
+    toString >> Encode.string
+
+
+toString : NutrientUnit -> String
+toString nutrientUnit =
+    case nutrientUnit of
+        Gram ->
+            "g"
+
+        IU ->
+            "IU"
+
+        Kilocalorie ->
+            "kCal"
+
+        Kilojoule ->
+            "kJ"
+
+        Microgram ->
+            "µg"
+
+        Milligram ->
+            "mg"
+
+        NiacinEquivalent ->
+            "NE"
