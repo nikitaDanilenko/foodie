@@ -1,7 +1,6 @@
 module Api.Types.NutrientUnit exposing (..)
 
 import Json.Decode as Decode
-import Json.Decode.Pipeline exposing (..)
 import Json.Encode as Encode
 
 
@@ -18,6 +17,10 @@ type NutrientUnit
 decoderNutrientUnit : Decode.Decoder NutrientUnit
 decoderNutrientUnit =
     Decode.string |> Decode.andThen decoderNutrientUnitByString
+
+
+
+-- todo: Consider a more automatic approach
 
 
 decoderNutrientUnitByString : String -> Decode.Decoder NutrientUnit
