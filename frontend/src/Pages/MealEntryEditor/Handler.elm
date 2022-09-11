@@ -1,6 +1,6 @@
 module Pages.MealEntryEditor.Handler exposing (init, update)
 
-import Api.Auxiliary exposing (JWT, MealEntryId, RecipeId)
+import Api.Auxiliary exposing (JWT, MealEntryId, MealId, RecipeId)
 import Api.Types.Meal exposing (Meal)
 import Api.Types.MealEntry exposing (MealEntry)
 import Api.Types.Recipe exposing (Recipe)
@@ -18,6 +18,7 @@ import Pages.MealEntryEditor.MealEntryUpdateClientInput as MealEntryUpdateClient
 import Pages.MealEntryEditor.MealInfo as MealInfo
 import Pages.MealEntryEditor.Page as Page exposing (Msg(..))
 import Pages.MealEntryEditor.Requests as Requests
+import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Ports
 import Util.Editing as Editing exposing (Editing)
 import Util.LensUtil as LensUtil
@@ -35,16 +36,16 @@ init flags =
                         , initialFetch
                             { configuration = flags.configuration
                             , jwt = token
-                            , mealId = flags.mealId
                             }
+                            flags.mealId
                         )
                     )
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration
             , jwt = jwt
-            , mealId = flags.mealId
             }
+      , mealId = flags.mealId
       , mealInfo = Nothing
       , mealEntries = []
       , recipes = Dict.empty
@@ -55,15 +56,12 @@ init flags =
     )
 
 
-initialFetch : Page.FlagsWithJWT -> Cmd Page.Msg
-initialFetch flags =
+initialFetch : FlagsWithJWT -> MealId -> Cmd Page.Msg
+initialFetch flags mealId =
     Cmd.batch
-        [ Requests.fetchMeal flags
-        , Requests.fetchRecipes
-            { configuration = flags.configuration
-            , jwt = flags.jwt
-            }
-        , Requests.fetchMealEntries flags
+        [ Requests.fetchMeal flags mealId
+        , Requests.fetchRecipes flags
+        , Requests.fetchMealEntries flags mealId
         ]
 
 
@@ -245,7 +243,7 @@ selectRecipe model recipeId =
                 , compareB = .recipeId >> Page.recipeNameOrEmpty model.recipes
                 , mapAB = identity
                 }
-                (MealEntryCreationClientInput.default model.flagsWithJWT.mealId recipeId)
+                (MealEntryCreationClientInput.default model.mealId recipeId)
             )
     , Cmd.none
     )
@@ -313,7 +311,7 @@ updateJWT model jwt =
             Page.lenses.jwt.set jwt model
     in
     ( newModel
-    , initialFetch newModel.flagsWithJWT
+    , initialFetch newModel.flagsWithJWT newModel.mealId
     )
 
 

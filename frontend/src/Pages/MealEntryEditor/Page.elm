@@ -15,11 +15,13 @@ import Monocle.Lens exposing (Lens)
 import Pages.MealEntryEditor.MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntryEditor.MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
 import Pages.MealEntryEditor.MealInfo exposing (MealInfo)
+import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
 
 
 type alias Model =
     { flagsWithJWT : FlagsWithJWT
+    , mealId : MealId
     , mealInfo : Maybe MealInfo
     , mealEntries : List MealEntryOrUpdate
     , recipes : RecipeMap
@@ -39,13 +41,6 @@ type alias RecipeMap =
 type alias Flags =
     { configuration : Configuration
     , jwt : Maybe JWT
-    , mealId : MealId
-    }
-
-
-type alias FlagsWithJWT =
-    { configuration : Configuration
-    , jwt : JWT
     , mealId : MealId
     }
 
