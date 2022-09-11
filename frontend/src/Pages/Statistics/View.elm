@@ -2,11 +2,10 @@ module Pages.Statistics.View exposing (view)
 
 import Api.Types.Date exposing (Date)
 import Api.Types.NutrientInformation exposing (NutrientInformation)
-import Api.Types.NutrientUnit exposing (NutrientUnit, encoderNutrientUnit)
+import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
 import Html exposing (Html, button, div, input, label, td, text, thead, tr)
 import Html.Attributes exposing (class, id, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Json.Encode as Encode
 import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 import Pages.Statistics.Page as Page
@@ -30,7 +29,10 @@ view model =
             (thead []
                 [ tr []
                     [ td [] [ label [] [ text "Name" ] ]
-                    , td [] [ label [] [ text "Description" ] ]
+                    , td [] [ label [] [ text "Total amount" ] ]
+                    , td [] [ label [] [ text "Unit" ] ]
+                    , td [] [ label [] [ text "Daily average amount" ] ]
+                    , td [] [ label [] [ text "Unit" ] ]
                     ]
                 ]
                 :: List.map nutrientInformationLine model.stats.nutrients
@@ -44,7 +46,7 @@ nutrientInformationLine : NutrientInformation -> Html Page.Msg
 nutrientInformationLine nutrientInformation =
     let
         nutrientUnitString =
-            nutrientUnitToString <| nutrientInformation.unit
+            NutrientUnit.toString <| nutrientInformation.unit
     in
     tr [ id "nutrientInformationLine" ]
         [ td [] [ text <| nutrientInformation.name ]
@@ -53,11 +55,6 @@ nutrientInformationLine nutrientInformation =
         , td [] [ text <| String.fromFloat <| nutrientInformation.amounts.dailyAverage ]
         , td [] [ text <| nutrientUnitString ]
         ]
-
-
-nutrientUnitToString : NutrientUnit -> String
-nutrientUnitToString =
-    encoderNutrientUnit >> Encode.encode 0
 
 
 dateInput : Page.Model -> (Maybe Date -> c) -> Lens Page.Model (Maybe Date) -> Html c
