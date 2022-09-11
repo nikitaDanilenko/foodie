@@ -2,6 +2,7 @@ module Pages.Statistics.Handler exposing (init, update)
 
 import Api.Auxiliary exposing (JWT)
 import Api.Lenses.RequestIntervalLens as RequestIntervalLens
+import Api.Lenses.StatsLens as StatsLens
 import Api.Types.Date exposing (Date)
 import Api.Types.Stats exposing (Stats)
 import Basics.Extra exposing (flip)
@@ -9,6 +10,7 @@ import Either
 import Http exposing (Error)
 import Maybe.Extra
 import Monocle.Compose as Compose
+import Monocle.Lens as Lens
 import Pages.Statistics.Page as Page
 import Pages.Statistics.Requests as Requests
 import Ports
@@ -48,11 +50,11 @@ defaultStats =
 update : Page.Msg -> Page.Model -> ( Page.Model, Cmd Page.Msg )
 update msg model =
     case msg of
-        Page.SetStartDate maybeDate ->
-            setStartDate model maybeDate
+        Page.SetFromDate maybeDate ->
+            setFromDate model maybeDate
 
-        Page.SetEndDate maybeDate ->
-            setEndDate model maybeDate
+        Page.SetToDate maybeDate ->
+            setToDate model maybeDate
 
         Page.FetchStats ->
             fetchStats model
@@ -64,23 +66,19 @@ update msg model =
             updateJWT model jwt
 
 
-setStartDate : Page.Model -> Maybe Date -> ( Page.Model, Cmd Page.Msg )
-setStartDate model maybeDate =
+setFromDate : Page.Model -> Maybe Date -> ( Page.Model, Cmd Page.Msg )
+setFromDate model maybeDate =
     ( model
-        |> (Page.lenses.requestInterval
-                |> Compose.lensWithLens RequestIntervalLens.from
-           ).set
+        |> Page.lenses.from.set
             maybeDate
     , Cmd.none
     )
 
 
-setEndDate : Page.Model -> Maybe Date -> ( Page.Model, Cmd Page.Msg )
-setEndDate model maybeDate =
+setToDate : Page.Model -> Maybe Date -> ( Page.Model, Cmd Page.Msg )
+setToDate model maybeDate =
     ( model
-        |> (Page.lenses.requestInterval
-                |> Compose.lensWithLens RequestIntervalLens.to
-           ).set
+        |> Page.lenses.to.set
             maybeDate
     , Cmd.none
     )
@@ -104,6 +102,9 @@ gotFetchStatsResponse : Page.Model -> Result Error Stats -> ( Page.Model, Cmd Pa
 gotFetchStatsResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model (flip Page.lenses.stats.set model)
+        |> Either.unwrap model
+            (flip Page.lenses.stats.set model
+                >> Lens.modify (Page.lenses.stats |> Compose.lensWithLens StatsLens.nutrients) (List.sortBy .name)
+            )
     , Cmd.none
     )
