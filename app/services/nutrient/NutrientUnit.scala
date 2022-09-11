@@ -30,6 +30,10 @@ object NutrientUnit extends Enum[NutrientUnit] {
     override val entryName: String = "NE"
   }
 
+  case object IU extends NutrientUnit {
+    override val entryName: String = "IU"
+  }
+
   override lazy val values: IndexedSeq[NutrientUnit] = findValues
 
 }

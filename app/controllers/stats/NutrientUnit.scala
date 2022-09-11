@@ -31,6 +31,10 @@ object NutrientUnit extends Enum[NutrientUnit] with CirceEnum[NutrientUnit] {
     override val entryName: String = "NE"
   }
 
+  case object IU extends NutrientUnit {
+    override val entryName: String = "IU"
+  }
+
   override lazy val values: IndexedSeq[NutrientUnit] = findValues
 
   implicit val fromDomain: Transformer[services.nutrient.NutrientUnit, NutrientUnit] = {
@@ -40,6 +44,7 @@ object NutrientUnit extends Enum[NutrientUnit] with CirceEnum[NutrientUnit] {
     case services.nutrient.NutrientUnit.Milligram        => Milligram
     case services.nutrient.NutrientUnit.Gram             => Gram
     case services.nutrient.NutrientUnit.NiacinEquivalent => NiacinEquivalent
+    case services.nutrient.NutrientUnit.IU               => IU
   }
 
 }
