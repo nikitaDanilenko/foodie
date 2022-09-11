@@ -19,29 +19,30 @@ import Configuration exposing (Configuration)
 import Http exposing (Error)
 import Json.Decode as Decode
 import Pages.IngredientEditor.Page as Page
+import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Url.Builder
 import Util.HttpUtil as HttpUtil
 
 
-fetchIngredients : Page.FlagsWithJWT -> Cmd Page.Msg
-fetchIngredients flags =
+fetchIngredients : FlagsWithJWT -> RecipeId -> Cmd Page.Msg
+fetchIngredients flags recipeId =
     fetchList
-        { addressSuffix = Url.Builder.relative [ "recipe", flags.recipeId, "ingredients" ] []
+        { addressSuffix = Url.Builder.relative [ "recipe", recipeId, "ingredients" ] []
         , decoder = decoderIngredient
         , gotMsg = Page.GotFetchIngredientsResponse
         }
         flags
 
 
-fetchRecipe : Page.FlagsWithJWT -> Cmd Page.Msg
-fetchRecipe flags =
+fetchRecipe : FlagsWithJWT -> RecipeId -> Cmd Page.Msg
+fetchRecipe flags recipeId =
     HttpUtil.getJsonWithJWT flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "recipe", flags.recipeId ] []
+        { url = Url.Builder.relative [ flags.configuration.backendURL, "recipe", recipeId ] []
         , expect = HttpUtil.expectJson Page.GotFetchRecipeResponse decoderRecipe
         }
 
 
-fetchFoods : Page.FlagsWithJWT -> Cmd Page.Msg
+fetchFoods : FlagsWithJWT -> Cmd Page.Msg
 fetchFoods =
     fetchList
         { addressSuffix = Url.Builder.relative [ "recipe", "foods" ] []
@@ -50,7 +51,7 @@ fetchFoods =
         }
 
 
-fetchMeasures : Page.FlagsWithJWT -> Cmd Page.Msg
+fetchMeasures : FlagsWithJWT -> Cmd Page.Msg
 fetchMeasures =
     fetchList
         { addressSuffix = Url.Builder.relative [ "recipe", "measures" ] []
@@ -64,7 +65,7 @@ fetchList :
     , decoder : Decode.Decoder a
     , gotMsg : Result Error (List a) -> Page.Msg
     }
-    -> Page.FlagsWithJWT
+    -> FlagsWithJWT
     -> Cmd Page.Msg
 fetchList ps flags =
     HttpUtil.getJsonWithJWT flags.jwt
@@ -82,7 +83,7 @@ addFood ps =
         }
 
 
-saveIngredient : Page.FlagsWithJWT -> IngredientUpdate -> Cmd Page.Msg
+saveIngredient : FlagsWithJWT -> IngredientUpdate -> Cmd Page.Msg
 saveIngredient flags ingredientUpdate =
     HttpUtil.patchJsonWithJWT
         flags.jwt
@@ -92,7 +93,7 @@ saveIngredient flags ingredientUpdate =
         }
 
 
-deleteIngredient : Page.FlagsWithJWT -> IngredientId -> Cmd Page.Msg
+deleteIngredient : FlagsWithJWT -> IngredientId -> Cmd Page.Msg
 deleteIngredient fs iid =
     HttpUtil.deleteWithJWT fs.jwt
         { url = Url.Builder.relative [ fs.configuration.backendURL, "recipe", "delete-ingredient", iid ] []

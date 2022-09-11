@@ -21,17 +21,18 @@ import Pages.IngredientEditor.IngredientUpdateClientInput as IngredientUpdateCli
 import Pages.IngredientEditor.Page as Page
 import Pages.IngredientEditor.RecipeInfo as RecipeInfo exposing (RecipeInfo)
 import Pages.IngredientEditor.Requests as Requests
+import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Ports exposing (doFetchFoods, doFetchMeasures, doFetchToken, storeFoods, storeMeasures)
 import Util.Editing as Editing exposing (Editing)
 import Util.LensUtil as LensUtil
 import Util.ListUtil as ListUtil
 
 
-initialFetch : Page.FlagsWithJWT -> Cmd Page.Msg
-initialFetch flags =
+initialFetch : FlagsWithJWT -> RecipeId -> Cmd Page.Msg
+initialFetch flags recipeId =
     Cmd.batch
-        [ Requests.fetchIngredients flags
-        , Requests.fetchRecipe flags
+        [ Requests.fetchIngredients flags recipeId
+        , Requests.fetchRecipe flags recipeId
         , doFetchFoods ()
         , doFetchMeasures ()
         ]
@@ -49,16 +50,16 @@ init flags =
                         , initialFetch
                             { configuration = flags.configuration
                             , jwt = token
-                            , recipeId = flags.recipeId
                             }
+                            flags.recipeId
                         )
                     )
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration
             , jwt = jwt
-            , recipeId = flags.recipeId
             }
+      , recipeId = flags.recipeId
       , ingredients = []
       , foods = Dict.empty
       , measures = Dict.empty
@@ -294,7 +295,7 @@ updateJWT model token =
             Page.lenses.jwt.set token model
     in
     ( newModel
-    , initialFetch newModel.flagsWithJWT
+    , initialFetch newModel.flagsWithJWT model.recipeId
     )
 
 
@@ -346,7 +347,7 @@ selectFood model food =
                 , compareB = .foodId >> Page.ingredientNameOrEmpty model.foods
                 , mapAB = identity
                 }
-                (IngredientCreationClientInput.default model.flagsWithJWT.recipeId food.id (food.measures |> List.head |> Maybe.Extra.unwrap 0 .id))
+                (IngredientCreationClientInput.default model.recipeId food.id (food.measures |> List.head |> Maybe.Extra.unwrap 0 .id))
             )
     , Cmd.none
     )

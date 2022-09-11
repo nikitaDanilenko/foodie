@@ -14,12 +14,14 @@ import Monocle.Lens exposing (Lens)
 import Pages.IngredientEditor.IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.IngredientEditor.IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
 import Pages.IngredientEditor.RecipeInfo exposing (RecipeInfo)
+import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
 import Util.LensUtil as LensUtil
 
 
 type alias Model =
     { flagsWithJWT : FlagsWithJWT
+    , recipeId : RecipeId
     , recipeInfo : Maybe RecipeInfo
     , ingredients : List IngredientOrUpdate
     , foods : FoodMap
@@ -87,13 +89,6 @@ type Msg
 type alias Flags =
     { configuration : Configuration
     , jwt : Maybe JWT
-    , recipeId : RecipeId
-    }
-
-
-type alias FlagsWithJWT =
-    { configuration : Configuration
-    , jwt : JWT
     , recipeId : RecipeId
     }
 
