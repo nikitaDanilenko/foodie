@@ -2,13 +2,12 @@ package controllers.stats
 
 import io.circe.generic.JsonCodec
 import io.scalaland.chimney.Transformer
-
-import java.time.LocalDate
+import utils.date.Date
 
 @JsonCodec
 case class RequestInterval(
-    from: Option[LocalDate],
-    to: Option[LocalDate]
+    from: Option[Date],
+    to: Option[Date]
 )
 
 object RequestInterval {

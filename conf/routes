@@ -23,7 +23,7 @@ POST   /meal/add-meal-entry          controllers.meal.MealController.addMealEntr
 PATCH  /meal/update-meal-entry       controllers.meal.MealController.updateMealEntry
 PATCH  /meal/delete-meal-entry/:id   controllers.meal.MealController.deleteMealEntry(id: java.util.UUID)
 
-GET    /stats                        controllers.stats.StatsController.get
+GET    /stats                        controllers.stats.StatsController.get(from: Option[String] ?= None, to: Option[String] ?= None)
 
 GET    /                             controllers.home.HomeController.home
 POST   /login                        controllers.login.LoginController.login

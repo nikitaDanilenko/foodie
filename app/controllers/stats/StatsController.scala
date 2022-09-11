@@ -3,11 +3,12 @@ package controllers.stats
 import action.JwtAction
 import io.circe.syntax._
 import io.scalaland.chimney.dsl.TransformerOps
-import play.api.libs.circe.Circe
-import play.api.mvc.{ AbstractController, Action, ControllerComponents }
-import services.stats.StatsService
-
 import javax.inject.Inject
+import play.api.libs.circe.Circe
+import play.api.mvc.{ AbstractController, Action, AnyContent, ControllerComponents }
+import services.stats.StatsService
+import utils.date.Date
+
 import scala.concurrent.ExecutionContext
 import scala.util.chaining.scalaUtilChainingOps
 
@@ -19,10 +20,16 @@ class StatsController @Inject() (
     extends AbstractController(controllerComponents)
     with Circe {
 
-  def get: Action[RequestInterval] =
-    jwtAction.async(circe.tolerantJson[RequestInterval]) { request =>
+  def get(from: Option[String], to: Option[String]): Action[AnyContent] =
+    jwtAction.async { request =>
       statsService
-        .nutrientsOverTime(request.user.id, request.body.transformInto[services.stats.RequestInterval])
+        .nutrientsOverTime(
+          userId = request.user.id,
+          requestInterval = RequestInterval(
+            from = from.flatMap(Date.parse),
+            to = to.flatMap(Date.parse)
+          ).transformInto[services.stats.RequestInterval]
+        )
         .map(
           _.pipe(_.transformInto[Stats])
             .pipe(_.asJson)

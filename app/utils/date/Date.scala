@@ -4,6 +4,9 @@ import java.time.LocalDate
 
 import io.circe.generic.JsonCodec
 import io.scalaland.chimney.Transformer
+import io.scalaland.chimney.dsl._
+
+import scala.util.Try
 
 @JsonCodec
 case class Date(
@@ -13,6 +16,11 @@ case class Date(
 )
 
 object Date {
+
+  def parse(string: String): Option[Date] =
+    Try(LocalDate.parse(string))
+      .map(_.transformInto[Date])
+      .toOption
 
   implicit val toJava: Transformer[Date, LocalDate] = date =>
     LocalDate.of(
