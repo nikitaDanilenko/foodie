@@ -72,8 +72,6 @@ editRecipeLine recipeId recipeUpdate =
         saveOnEnter =
             onEnter (Page.SaveRecipeEdit recipeId)
     in
-    -- todo: Check whether the update behaviour is correct. There is the implicit assumption that the update originates from the recipe.
-    --       cf. name, description
     tr [ id "recipeLine" ]
         [ td []
             [ input
