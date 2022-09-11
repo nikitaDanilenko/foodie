@@ -5,7 +5,7 @@ import Json.Decode.Pipeline exposing (..)
 import Json.Encode as Encode
 
 
-type NutrientUnit = Gram | Kilocalorie | Kilojoule | Microgram | Milligram | NiacinEquivalent
+type NutrientUnit = Gram | IU | Kilocalorie | Kilojoule | Microgram | Milligram | NiacinEquivalent
 
 
 decoderNutrientUnit : Decode.Decoder NutrientUnit
@@ -15,6 +15,7 @@ decoderNutrientUnitTpe : String -> Decode.Decoder NutrientUnit
 decoderNutrientUnitTpe tpe =
    case tpe of
       "Gram" -> Decode.succeed Gram
+      "IU" -> Decode.succeed IU
       "Kilocalorie" -> Decode.succeed Kilocalorie
       "Kilojoule" -> Decode.succeed Kilojoule
       "Microgram" -> Decode.succeed Microgram
@@ -27,6 +28,7 @@ encoderNutrientUnit : NutrientUnit -> Encode.Value
 encoderNutrientUnit tpe =
    case tpe of
       Gram -> Encode.object [ ("type", Encode.string "Gram") ]
+      IU -> Encode.object [ ("type", Encode.string "IU") ]
       Kilocalorie -> Encode.object [ ("type", Encode.string "Kilocalorie") ]
       Kilojoule -> Encode.object [ ("type", Encode.string "Kilojoule") ]
       Microgram -> Encode.object [ ("type", Encode.string "Microgram") ]
