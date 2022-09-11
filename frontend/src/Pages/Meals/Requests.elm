@@ -8,11 +8,12 @@ import Configuration exposing (Configuration)
 import Json.Decode as Decode
 import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
 import Pages.Meals.Page as Page
+import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Url.Builder
 import Util.HttpUtil as HttpUtil
 
 
-fetchMeals : Page.FlagsWithJWT -> Cmd Page.Msg
+fetchMeals : FlagsWithJWT -> Cmd Page.Msg
 fetchMeals flags =
     HttpUtil.getJsonWithJWT flags.jwt
         { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", "all" ] []
@@ -20,7 +21,7 @@ fetchMeals flags =
         }
 
 
-createMeal : Page.FlagsWithJWT -> Cmd Page.Msg
+createMeal : FlagsWithJWT -> Cmd Page.Msg
 createMeal flags =
     HttpUtil.postJsonWithJWT flags.jwt
         { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", "create" ] []
@@ -32,7 +33,7 @@ createMeal flags =
         }
 
 
-saveMeal : Page.FlagsWithJWT -> MealUpdate -> Cmd Page.Msg
+saveMeal : FlagsWithJWT -> MealUpdate -> Cmd Page.Msg
 saveMeal flags mealUpdate =
     HttpUtil.patchJsonWithJWT flags.jwt
         { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", "update" ] []
@@ -41,7 +42,7 @@ saveMeal flags mealUpdate =
         }
 
 
-deleteMeal : Page.FlagsWithJWT -> MealId -> Cmd Page.Msg
+deleteMeal : FlagsWithJWT -> MealId -> Cmd Page.Msg
 deleteMeal flags mealId =
     HttpUtil.deleteWithJWT flags.jwt
         { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", "delete", mealId ] []

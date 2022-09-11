@@ -8,6 +8,7 @@ import Either exposing (Either)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
 import Pages.Meals.MealCreationClientInput exposing (MealCreationClientInput)
+import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
 import Util.LensUtil as LensUtil
 
@@ -38,12 +39,6 @@ lenses =
 type alias Flags =
     { configuration : Configuration
     , jwt : Maybe String
-    }
-
-
-type alias FlagsWithJWT =
-    { configuration : Configuration
-    , jwt : String
     }
 
 
