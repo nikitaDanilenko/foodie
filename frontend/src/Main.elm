@@ -24,6 +24,9 @@ import Pages.Overview.View
 import Pages.Recipes.Handler
 import Pages.Recipes.Page
 import Pages.Recipes.View
+import Pages.Statistics.Handler
+import Pages.Statistics.Page
+import Pages.Statistics.View
 import Pages.Util.ParserUtil as ParserUtil
 import Ports exposing (doFetchToken, fetchFoods, fetchMeasures, fetchToken)
 import Url exposing (Url)
@@ -71,6 +74,7 @@ type Page
     | IngredientEditor Pages.IngredientEditor.Page.Model
     | Meals Pages.Meals.Page.Model
     | MealEntryEditor Pages.MealEntryEditor.Page.Model
+    | Statistics Pages.Statistics.Page.Model
     | NotFound
 
 
@@ -86,6 +90,7 @@ type Msg
     | IngredientEditorMsg Pages.IngredientEditor.Page.Msg
     | MealsMsg Pages.Meals.Page.Msg
     | MealEntryEditorMsg Pages.MealEntryEditor.Page.Msg
+    | StatisticsMsg Pages.Statistics.Page.Msg
 
 
 titleFor : Model -> String
@@ -127,6 +132,9 @@ view model =
 
         MealEntryEditor mealEntryEditor ->
             Html.map MealEntryEditorMsg (Pages.MealEntryEditor.View.view mealEntryEditor)
+
+        Statistics statistics ->
+            Html.map StatisticsMsg (Pages.Statistics.View.view statistics)
 
         NotFound ->
             div [] [ text "Page not found" ]
@@ -170,6 +178,9 @@ update msg model =
                 MealEntryEditor mealEntryEditor ->
                     stepMealEntryEditor model (Pages.MealEntryEditor.Handler.update (Pages.MealEntryEditor.Page.UpdateJWT token) mealEntryEditor)
 
+                Statistics statistics ->
+                    stepStatistics model (Pages.Statistics.Handler.update (Pages.Statistics.Page.UpdateJWT token) statistics)
+
                 NotFound ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
@@ -193,6 +204,9 @@ update msg model =
 
         ( MealEntryEditorMsg mealEntryEditorMsg, MealEntryEditor mealEntryEditor ) ->
             stepMealEntryEditor model (Pages.MealEntryEditor.Handler.update mealEntryEditorMsg mealEntryEditor)
+
+        ( StatisticsMsg statisticsMsg, Statistics statistics ) ->
+            stepStatistics model (Pages.Statistics.Handler.update statisticsMsg statistics)
 
         _ ->
             ( model, Cmd.none )
@@ -220,6 +234,9 @@ stepTo url model =
 
                 MealEntryEditorRoute flags ->
                     Pages.MealEntryEditor.Handler.init flags |> stepMealEntryEditor model
+
+                StatisticsRoute flags ->
+                    Pages.Statistics.Handler.init flags |> stepStatistics model
 
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
@@ -255,6 +272,11 @@ stepMeals model ( recipes, cmd ) =
     ( { model | page = Meals recipes }, Cmd.map MealsMsg cmd )
 
 
+stepStatistics : Model -> ( Pages.Statistics.Page.Model, Cmd Pages.Statistics.Page.Msg ) -> ( Model, Cmd Msg )
+stepStatistics model ( statistics, cmd ) =
+    ( { model | page = Statistics statistics }, Cmd.map StatisticsMsg cmd )
+
+
 type Route
     = LoginRoute Pages.Login.Page.Flags
     | OverviewRoute Pages.Overview.Page.Flags
@@ -262,6 +284,7 @@ type Route
     | IngredientEditorRoute Pages.IngredientEditor.Page.Flags
     | MealsRoute Pages.Meals.Page.Flags
     | MealEntryEditorRoute Pages.MealEntryEditor.Page.Flags
+    | StatisticsRoute Pages.Statistics.Page.Flags
 
 
 routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
@@ -299,6 +322,9 @@ routeParser jwt configuration =
                         }
                     )
 
+        statisticsParser =
+            s "statistics" |> Parser.map flags
+
         flags =
             { configuration = configuration, jwt = jwt }
     in
@@ -309,6 +335,7 @@ routeParser jwt configuration =
         , route ingredientEditorParser IngredientEditorRoute
         , route mealsParser MealsRoute
         , route mealEntryEditorParser MealEntryEditorRoute
+        , route statisticsParser StatisticsRoute
         ]
 
 
