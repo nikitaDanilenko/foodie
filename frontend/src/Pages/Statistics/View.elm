@@ -3,7 +3,7 @@ module Pages.Statistics.View exposing (view)
 import Api.Types.Date exposing (Date)
 import Api.Types.NutrientInformation exposing (NutrientInformation)
 import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
-import Html exposing (Html, button, div, input, label, td, text, thead, tr)
+import Html exposing (Html, button, div, input, label, span, td, text, thead, tr)
 import Html.Attributes exposing (class, id, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Maybe.Extra
@@ -30,7 +30,6 @@ view model =
                 [ tr []
                     [ td [] [ label [] [ text "Name" ] ]
                     , td [] [ label [] [ text "Total amount" ] ]
-                    , td [] [ label [] [ text "Unit" ] ]
                     , td [] [ label [] [ text "Daily average amount" ] ]
                     , td [] [ label [] [ text "Unit" ] ]
                     ]
@@ -49,9 +48,13 @@ nutrientInformationLine nutrientInformation =
             NutrientUnit.toString <| nutrientInformation.unit
     in
     tr [ id "nutrientInformationLine" ]
-        [ td [] [ text <| nutrientInformation.name ]
+        [ td []
+            [ div [ class "tooltip"]
+                [ text <| nutrientInformation.symbol
+                , span [ class "tooltipText" ] [ text <| nutrientInformation.name ]
+                ]
+            ]
         , td [] [ text <| String.fromFloat <| nutrientInformation.amounts.total ]
-        , td [] [ text <| nutrientUnitString ]
         , td [] [ text <| String.fromFloat <| nutrientInformation.amounts.dailyAverage ]
         , td [] [ text <| nutrientUnitString ]
         ]
