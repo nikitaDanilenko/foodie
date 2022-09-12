@@ -1,6 +1,7 @@
 module Pages.Statistics.View exposing (view)
 
 import Api.Types.Date exposing (Date)
+import Api.Types.Meal exposing (Meal)
 import Api.Types.NutrientInformation exposing (NutrientInformation)
 import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
 import Html exposing (Html, button, div, input, label, span, td, text, thead, tr)
@@ -26,18 +27,31 @@ view model =
                 [ text "Compute" ]
             ]
         , div [ id "nutrientInformation" ]
-            (thead []
-                [ tr []
-                    [ td [] [ label [] [ text "Name" ] ]
-                    , td [] [ label [] [ text "Total amount" ] ]
-                    , td [] [ label [] [ text "Daily average amount" ] ]
-                    , td [] [ label [] [ text "Unit" ] ]
+            (div [ id "nutrientInformationHeader" ] [ text "Nutrients" ]
+                :: thead []
+                    [ tr []
+                        [ td [] [ label [] [ text "Name" ] ]
+                        , td [] [ label [] [ text "Total amount" ] ]
+                        , td [] [ label [] [ text "Daily average amount" ] ]
+                        , td [] [ label [] [ text "Unit" ] ]
+                        ]
                     ]
-                ]
                 :: List.map nutrientInformationLine model.stats.nutrients
             )
         , div [ id "meals" ]
-            []
+            (div [ id "mealsHeader" ] [ text "Meals" ]
+                :: thead []
+                    [ tr []
+                        [ td [] [ label [] [ text "Name" ] ]
+                        , td [] [ label [] [ text "Description" ] ]
+                        ]
+                    ]
+                :: (model.stats.meals
+                        |> List.sortBy (.date >> DateUtil.toString)
+                        |> List.reverse
+                        |> List.map mealLine
+                   )
+            )
         ]
 
 
@@ -49,7 +63,7 @@ nutrientInformationLine nutrientInformation =
     in
     tr [ id "nutrientInformationLine" ]
         [ td []
-            [ div [ class "tooltip"]
+            [ div [ class "tooltip" ]
                 [ text <| nutrientInformation.symbol
                 , span [ class "tooltipText" ] [ text <| nutrientInformation.name ]
                 ]
@@ -57,6 +71,14 @@ nutrientInformationLine nutrientInformation =
         , td [] [ text <| String.fromFloat <| nutrientInformation.amounts.total ]
         , td [] [ text <| String.fromFloat <| nutrientInformation.amounts.dailyAverage ]
         , td [] [ text <| nutrientUnitString ]
+        ]
+
+
+mealLine : Meal -> Html Page.Msg
+mealLine meal =
+    tr [ id "mealLine" ]
+        [ td [] [ label [] [ text <| DateUtil.toString <| meal.date ] ]
+        , td [] [ label [] [ text <| Maybe.withDefault "" <| meal.name ] ]
         ]
 
 
