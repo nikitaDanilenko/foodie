@@ -2,7 +2,6 @@ module Pages.Recipes.Handler exposing (init, update)
 
 import Api.Auxiliary exposing (JWT, RecipeId)
 import Api.Types.Recipe exposing (Recipe)
-import Api.Types.RecipeUpdate exposing (RecipeUpdate)
 import Basics.Extra exposing (flip)
 import Either exposing (Either(..))
 import Http exposing (Error)
@@ -12,10 +11,12 @@ import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional as Optional
 import Pages.Recipes.Page as Page exposing (RecipeOrUpdate)
+import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Recipes.Requests as Requests
 import Ports exposing (doFetchToken)
 import Util.Editing as Editing exposing (Editing)
 import Util.LensUtil as LensUtil
+import Util.ListUtil as ListUtil
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
@@ -90,23 +91,31 @@ gotCreateRecipeResponse : Page.Model -> Result Error Recipe -> ( Page.Model, Cmd
 gotCreateRecipeResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.map
             (\recipe ->
-                Lens.modify Page.lenses.recipes
-                    (\ts ->
-                        Right
-                            { original = recipe
-                            , update = recipeUpdateFromRecipe recipe
+                model
+                    |> Lens.modify Page.lenses.recipes
+                        (ListUtil.insertBy
+                            { compareA = .name
+                            , compareB = recipeNameOf
+                            , mapAB = Left
                             }
-                            :: ts
-                    )
-                    model
+                            recipe
+                        )
             )
+        |> Either.withDefault model
     , Cmd.none
     )
 
 
-updateRecipe : Page.Model -> RecipeUpdate -> ( Page.Model, Cmd Page.Msg )
+recipeNameOf : Page.RecipeOrUpdate -> String
+recipeNameOf =
+    Either.unpack
+        .name
+        (.original >> .name)
+
+
+updateRecipe : Page.Model -> RecipeUpdateClientInput -> ( Page.Model, Cmd Page.Msg )
 updateRecipe model recipeUpdate =
     ( model
         |> mapRecipeOrUpdateById recipeUpdate.id
@@ -118,14 +127,16 @@ updateRecipe model recipeUpdate =
 saveRecipeEdit : Page.Model -> RecipeId -> ( Page.Model, Cmd Page.Msg )
 saveRecipeEdit model recipeId =
     ( model
-    , Maybe.Extra.unwrap
-        Cmd.none
-        (Either.unwrap Cmd.none
+    , model
+        |> Page.lenses.recipes.get
+        |> List.Extra.find (recipeIdIs recipeId)
+        |> Maybe.andThen Either.rightToMaybe
+        |> Maybe.Extra.unwrap
+            Cmd.none
             (.update
+                >> RecipeUpdateClientInput.to
                 >> Requests.saveRecipe model.flagsWithJWT
             )
-        )
-        (List.Extra.find (recipeIdIs recipeId) model.recipes)
     )
 
 
@@ -147,7 +158,7 @@ enterEditRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd Page.Msg )
 enterEditRecipe model recipeId =
     ( model
         |> mapRecipeOrUpdateById recipeId
-            (Either.unpack (\recipe -> { original = recipe, update = recipeUpdateFromRecipe recipe }) identity >> Right)
+            (Either.unpack (\recipe -> { original = recipe, update = RecipeUpdateClientInput.from recipe }) identity >> Right)
     , Cmd.none
     )
 
@@ -201,21 +212,13 @@ updateJWT model jwt =
     )
 
 
-mapRecipeOrUpdateById : RecipeId -> (RecipeOrUpdate -> RecipeOrUpdate) -> Page.Model -> Page.Model
+mapRecipeOrUpdateById : RecipeId -> (Page.RecipeOrUpdate -> Page.RecipeOrUpdate) -> Page.Model -> Page.Model
 mapRecipeOrUpdateById recipeId =
     Page.lenses.recipes
         |> Compose.lensWithOptional (recipeId |> recipeIdIs |> LensUtil.firstSuch)
         |> Optional.modify
 
 
-recipeIdIs : RecipeId -> Either Recipe (Editing Recipe RecipeUpdate) -> Bool
+recipeIdIs : RecipeId -> Page.RecipeOrUpdate -> Bool
 recipeIdIs =
     Editing.is .id
-
-
-recipeUpdateFromRecipe : Recipe -> RecipeUpdate
-recipeUpdateFromRecipe r =
-    { id = r.id
-    , name = r.name
-    , description = r.description
-    }

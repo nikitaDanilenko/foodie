@@ -2,11 +2,11 @@ module Pages.Recipes.Page exposing (..)
 
 import Api.Auxiliary exposing (JWT, RecipeId)
 import Api.Types.Recipe exposing (Recipe)
-import Api.Types.RecipeUpdate exposing (RecipeUpdate)
 import Configuration exposing (Configuration)
 import Either exposing (Either)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
+import Pages.Recipes.RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
 import Util.LensUtil as LensUtil
@@ -19,7 +19,7 @@ type alias Model =
 
 
 type alias RecipeOrUpdate =
-    Either Recipe (Editing Recipe RecipeUpdate)
+    Either Recipe (Editing Recipe RecipeUpdateClientInput)
 
 
 lenses :
@@ -41,7 +41,7 @@ type alias Flags =
 type Msg
     = CreateRecipe
     | GotCreateRecipeResponse (Result Error Recipe)
-    | UpdateRecipe RecipeUpdate
+    | UpdateRecipe RecipeUpdateClientInput
     | SaveRecipeEdit RecipeId
     | GotSaveRecipeResponse (Result Error Recipe)
     | EnterEditRecipe RecipeId

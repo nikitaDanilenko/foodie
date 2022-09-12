@@ -1,9 +1,7 @@
 module Pages.Recipes.View exposing (view)
 
 import Api.Auxiliary exposing (JWT, RecipeId)
-import Api.Lenses.RecipeUpdateLens as RecipeUpdateLens
 import Api.Types.Recipe exposing (Recipe)
-import Api.Types.RecipeUpdate exposing (RecipeUpdate)
 import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
 import Either exposing (Either(..))
@@ -14,7 +12,9 @@ import Html.Events.Extra exposing (onEnter)
 import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 import Pages.Recipes.Page as Page
+import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Util.Links as Links
+import Pages.Util.ValidatedInput as ValidatedInput
 import Url.Builder
 import Util.Editing exposing (Editing)
 
@@ -35,6 +35,7 @@ view model =
                 [ tr []
                     [ td [] [ label [] [ text "Name" ] ]
                     , td [] [ label [] [ text "Description" ] ]
+                    , td [] [ label [] [ text "Number of servings" ] ]
                     ]
                 ]
             :: viewEditRecipes model.recipes
@@ -45,7 +46,8 @@ editOrDeleteRecipeLine : Configuration -> Recipe -> Html Page.Msg
 editOrDeleteRecipeLine configuration recipe =
     tr [ id "editingRecipe" ]
         [ td [] [ label [] [ text recipe.name ] ]
-        , td [] [ label [] [ recipe.description |> Maybe.withDefault "" |> text ] ]
+        , td [] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
+        , td [] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
         , td [] [ button [ class "button", onClick (Page.EnterEditRecipe recipe.id) ] [ text "Edit" ] ]
         , td []
             [ Links.linkButton
@@ -66,8 +68,8 @@ editOrDeleteRecipeLine configuration recipe =
         ]
 
 
-editRecipeLine : RecipeId -> RecipeUpdate -> Html Page.Msg
-editRecipeLine recipeId recipeUpdate =
+editRecipeLine : RecipeId -> RecipeUpdateClientInput -> Html Page.Msg
+editRecipeLine recipeId recipeUpdateClientInput =
     let
         saveOnEnter =
             onEnter (Page.SaveRecipeEdit recipeId)
@@ -75,22 +77,37 @@ editRecipeLine recipeId recipeUpdate =
     tr [ id "recipeLine" ]
         [ td []
             [ input
-                [ value recipeUpdate.name
-                , onInput (flip RecipeUpdateLens.name.set recipeUpdate >> Page.UpdateRecipe)
+                [ value recipeUpdateClientInput.name
+                , onInput (flip RecipeUpdateClientInput.lenses.name.set recipeUpdateClientInput >> Page.UpdateRecipe)
                 , saveOnEnter
                 ]
                 []
             ]
         , td []
             [ input
-                [ Maybe.withDefault "" recipeUpdate.description |> value
+                [ Maybe.withDefault "" recipeUpdateClientInput.description |> value
                 , onInput
                     (flip
                         (Just
                             >> Maybe.Extra.filter (String.isEmpty >> not)
-                            >> RecipeUpdateLens.description.set
+                            >> RecipeUpdateClientInput.lenses.description.set
                         )
-                        recipeUpdate
+                        recipeUpdateClientInput
+                        >> Page.UpdateRecipe
+                    )
+                , saveOnEnter
+                ]
+                []
+            ]
+        , td []
+            [ input
+                [ value <| String.fromFloat <| recipeUpdateClientInput.numberOfServings.value
+                , onInput
+                    (flip
+                        (ValidatedInput.lift
+                            RecipeUpdateClientInput.lenses.numberOfServings
+                        ).set
+                        recipeUpdateClientInput
                         >> Page.UpdateRecipe
                     )
                 , saveOnEnter
