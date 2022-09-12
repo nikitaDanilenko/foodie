@@ -1,5 +1,6 @@
 package services.stats
 
+import cats.data.OptionT
 import cats.syntax.traverse._
 import db.generated.Tables
 import io.scalaland.chimney.dsl.TransformerOps
@@ -7,9 +8,11 @@ import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
 import services.{ MealId, RecipeId, UserId }
 import services.meal.{ MealEntry, MealService }
 import services.nutrient.{ NutrientMap, NutrientService }
-import services.recipe.{ Ingredient, RecipeService }
+import services.recipe.{ Ingredient, Recipe, RecipeService }
 import slick.dbio.DBIO
 import javax.inject.Inject
+import utils.DBIOUtil.instances._
+import cats.syntax.contravariantSemigroupal._
 
 import scala.concurrent.{ ExecutionContext, Future }
 import slick.jdbc.PostgresProfile
@@ -46,6 +49,11 @@ object StatsService {
 
   object Live extends Companion {
 
+    private case class RecipeNutrientMap(
+        recipe: Recipe,
+        nutrientMap: NutrientMap
+    )
+
     override def nutrientsOverTime(
         userId: UserId,
         requestInterval: RequestInterval
@@ -69,17 +77,25 @@ object StatsService {
           mealIds
             .flatMap(mealEntries(_).map(_.recipeId))
             .distinct
-            .traverse(recipeId =>
-              RecipeService.Live
-                .getIngredients(userId, recipeId)
-                .flatMap(NutrientService.Live.nutrientsOfIngredients)
-                .map(recipeId -> _): DBIO[(RecipeId, NutrientMap)]
-            )
-            .map(_.toMap)
+            .traverse { recipeId =>
+              val transformer = for {
+                recipe      <- OptionT(RecipeService.Live.getRecipe(userId, recipeId))
+                ingredients <- OptionT.liftF(RecipeService.Live.getIngredients(userId, recipeId))
+                nutrients   <- OptionT.liftF(NutrientService.Live.nutrientsOfIngredients(ingredients))
+              } yield recipeId -> RecipeNutrientMap(
+                recipe = recipe,
+                nutrientMap = nutrients
+              )
+              transformer.value
+            }
+            .map(_.flatten.toMap)
       } yield {
         val nutrientMap = meals
           .flatMap(m => mealEntries(m.id))
-          .map(me => me.numberOfServings *: nutrientsPerRecipe(me.recipeId))
+          .map { me =>
+            val recipeNutrientMap = nutrientsPerRecipe(me.recipeId)
+            (me.numberOfServings / recipeNutrientMap.recipe.numberOfServings) *: recipeNutrientMap.nutrientMap
+          }
           .qsum
         Stats(
           meals = meals,
