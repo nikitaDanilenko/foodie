@@ -47,7 +47,7 @@ view model =
             (thead []
                 [ tr []
                     [ td [] [ label [] [ text "Name" ] ]
-                    , td [] [ label [] [ text "Amount" ] ]
+                    , td [] [ label [] [ text "Number of servings" ] ]
                     ]
                 ]
                 :: viewEditMealEntries model.mealEntries
@@ -74,7 +74,7 @@ editOrDeleteMealEntryLine : Page.RecipeMap -> MealEntry -> Html Page.Msg
 editOrDeleteMealEntryLine recipeMap mealEntry =
     tr [ id "editingMealEntry" ]
         [ td [] [ label [] [ text (mealEntry.recipeId |> Page.recipeNameOrEmpty recipeMap) ] ]
-        , td [] [ label [] [ text (mealEntry.factor |> String.fromFloat) ] ]
+        , td [] [ label [] [ text (mealEntry.numberOfServings |> String.fromFloat) ] ]
         , td [] [ button [ class "button", onClick (Page.EnterEditMealEntry mealEntry.id) ] [ text "Edit" ] ]
         , td [] [ button [ class "button", onClick (Page.DeleteMealEntry mealEntry.id) ] [ text "Delete" ] ]
         ]
@@ -87,13 +87,13 @@ editMealEntryLine recipeMap mealEntry mealEntryUpdateClientInput =
         , td []
             [ input
                 [ value
-                    (mealEntryUpdateClientInput.factor.value
+                    (mealEntryUpdateClientInput.numberOfServings.value
                         |> String.fromFloat
                     )
                 , onInput
                     (flip
                         (ValidatedInput.lift
-                            MealEntryUpdateClientInput.lenses.factor
+                            MealEntryUpdateClientInput.lenses.numberOfServings
                         ).set
                         mealEntryUpdateClientInput
                         >> Page.UpdateMealEntry
@@ -128,11 +128,11 @@ viewRecipeLine mealEntriesToAdd recipe =
                     [ td []
                         [ label [] [ text "Amount" ]
                         , input
-                            [ value mealEntryToAdd.factor.text
+                            [ value mealEntryToAdd.numberOfServings.text
                             , onInput
                                 (flip
                                     (ValidatedInput.lift
-                                        MealEntryCreationClientInput.lenses.factor
+                                        MealEntryCreationClientInput.lenses.numberOfServings
                                     ).set
                                     mealEntryToAdd
                                     >> Page.UpdateAddRecipe
@@ -146,7 +146,7 @@ viewRecipeLine mealEntriesToAdd recipe =
                             [ class "button"
                             , disabled
                                 (List.Extra.find (\me -> me.recipeId == recipe.id) mealEntriesToAdd
-                                    |> Maybe.Extra.unwrap True (.factor >> ValidatedInput.isValid >> not)
+                                    |> Maybe.Extra.unwrap True (.numberOfServings >> ValidatedInput.isValid >> not)
                                 )
                             , onClick addMsg
                             ]

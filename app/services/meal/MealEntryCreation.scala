@@ -5,7 +5,7 @@ import services.{ MealEntryId, MealId, RecipeId }
 case class MealEntryCreation(
     mealId: MealId,
     recipeId: RecipeId,
-    factor: BigDecimal
+    numberOfServings: BigDecimal
 )
 
 object MealEntryCreation {
@@ -14,7 +14,7 @@ object MealEntryCreation {
     MealEntry(
       id = id,
       recipeId = mealEntryCreation.recipeId,
-      numberOfServings = mealEntryCreation.factor
+      numberOfServings = mealEntryCreation.numberOfServings
     )
 
 }
