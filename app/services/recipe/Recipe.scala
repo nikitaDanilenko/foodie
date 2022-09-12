@@ -11,7 +11,8 @@ import java.util.UUID
 case class Recipe(
     id: RecipeId,
     name: String,
-    description: Option[String]
+    description: Option[String],
+    numberOfServings: Int
 )
 
 object Recipe {
@@ -27,7 +28,8 @@ object Recipe {
         id = recipe.id.transformInto[UUID],
         userId = userId.transformInto[UUID],
         name = recipe.name,
-        description = recipe.description
+        description = recipe.description,
+        numberOfServings = recipe.numberOfServings
       )
 
   }

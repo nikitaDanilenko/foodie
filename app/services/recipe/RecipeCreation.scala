@@ -4,7 +4,8 @@ import services.RecipeId
 
 case class RecipeCreation(
     name: String,
-    description: Option[String]
+    description: Option[String],
+    numberOfServings: Int
 )
 
 object RecipeCreation {
@@ -13,7 +14,8 @@ object RecipeCreation {
     Recipe(
       id = id,
       name = recipeCreation.name,
-      description = recipeCreation.description
+      description = recipeCreation.description,
+      numberOfServings = recipeCreation.numberOfServings
     )
 
 }
