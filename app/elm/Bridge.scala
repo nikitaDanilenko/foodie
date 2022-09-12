@@ -30,6 +30,13 @@ object Bridge {
             imports = s"\nimport $elmModule.UUID exposing (..)",
             encoder = "encoderUUID",
             decoder = "decoderUUID"
+          ),
+        Ref("NutrientUnit")
+          -> TypeReplacement(
+            "NutrientUnit",
+            imports = s"\nimport $elmModule.NutrientUnit exposing (..)",
+            encoder = "encoderNutrientUnit",
+            decoder = "decoderNutrientUnit"
           )
       )
     )

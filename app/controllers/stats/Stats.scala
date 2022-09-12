@@ -19,6 +19,7 @@ object Stats {
       case (nutrient, amount) =>
         NutrientInformation(
           name = nutrient.name,
+          symbol = nutrient.symbol,
           unit = nutrient.unit.transformInto[NutrientUnit],
           amounts = Amounts(
             total = amount,
