@@ -1,30 +1,47 @@
 package services.stats
 
+import java.util.UUID
+
 import cats.data.OptionT
 import cats.syntax.traverse._
 import db.generated.Tables
 import io.scalaland.chimney.dsl.TransformerOps
-import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
-import services.{ MealId, RecipeId, UserId }
-import services.meal.{ MealEntry, MealService }
-import services.nutrient.{ NutrientMap, NutrientService }
-import services.recipe.{ Ingredient, Recipe, RecipeService }
-import slick.dbio.DBIO
 import javax.inject.Inject
-import utils.DBIOUtil.instances._
-import cats.syntax.contravariantSemigroupal._
-
-import scala.concurrent.{ ExecutionContext, Future }
+import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
+import services.meal.{ MealEntry, MealService }
+import services.nutrient.{ Nutrient, NutrientMap, NutrientService }
+import services.recipe.{ Recipe, RecipeService }
+import services.{ MealId, NutrientCode, UserId }
+import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
+import spire.implicits._
 import utils.DBIOUtil
 import utils.DBIOUtil.instances._
-import spire.implicits._
 import utils.TransformerUtils.Implicits._
+
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait StatsService {
 
   def nutrientsOverTime(userId: UserId, requestInterval: RequestInterval): Future[Stats]
+
+  def referenceNutrientMap(userId: UserId): Future[Option[NutrientMap]]
+
+  def createReferenceNutrient(
+      userId: UserId,
+      referenceNutrientCreation: ReferenceNutrientCreation
+  ): Future[ReferenceNutrient]
+
+  def updateReferenceNutrient(
+      userId: UserId,
+      referenceNutrientUpdate: ReferenceNutrientUpdate
+  ): Future[ReferenceNutrient]
+
+  def deleteReferenceNutrient(
+      userId: UserId,
+      nutrientCode: NutrientCode
+  ): Future[Boolean]
 
 }
 
@@ -41,10 +58,48 @@ object StatsService {
     override def nutrientsOverTime(userId: UserId, requestInterval: RequestInterval): Future[Stats] =
       db.run(companion.nutrientsOverTime(userId, requestInterval))
 
+    override def referenceNutrientMap(userId: UserId): Future[Option[NutrientMap]] =
+      db.run(companion.referenceNutrientMap(userId))
+
+    override def createReferenceNutrient(
+        userId: UserId,
+        referenceNutrientCreation: ReferenceNutrientCreation
+    ): Future[ReferenceNutrient] =
+      db.run(companion.createReferenceNutrient(userId, referenceNutrientCreation))
+
+    override def updateReferenceNutrient(
+        userId: UserId,
+        referenceNutrientUpdate: ReferenceNutrientUpdate
+    ): Future[ReferenceNutrient] =
+      db.run(companion.updateReferenceNutrient(userId, referenceNutrientUpdate))
+
+    override def deleteReferenceNutrient(
+        userId: UserId,
+        nutrientCode: NutrientCode
+    ): Future[Boolean] =
+      db.run(companion.deleteReferenceNutrient(userId, nutrientCode))
+
   }
 
   trait Companion {
     def nutrientsOverTime(userId: UserId, requestInterval: RequestInterval)(implicit ec: ExecutionContext): DBIO[Stats]
+    def referenceNutrientMap(userId: UserId)(implicit ec: ExecutionContext): DBIO[Option[NutrientMap]]
+
+    def createReferenceNutrient(
+        userId: UserId,
+        referenceNutrientCreation: ReferenceNutrientCreation
+    )(implicit ec: ExecutionContext): DBIO[ReferenceNutrient]
+
+    def updateReferenceNutrient(
+        userId: UserId,
+        referenceNutrientUpdate: ReferenceNutrientUpdate
+    )(implicit ec: ExecutionContext): DBIO[ReferenceNutrient]
+
+    def deleteReferenceNutrient(
+        userId: UserId,
+        nutrientCode: NutrientCode
+    )(implicit ec: ExecutionContext): DBIO[Boolean]
+
   }
 
   object Live extends Companion {
@@ -103,6 +158,76 @@ object StatsService {
         )
       }
     }
+
+    override def referenceNutrientMap(userId: UserId)(implicit ec: ExecutionContext): DBIO[Option[NutrientMap]] = {
+      val transformer = for {
+        referenceNutrients <- OptionT.liftF(referenceNutrientsByUserId(userId))
+        referenceNutrientAmounts <- referenceNutrients.traverse { referenceNutrient =>
+          OptionT(nutrientNameByCode(referenceNutrient.nutrientCode)).map(nutrientNameRow =>
+            nutrientNameRow.transformInto[Nutrient] -> referenceNutrient.amount
+          )
+        }
+      } yield referenceNutrientAmounts.toMap
+
+      transformer.value
+    }
+
+    override def createReferenceNutrient(userId: UserId, referenceNutrientCreation: ReferenceNutrientCreation)(implicit
+        ec: ExecutionContext
+    ): DBIO[ReferenceNutrient] = {
+      val referenceNutrient    = ReferenceNutrientCreation.create(referenceNutrientCreation)
+      val referenceNutrientRow = (referenceNutrient, userId).transformInto[Tables.ReferenceNutrientRow]
+      (Tables.ReferenceNutrient.returning(Tables.ReferenceNutrient) += referenceNutrientRow)
+        .map(_.transformInto[ReferenceNutrient])
+    }
+
+    override def updateReferenceNutrient(userId: UserId, referenceNutrientUpdate: ReferenceNutrientUpdate)(implicit
+        ec: ExecutionContext
+    ): DBIO[ReferenceNutrient] = {
+      val findAction =
+        OptionT(
+          referenceNutrientQuery(
+            userId,
+            referenceNutrientUpdate.nutrientCode
+          ).result.headOption: DBIO[Option[Tables.ReferenceNutrientRow]]
+        ).map(_.transformInto[ReferenceNutrient])
+          .getOrElseF(DBIO.failed(DBError.ReferenceNutrientNotFound))
+      for {
+        referenceNutrientRow <- findAction
+        _ <- referenceNutrientQuery(userId, referenceNutrientUpdate.nutrientCode).update(
+          (
+            ReferenceNutrientUpdate
+              .update(referenceNutrientRow, referenceNutrientUpdate),
+            userId
+          )
+            .transformInto[Tables.ReferenceNutrientRow]
+        )
+        updatedReferenceNutrient <- findAction
+      } yield updatedReferenceNutrient
+    }
+
+    override def deleteReferenceNutrient(userId: UserId, nutrientCode: NutrientCode)(implicit
+        ec: ExecutionContext
+    ): DBIO[Boolean] =
+      referenceNutrientQuery(userId, nutrientCode).delete
+        .map(_ > 0)
+
+    private def referenceNutrientsByUserId(userId: UserId): DBIO[Seq[Tables.ReferenceNutrientRow]] =
+      Tables.ReferenceNutrient
+        .filter(_.userId === userId.transformInto[UUID])
+        .result
+
+    private def nutrientNameByCode(nutrientCode: Int): DBIO[Option[Tables.NutrientNameRow]] =
+      Tables.NutrientName
+        .filter(_.nutrientCode === nutrientCode)
+        .result
+        .headOption
+
+    private def referenceNutrientQuery(userId: UserId, nutrientCode: NutrientCode) =
+      Tables.ReferenceNutrient.filter(referenceNutrient =>
+        referenceNutrient.userId === userId.transformInto[UUID] &&
+          referenceNutrient.nutrientCode === nutrientCode.transformInto[Int]
+      )
 
   }
 

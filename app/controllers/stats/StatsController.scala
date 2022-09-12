@@ -37,4 +37,29 @@ class StatsController @Inject() (
         )
     }
 
+  def referenceNutrients: Action[AnyContent] =
+    jwtAction.async { request =>
+      statsService
+        .referenceNutrientMap(request.user.id)
+        .map { nutrientMap =>
+          nutrientMap
+            .map {
+              _.map {
+                case (nutrient, amount) =>
+                  ReferenceNutrient(
+                    nutrientCode = nutrient.code,
+                    amount = amount
+                  )
+              }
+            }
+            .getOrElse(List.empty)
+            .pipe(_.asJson)
+            .pipe(Ok(_))
+        }
+        .recover {
+          case error =>
+            BadRequest(error.getMessage)
+        }
+    }
+
 }
