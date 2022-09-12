@@ -10,7 +10,7 @@ import java.util.UUID
 case class MealEntryUpdate(
     mealEntryId: UUID,
     recipeId: UUID,
-    factor: BigDecimal
+    numberOfServings: BigDecimal
 )
 
 object MealEntryUpdate {

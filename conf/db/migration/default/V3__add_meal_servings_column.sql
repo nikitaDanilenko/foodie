@@ -6,3 +6,6 @@ update recipe
 
 alter table recipe
     alter column number_of_servings set not null;
+
+alter table meal_entry
+    rename column factor to number_of_servings;

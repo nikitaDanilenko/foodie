@@ -203,8 +203,8 @@ trait Tables {
    *  @param id Database column id SqlType(uuid), PrimaryKey
    *  @param mealId Database column meal_id SqlType(uuid)
    *  @param recipeId Database column recipe_id SqlType(uuid)
-   *  @param factor Database column factor SqlType(numeric) */
-  case class MealEntryRow(id: java.util.UUID, mealId: java.util.UUID, recipeId: java.util.UUID, factor: scala.math.BigDecimal)
+   *  @param numberOfServings Database column number_of_servings SqlType(numeric) */
+  case class MealEntryRow(id: java.util.UUID, mealId: java.util.UUID, recipeId: java.util.UUID, numberOfServings: scala.math.BigDecimal)
   /** GetResult implicit for fetching MealEntryRow objects using plain SQL queries */
   implicit def GetResultMealEntryRow(implicit e0: GR[java.util.UUID], e1: GR[scala.math.BigDecimal]): GR[MealEntryRow] = GR{
     prs => import prs._
@@ -212,9 +212,9 @@ trait Tables {
   }
   /** Table description of table meal_entry. Objects of this class serve as prototypes for rows in queries. */
   class MealEntry(_tableTag: Tag) extends profile.api.Table[MealEntryRow](_tableTag, "meal_entry") {
-    def * = (id, mealId, recipeId, factor) <> (MealEntryRow.tupled, MealEntryRow.unapply)
+    def * = (id, mealId, recipeId, numberOfServings) <> (MealEntryRow.tupled, MealEntryRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(id), Rep.Some(mealId), Rep.Some(recipeId), Rep.Some(factor))).shaped.<>({r=>import r._; _1.map(_=> MealEntryRow.tupled((_1.get, _2.get, _3.get, _4.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(id), Rep.Some(mealId), Rep.Some(recipeId), Rep.Some(numberOfServings))).shaped.<>({r=>import r._; _1.map(_=> MealEntryRow.tupled((_1.get, _2.get, _3.get, _4.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(uuid), PrimaryKey */
     val id: Rep[java.util.UUID] = column[java.util.UUID]("id", O.PrimaryKey)
@@ -222,8 +222,8 @@ trait Tables {
     val mealId: Rep[java.util.UUID] = column[java.util.UUID]("meal_id")
     /** Database column recipe_id SqlType(uuid) */
     val recipeId: Rep[java.util.UUID] = column[java.util.UUID]("recipe_id")
-    /** Database column factor SqlType(numeric) */
-    val factor: Rep[scala.math.BigDecimal] = column[scala.math.BigDecimal]("factor")
+    /** Database column number_of_servings SqlType(numeric) */
+    val numberOfServings: Rep[scala.math.BigDecimal] = column[scala.math.BigDecimal]("number_of_servings")
 
     /** Foreign key referencing Meal (database name meal_entry_meal_id_fk) */
     lazy val mealFk = foreignKey("meal_entry_meal_id_fk", mealId, Meal)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)

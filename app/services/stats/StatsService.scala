@@ -79,7 +79,7 @@ object StatsService {
       } yield {
         val nutrientMap = meals
           .flatMap(m => mealEntries(m.id))
-          .map(me => me.factor *: nutrientsPerRecipe(me.recipeId))
+          .map(me => me.numberOfServings *: nutrientsPerRecipe(me.recipeId))
           .qsum
         Stats(
           meals = meals,

@@ -14,7 +14,7 @@ object MealEntryCreation {
     MealEntry(
       id = id,
       recipeId = mealEntryCreation.recipeId,
-      factor = mealEntryCreation.factor
+      numberOfServings = mealEntryCreation.factor
     )
 
 }

@@ -11,7 +11,7 @@ import java.util.UUID
 case class MealEntry(
     id: MealEntryId,
     recipeId: RecipeId,
-    factor: BigDecimal
+    numberOfServings: BigDecimal
 )
 
 object MealEntry {
@@ -27,7 +27,7 @@ object MealEntry {
         id = mealEntry.id.transformInto[UUID],
         mealId = mealId.transformInto[UUID],
         recipeId = mealEntry.recipeId.transformInto[UUID],
-        factor = mealEntry.factor
+        numberOfServings = mealEntry.numberOfServings
       )
   }
 
