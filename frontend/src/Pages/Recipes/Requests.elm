@@ -26,6 +26,7 @@ createRecipe flags =
         defaultRecipeCreation =
             { name = ""
             , description = Nothing
+            , numberOfServings = 1
             }
     in
     HttpUtil.postJsonWithJWT flags.jwt
