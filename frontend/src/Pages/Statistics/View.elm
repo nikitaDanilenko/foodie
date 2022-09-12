@@ -4,6 +4,8 @@ import Api.Types.Date exposing (Date)
 import Api.Types.Meal exposing (Meal)
 import Api.Types.NutrientInformation exposing (NutrientInformation)
 import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
+import FormatNumber
+import FormatNumber.Locales
 import Html exposing (Html, button, div, input, label, span, td, text, thead, tr)
 import Html.Attributes exposing (class, id, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -68,8 +70,8 @@ nutrientInformationLine nutrientInformation =
                 , span [ class "tooltipText" ] [ text <| nutrientInformation.name ]
                 ]
             ]
-        , td [] [ text <| String.fromFloat <| nutrientInformation.amounts.total ]
-        , td [] [ text <| String.fromFloat <| nutrientInformation.amounts.dailyAverage ]
+        , td [] [ text <| FormatNumber.format FormatNumber.Locales.frenchLocale <| nutrientInformation.amounts.total ]
+        , td [] [ text <| FormatNumber.format FormatNumber.Locales.frenchLocale <| nutrientInformation.amounts.dailyAverage ]
         , td [] [ text <| nutrientUnitString ]
         ]
 
