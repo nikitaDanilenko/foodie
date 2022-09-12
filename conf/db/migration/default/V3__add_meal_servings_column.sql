@@ -1,5 +1,5 @@
 alter table recipe
-    add column number_of_servings int;
+    add column number_of_servings decimal;
 
 update recipe
     set number_of_servings = 1;

@@ -6,12 +6,12 @@ import Json.Encode as Encode
 
 import Api.Types.UUID exposing (..)
 
-type alias Recipe = { id: UUID, name: String, description: (Maybe String) }
+type alias Recipe = { id: UUID, name: String, description: (Maybe String), numberOfServings: Float }
 
 
 decoderRecipe : Decode.Decoder Recipe
-decoderRecipe = Decode.succeed Recipe |> required "id" decoderUUID |> required "name" Decode.string |> optional "description" (Decode.maybe Decode.string) Nothing
+decoderRecipe = Decode.succeed Recipe |> required "id" decoderUUID |> required "name" Decode.string |> optional "description" (Decode.maybe Decode.string) Nothing |> required "numberOfServings" Decode.float
 
 
 encoderRecipe : Recipe -> Encode.Value
-encoderRecipe obj = Encode.object [ ("id", encoderUUID obj.id), ("name", Encode.string obj.name), ("description", Maybe.withDefault Encode.null (Maybe.map Encode.string obj.description)) ]
+encoderRecipe obj = Encode.object [ ("id", encoderUUID obj.id), ("name", Encode.string obj.name), ("description", Maybe.withDefault Encode.null (Maybe.map Encode.string obj.description)), ("numberOfServings", Encode.float obj.numberOfServings) ]

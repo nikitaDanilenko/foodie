@@ -10,7 +10,8 @@ import java.util.UUID
 case class Recipe(
     id: UUID,
     name: String,
-    description: Option[String]
+    description: Option[String],
+    numberOfServings: BigDecimal
 )
 
 object Recipe {

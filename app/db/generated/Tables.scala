@@ -378,12 +378,12 @@ trait Tables {
    *  @param userId Database column user_id SqlType(uuid)
    *  @param name Database column name SqlType(text)
    *  @param description Database column description SqlType(text), Default(None)
-   *  @param numberOfServings Database column number_of_servings SqlType(int4) */
-  case class RecipeRow(id: java.util.UUID, userId: java.util.UUID, name: String, description: Option[String] = None, numberOfServings: Int)
+   *  @param numberOfServings Database column number_of_servings SqlType(numeric) */
+  case class RecipeRow(id: java.util.UUID, userId: java.util.UUID, name: String, description: Option[String] = None, numberOfServings: scala.math.BigDecimal)
   /** GetResult implicit for fetching RecipeRow objects using plain SQL queries */
-  implicit def GetResultRecipeRow(implicit e0: GR[java.util.UUID], e1: GR[String], e2: GR[Option[String]], e3: GR[Int]): GR[RecipeRow] = GR{
+  implicit def GetResultRecipeRow(implicit e0: GR[java.util.UUID], e1: GR[String], e2: GR[Option[String]], e3: GR[scala.math.BigDecimal]): GR[RecipeRow] = GR{
     prs => import prs._
-    RecipeRow.tupled((<<[java.util.UUID], <<[java.util.UUID], <<[String], <<?[String], <<[Int]))
+    RecipeRow.tupled((<<[java.util.UUID], <<[java.util.UUID], <<[String], <<?[String], <<[scala.math.BigDecimal]))
   }
   /** Table description of table recipe. Objects of this class serve as prototypes for rows in queries. */
   class Recipe(_tableTag: Tag) extends profile.api.Table[RecipeRow](_tableTag, "recipe") {
@@ -399,8 +399,8 @@ trait Tables {
     val name: Rep[String] = column[String]("name")
     /** Database column description SqlType(text), Default(None) */
     val description: Rep[Option[String]] = column[Option[String]]("description", O.Default(None))
-    /** Database column number_of_servings SqlType(int4) */
-    val numberOfServings: Rep[Int] = column[Int]("number_of_servings")
+    /** Database column number_of_servings SqlType(numeric) */
+    val numberOfServings: Rep[scala.math.BigDecimal] = column[scala.math.BigDecimal]("number_of_servings")
 
     /** Foreign key referencing User (database name recipe_user_id_fk) */
     lazy val userFk = foreignKey("recipe_user_id_fk", userId, User)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
