@@ -42,3 +42,13 @@ app.ports.doFetchMeasures.subscribe(function() {
     var measuresOrEmpty = storedMeasures ? storedMeasures : '[]';
     app.ports.fetchMeasures.send(measuresOrEmpty);
 });
+
+app.ports.storeNutrients.subscribe(function(nutrients) {
+    localStorage.setItem(nutrientsKey, nutrients)
+});
+
+app.ports.doFetchNutrients.subscribe(function() {
+    var storedNutrients = localStorage.getItem(nutrientsKey);
+    var nutrientsOrEmpty = storedNutrients ? storedNutrients : '[]';
+    app.ports.fetchNutrients.send(nutrientsOrEmpty);
+});

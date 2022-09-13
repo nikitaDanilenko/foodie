@@ -36,3 +36,12 @@ port doFetchMeasures : () -> Cmd msg
 
 
 port fetchMeasures : (String -> msg) -> Sub msg
+
+
+port storeNutrients : String -> Cmd msg
+
+
+port doFetchNutrients : () -> Cmd msg
+
+
+port fetchNutrients : (String -> msg) -> Sub msg
