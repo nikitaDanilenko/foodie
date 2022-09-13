@@ -1,4 +1,4 @@
-module Pages.IngredientEditor.Requests exposing
+module Pages.Ingredient.Requests exposing
     ( addFood
     , deleteIngredient
     , fetchFoods
@@ -18,7 +18,7 @@ import Api.Types.Recipe exposing (Recipe, decoderRecipe)
 import Configuration exposing (Configuration)
 import Http exposing (Error)
 import Json.Decode as Decode
-import Pages.IngredientEditor.Page as Page
+import Pages.Ingredient.Page as Page
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Url.Builder
 import Util.HttpUtil as HttpUtil

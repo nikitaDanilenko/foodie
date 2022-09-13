@@ -1,4 +1,4 @@
-module Pages.IngredientEditor.Handler exposing (init, update)
+module Pages.Ingredient.Handler exposing (init, update)
 
 import Api.Auxiliary exposing (FoodId, IngredientId, JWT, MeasureId, RecipeId)
 import Api.Types.Food exposing (Food, decoderFood, encoderFood)
@@ -16,11 +16,11 @@ import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens exposing (Lens)
 import Monocle.Optional as Optional
-import Pages.IngredientEditor.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
-import Pages.IngredientEditor.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
-import Pages.IngredientEditor.Page as Page
-import Pages.IngredientEditor.RecipeInfo as RecipeInfo exposing (RecipeInfo)
-import Pages.IngredientEditor.Requests as Requests
+import Pages.Ingredient.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
+import Pages.Ingredient.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
+import Pages.Ingredient.Page as Page
+import Pages.Ingredient.RecipeInfo as RecipeInfo exposing (RecipeInfo)
+import Pages.Ingredient.Requests as Requests
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Ports exposing (doFetchFoods, doFetchMeasures, doFetchToken, storeFoods, storeMeasures)
 import Util.Editing as Editing exposing (Editing)

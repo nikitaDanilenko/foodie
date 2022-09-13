@@ -1,10 +1,10 @@
-module Pages.IngredientEditor.IngredientUpdateClientInput exposing (..)
+module Pages.Ingredient.IngredientUpdateClientInput exposing (..)
 
 import Api.Auxiliary exposing (IngredientId)
 import Api.Types.Ingredient exposing (Ingredient)
 import Api.Types.IngredientUpdate exposing (IngredientUpdate)
 import Monocle.Lens exposing (Lens)
-import Pages.IngredientEditor.AmountUnitClientInput as AmountUnitClientInput exposing (AmountUnitClientInput)
+import Pages.Ingredient.AmountUnitClientInput as AmountUnitClientInput exposing (AmountUnitClientInput)
 
 
 type alias IngredientUpdateClientInput =

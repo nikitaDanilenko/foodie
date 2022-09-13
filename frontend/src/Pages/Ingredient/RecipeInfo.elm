@@ -1,4 +1,4 @@
-module Pages.IngredientEditor.RecipeInfo exposing (..)
+module Pages.Ingredient.RecipeInfo exposing (..)
 
 import Api.Types.Recipe exposing (Recipe)
 

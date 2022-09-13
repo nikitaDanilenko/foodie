@@ -1,4 +1,4 @@
-module Pages.IngredientEditor.AmountUnitClientInput exposing (..)
+module Pages.Ingredient.AmountUnitClientInput exposing (..)
 
 import Api.Auxiliary exposing (MeasureId)
 import Api.Types.AmountUnit exposing (AmountUnit)

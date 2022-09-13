@@ -6,15 +6,15 @@ import Browser.Navigation as Nav
 import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
 import Monocle.Lens exposing (Lens)
-import Pages.IngredientEditor.Handler
-import Pages.IngredientEditor.Page
-import Pages.IngredientEditor.View
+import Pages.Ingredient.Handler
+import Pages.Ingredient.Page
+import Pages.Ingredient.View
 import Pages.Login.Handler
 import Pages.Login.Page
 import Pages.Login.View
-import Pages.MealEntryEditor.Handler
-import Pages.MealEntryEditor.Page
-import Pages.MealEntryEditor.View
+import Pages.MealEntry.Handler
+import Pages.MealEntry.Page
+import Pages.MealEntry.View
 import Pages.Meals.Handler
 import Pages.Meals.Page
 import Pages.Meals.View
@@ -71,9 +71,9 @@ type Page
     = Login Pages.Login.Page.Model
     | Overview Pages.Overview.Page.Model
     | Recipes Pages.Recipes.Page.Model
-    | IngredientEditor Pages.IngredientEditor.Page.Model
+    | Ingredient Pages.Ingredient.Page.Model
     | Meals Pages.Meals.Page.Model
-    | MealEntryEditor Pages.MealEntryEditor.Page.Model
+    | MealEntry Pages.MealEntry.Page.Model
     | Statistics Pages.Statistics.Page.Model
     | NotFound
 
@@ -87,9 +87,9 @@ type Msg
     | LoginMsg Pages.Login.Page.Msg
     | OverviewMsg Pages.Overview.Page.Msg
     | RecipesMsg Pages.Recipes.Page.Msg
-    | IngredientEditorMsg Pages.IngredientEditor.Page.Msg
+    | IngredientMsg Pages.Ingredient.Page.Msg
     | MealsMsg Pages.Meals.Page.Msg
-    | MealEntryEditorMsg Pages.MealEntryEditor.Page.Msg
+    | MealEntryMsg Pages.MealEntry.Page.Msg
     | StatisticsMsg Pages.Statistics.Page.Msg
 
 
@@ -124,14 +124,14 @@ view model =
         Recipes recipes ->
             Html.map RecipesMsg (Pages.Recipes.View.view recipes)
 
-        IngredientEditor ingredientEditor ->
-            Html.map IngredientEditorMsg (Pages.IngredientEditor.View.view ingredientEditor)
+        Ingredient ingredient ->
+            Html.map IngredientMsg (Pages.Ingredient.View.view ingredient)
 
         Meals meals ->
             Html.map MealsMsg (Pages.Meals.View.view meals)
 
-        MealEntryEditor mealEntryEditor ->
-            Html.map MealEntryEditorMsg (Pages.MealEntryEditor.View.view mealEntryEditor)
+        MealEntry mealEntry ->
+            Html.map MealEntryMsg (Pages.MealEntry.View.view mealEntry)
 
         Statistics statistics ->
             Html.map StatisticsMsg (Pages.Statistics.View.view statistics)
@@ -169,14 +169,14 @@ update msg model =
                 Recipes recipes ->
                     stepRecipes model (Pages.Recipes.Handler.update (Pages.Recipes.Page.UpdateJWT token) recipes)
 
-                IngredientEditor ingredientEditor ->
-                    stepIngredientEditor model (Pages.IngredientEditor.Handler.update (Pages.IngredientEditor.Page.UpdateJWT token) ingredientEditor)
+                Ingredient ingredient ->
+                    stepIngredient model (Pages.Ingredient.Handler.update (Pages.Ingredient.Page.UpdateJWT token) ingredient)
 
                 Meals meals ->
                     stepMeals model (Pages.Meals.Handler.update (Pages.Meals.Page.UpdateJWT token) meals)
 
-                MealEntryEditor mealEntryEditor ->
-                    stepMealEntryEditor model (Pages.MealEntryEditor.Handler.update (Pages.MealEntryEditor.Page.UpdateJWT token) mealEntryEditor)
+                MealEntry mealEntry ->
+                    stepMealEntry model (Pages.MealEntry.Handler.update (Pages.MealEntry.Page.UpdateJWT token) mealEntry)
 
                 Statistics statistics ->
                     stepStatistics model (Pages.Statistics.Handler.update (Pages.Statistics.Page.UpdateJWT token) statistics)
@@ -184,11 +184,11 @@ update msg model =
                 NotFound ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
-        ( FetchFoods foods, IngredientEditor ingredientEditor ) ->
-            stepIngredientEditor model (Pages.IngredientEditor.Handler.update (Pages.IngredientEditor.Page.UpdateFoods foods) ingredientEditor)
+        ( FetchFoods foods, Ingredient ingredient ) ->
+            stepIngredient model (Pages.Ingredient.Handler.update (Pages.Ingredient.Page.UpdateFoods foods) ingredient)
 
-        ( FetchMeasures measures, IngredientEditor ingredientEditor ) ->
-            stepIngredientEditor model (Pages.IngredientEditor.Handler.update (Pages.IngredientEditor.Page.UpdateMeasures measures) ingredientEditor)
+        ( FetchMeasures measures, Ingredient ingredient ) ->
+            stepIngredient model (Pages.Ingredient.Handler.update (Pages.Ingredient.Page.UpdateMeasures measures) ingredient)
 
         ( OverviewMsg overviewMsg, Overview overview ) ->
             stepOverview model (Pages.Overview.Handler.update overviewMsg overview)
@@ -196,14 +196,14 @@ update msg model =
         ( RecipesMsg recipesMsg, Recipes recipes ) ->
             stepRecipes model (Pages.Recipes.Handler.update recipesMsg recipes)
 
-        ( IngredientEditorMsg ingredientEditorMsg, IngredientEditor ingredientEditor ) ->
-            stepIngredientEditor model (Pages.IngredientEditor.Handler.update ingredientEditorMsg ingredientEditor)
+        ( IngredientMsg ingredientMsg, Ingredient ingredient ) ->
+            stepIngredient model (Pages.Ingredient.Handler.update ingredientMsg ingredient)
 
         ( MealsMsg mealsMsg, Meals meals ) ->
             stepMeals model (Pages.Meals.Handler.update mealsMsg meals)
 
-        ( MealEntryEditorMsg mealEntryEditorMsg, MealEntryEditor mealEntryEditor ) ->
-            stepMealEntryEditor model (Pages.MealEntryEditor.Handler.update mealEntryEditorMsg mealEntryEditor)
+        ( MealEntryMsg mealEntryMsg, MealEntry mealEntry ) ->
+            stepMealEntry model (Pages.MealEntry.Handler.update mealEntryMsg mealEntry)
 
         ( StatisticsMsg statisticsMsg, Statistics statistics ) ->
             stepStatistics model (Pages.Statistics.Handler.update statisticsMsg statistics)
@@ -226,14 +226,14 @@ stepTo url model =
                 RecipesRoute flags ->
                     Pages.Recipes.Handler.init flags |> stepRecipes model
 
-                IngredientEditorRoute flags ->
-                    Pages.IngredientEditor.Handler.init flags |> stepIngredientEditor model
+                IngredientRoute flags ->
+                    Pages.Ingredient.Handler.init flags |> stepIngredient model
 
                 MealsRoute flags ->
                     Pages.Meals.Handler.init flags |> stepMeals model
 
-                MealEntryEditorRoute flags ->
-                    Pages.MealEntryEditor.Handler.init flags |> stepMealEntryEditor model
+                MealEntryRoute flags ->
+                    Pages.MealEntry.Handler.init flags |> stepMealEntry model
 
                 StatisticsRoute flags ->
                     Pages.Statistics.Handler.init flags |> stepStatistics model
@@ -257,14 +257,14 @@ stepRecipes model ( recipes, cmd ) =
     ( { model | page = Recipes recipes }, Cmd.map RecipesMsg cmd )
 
 
-stepIngredientEditor : Model -> ( Pages.IngredientEditor.Page.Model, Cmd Pages.IngredientEditor.Page.Msg ) -> ( Model, Cmd Msg )
-stepIngredientEditor model ( ingredientEditor, cmd ) =
-    ( { model | page = IngredientEditor ingredientEditor }, Cmd.map IngredientEditorMsg cmd )
+stepIngredient : Model -> ( Pages.Ingredient.Page.Model, Cmd Pages.Ingredient.Page.Msg ) -> ( Model, Cmd Msg )
+stepIngredient model ( ingredient, cmd ) =
+    ( { model | page = Ingredient ingredient }, Cmd.map IngredientMsg cmd )
 
 
-stepMealEntryEditor : Model -> ( Pages.MealEntryEditor.Page.Model, Cmd Pages.MealEntryEditor.Page.Msg ) -> ( Model, Cmd Msg )
-stepMealEntryEditor model ( mealEntryEditor, cmd ) =
-    ( { model | page = MealEntryEditor mealEntryEditor }, Cmd.map MealEntryEditorMsg cmd )
+stepMealEntry : Model -> ( Pages.MealEntry.Page.Model, Cmd Pages.MealEntry.Page.Msg ) -> ( Model, Cmd Msg )
+stepMealEntry model ( mealEntry, cmd ) =
+    ( { model | page = MealEntry mealEntry }, Cmd.map MealEntryMsg cmd )
 
 
 stepMeals : Model -> ( Pages.Meals.Page.Model, Cmd Pages.Meals.Page.Msg ) -> ( Model, Cmd Msg )
@@ -281,9 +281,9 @@ type Route
     = LoginRoute Pages.Login.Page.Flags
     | OverviewRoute Pages.Overview.Page.Flags
     | RecipesRoute Pages.Recipes.Page.Flags
-    | IngredientEditorRoute Pages.IngredientEditor.Page.Flags
+    | IngredientRoute Pages.Ingredient.Page.Flags
     | MealsRoute Pages.Meals.Page.Flags
-    | MealEntryEditorRoute Pages.MealEntryEditor.Page.Flags
+    | MealEntryRoute Pages.MealEntry.Page.Flags
     | StatisticsRoute Pages.Statistics.Page.Flags
 
 
@@ -299,7 +299,7 @@ routeParser jwt configuration =
         recipesParser =
             s "recipes" |> Parser.map flags
 
-        ingredientEditorParser =
+        ingredientParser =
             (s "ingredient-editor" </> ParserUtil.uuidParser)
                 |> Parser.map
                     (\recipeId ->
@@ -312,7 +312,7 @@ routeParser jwt configuration =
         mealsParser =
             s "meals" |> Parser.map flags
 
-        mealEntryEditorParser =
+        mealEntryParser =
             (s "meal-entry-editor" </> ParserUtil.uuidParser)
                 |> Parser.map
                     (\mealId ->
@@ -332,9 +332,9 @@ routeParser jwt configuration =
         [ route loginParser LoginRoute
         , route overviewParser OverviewRoute
         , route recipesParser RecipesRoute
-        , route ingredientEditorParser IngredientEditorRoute
+        , route ingredientParser IngredientRoute
         , route mealsParser MealsRoute
-        , route mealEntryEditorParser MealEntryEditorRoute
+        , route mealEntryParser MealEntryRoute
         , route statisticsParser StatisticsRoute
         ]
 

@@ -1,4 +1,4 @@
-module Pages.MealEntryEditor.MealEntryUpdateClientInput exposing (..)
+module Pages.MealEntry.MealEntryUpdateClientInput exposing (..)
 
 import Api.Auxiliary exposing (MealEntryId, RecipeId)
 import Api.Types.MealEntry exposing (MealEntry)

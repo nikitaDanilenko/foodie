@@ -1,4 +1,4 @@
-module Pages.MealEntryEditor.View exposing (view)
+module Pages.MealEntry.View exposing (view)
 
 import Api.Types.MealEntry exposing (MealEntry)
 import Api.Types.Recipe exposing (Recipe)
@@ -11,9 +11,9 @@ import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import List.Extra
 import Maybe.Extra
-import Pages.MealEntryEditor.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
-import Pages.MealEntryEditor.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
-import Pages.MealEntryEditor.Page as Page exposing (RecipeMap)
+import Pages.MealEntry.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
+import Pages.MealEntry.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
+import Pages.MealEntry.Page as Page exposing (RecipeMap)
 import Pages.Util.DateUtil as DateUtil
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
@@ -36,7 +36,7 @@ view model =
                 |> List.sortBy .name
                 |> List.map (viewRecipeLine model.mealEntriesToAdd)
     in
-    div [ id "mealEntryEditor" ]
+    div [ id "mealEntry" ]
         [ div [ id "mealInfo" ]
             [ label [] [ text "Date" ]
             , label [] [ text <| Maybe.Extra.unwrap "" (.date >> DateUtil.toString) <| model.mealInfo ]
