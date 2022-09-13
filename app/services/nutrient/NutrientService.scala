@@ -35,6 +35,7 @@ trait NutrientService {
       ingredients: Seq[Ingredient]
   ): Future[NutrientMap]
 
+  def all: Future[Seq[Nutrient]]
 }
 
 object NutrientService {
@@ -60,6 +61,7 @@ object NutrientService {
         measureId: MeasureId
     )(implicit ec: ExecutionContext): DBIO[Tables.ConversionFactorRow]
 
+    def all(implicit ec: ExecutionContext): DBIO[Seq[Nutrient]]
   }
 
   class Live @Inject() (
@@ -77,6 +79,9 @@ object NutrientService {
 
     override def nutrientsOfIngredients(ingredients: Seq[Ingredient]): Future[NutrientMap] =
       db.run(companion.nutrientsOfIngredients(ingredients))
+
+    override def all: Future[Seq[Nutrient]] =
+      db.run(companion.all)
 
   }
 
@@ -124,6 +129,10 @@ object NutrientService {
       ingredients
         .traverse(nutrientsOfIngredient)
         .map(_.qsum)
+
+    override def all(implicit ec: ExecutionContext): DBIO[Seq[Nutrient]] =
+      Tables.NutrientName.result
+        .map(_.map(_.transformInto[Nutrient]))
 
     private def getNutrient(
         idOrCode: Int

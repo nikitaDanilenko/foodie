@@ -9,6 +9,7 @@ import javax.inject.Inject
 import play.api.libs.circe.Circe
 import play.api.mvc._
 import services.NutrientCode
+import services.nutrient.NutrientService
 import services.stats.{ DBError, StatsService }
 import utils.date.Date
 import utils.TransformerUtils.Implicits._
@@ -19,7 +20,8 @@ import scala.util.chaining.scalaUtilChainingOps
 class StatsController @Inject() (
     controllerComponents: ControllerComponents,
     jwtAction: JwtAction,
-    statsService: StatsService
+    statsService: StatsService,
+    nutrientService: NutrientService
 )(implicit ec: ExecutionContext)
     extends AbstractController(controllerComponents)
     with Circe {
@@ -64,6 +66,15 @@ class StatsController @Inject() (
           case error =>
             BadRequest(error.getMessage)
         }
+    }
+
+  def allNutrients: Action[AnyContent] =
+    jwtAction.async {
+      nutrientService.all.map(
+        _.map(_.transformInto[Nutrient])
+          .pipe(_.asJson)
+          .pipe(Ok(_))
+      )
     }
 
   def createReferenceNutrient: Action[ReferenceNutrientCreation] =

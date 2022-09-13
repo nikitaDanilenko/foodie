@@ -3,6 +3,7 @@ package modules
 import play.api.{ Configuration, Environment }
 import play.api.inject.Binding
 import services.meal.MealService
+import services.nutrient.NutrientService
 import services.recipe.RecipeService
 import services.stats.StatsService
 import services.user.UserService
@@ -18,7 +19,9 @@ class ApplicationModule extends play.api.inject.Module {
       bind[MealService.Companion].toInstance(MealService.Live),
       bind[MealService].to[MealService.Live],
       bind[StatsService.Companion].toInstance(StatsService.Live),
-      bind[StatsService].to[StatsService.Live]
+      bind[StatsService].to[StatsService.Live],
+      bind[NutrientService.Companion].toInstance(NutrientService.Live),
+      bind[NutrientService].to[NutrientService.Live]
     )
     settings
   }
