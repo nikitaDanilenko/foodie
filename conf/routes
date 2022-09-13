@@ -8,20 +8,20 @@ GET    /recipe/:id                             controllers.recipe.RecipeControll
 POST   /recipe/create                          controllers.recipe.RecipeController.create
 PATCH  /recipe/update                          controllers.recipe.RecipeController.update
 DELETE /recipe/delete/:id                      controllers.recipe.RecipeController.delete(id: java.util.UUID)
-GET    /recipe/:id/ingredients                 controllers.recipe.RecipeController.getIngredients(id: java.util.UUID)
-PATCH  /recipe/add-ingredient                  controllers.recipe.RecipeController.addIngredient
-PATCH  /recipe/update-ingredient               controllers.recipe.RecipeController.updateIngredient
-DELETE /recipe/delete-ingredient/:id           controllers.recipe.RecipeController.removeIngredient(id: java.util.UUID)
+GET    /recipe/:id/ingredient/all              controllers.recipe.RecipeController.getIngredients(id: java.util.UUID)
+PATCH  /recipe/ingredient/create               controllers.recipe.RecipeController.addIngredient
+PATCH  /recipe/ingredient/update               controllers.recipe.RecipeController.updateIngredient
+DELETE /recipe/ingredient/delete/:id           controllers.recipe.RecipeController.removeIngredient(id: java.util.UUID)
 
 GET    /meal/all                               controllers.meal.MealController.all
 GET    /meal/:id                               controllers.meal.MealController.get(id: java.util.UUID)
 POST   /meal/create                            controllers.meal.MealController.create
 PATCH  /meal/update                            controllers.meal.MealController.update
 DELETE /meal/delete/:id                        controllers.meal.MealController.delete(id: java.util.UUID)
-GET    /meal/:id/meal-entries                  controllers.meal.MealController.getMealEntries(id: java.util.UUID)
-POST   /meal/add-meal-entry                    controllers.meal.MealController.addMealEntry
-PATCH  /meal/update-meal-entry                 controllers.meal.MealController.updateMealEntry
-DELETE /meal/delete-meal-entry/:id             controllers.meal.MealController.deleteMealEntry(id: java.util.UUID)
+GET    /meal/:id/entry/all                     controllers.meal.MealController.getMealEntries(id: java.util.UUID)
+POST   /meal/entry/create                      controllers.meal.MealController.addMealEntry
+PATCH  /meal/entry/update                      controllers.meal.MealController.updateMealEntry
+DELETE /meal/entry/delete/:id                  controllers.meal.MealController.deleteMealEntry(id: java.util.UUID)
 
 GET    /stats                                  controllers.stats.StatsController.get(from: Option[String], to: Option[String])
 GET    /stats/reference/all                    controllers.stats.StatsController.referenceNutrients

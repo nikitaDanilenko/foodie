@@ -33,7 +33,7 @@ fetchMeal flags mealId =
 fetchMealEntries : FlagsWithJWT -> MealId -> Cmd Msg
 fetchMealEntries flags mealId =
     HttpUtil.getJsonWithJWT flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", mealId, "meal-entries" ] []
+        { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", mealId, "entry", "all" ] []
         , expect = HttpUtil.expectJson GotFetchMealEntriesResponse (Decode.list decoderMealEntry)
         }
 
@@ -50,7 +50,7 @@ saveMealEntry : FlagsWithJWT -> MealEntryUpdate -> Cmd Msg
 saveMealEntry flags mealEntryUpdate =
     HttpUtil.patchJsonWithJWT
         flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", "update-meal-entry" ] []
+        { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", "entry", "update" ] []
         , body = encoderMealEntryUpdate mealEntryUpdate
         , expect = HttpUtil.expectJson GotSaveMealEntryResponse decoderMealEntry
         }
@@ -59,7 +59,7 @@ saveMealEntry flags mealEntryUpdate =
 deleteMealEntry : FlagsWithJWT -> MealEntryId -> Cmd Msg
 deleteMealEntry fs mealEntryId =
     HttpUtil.deleteWithJWT fs.jwt
-        { url = Url.Builder.relative [ fs.configuration.backendURL, "meal", "delete-meal-entry", mealEntryId ] []
+        { url = Url.Builder.relative [ fs.configuration.backendURL, "meal", "entry", "delete", mealEntryId ] []
         , expect = HttpUtil.expectWhatever (GotDeleteMealEntryResponse mealEntryId)
         }
 
@@ -74,7 +74,7 @@ type alias AddMealEntryParams =
 addMealEntry : AddMealEntryParams -> Cmd Msg
 addMealEntry ps =
     HttpUtil.postJsonWithJWT ps.jwt
-        { url = Url.Builder.relative [ ps.configuration.backendURL, "meal", "add-meal-entry" ] []
+        { url = Url.Builder.relative [ ps.configuration.backendURL, "meal", "entry", "create" ] []
         , body = encoderMealEntryCreation ps.mealEntryCreation
         , expect = HttpUtil.expectJson GotAddMealEntryResponse decoderMealEntry
         }

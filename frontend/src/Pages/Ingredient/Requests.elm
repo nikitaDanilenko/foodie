@@ -27,7 +27,7 @@ import Util.HttpUtil as HttpUtil
 fetchIngredients : FlagsWithJWT -> RecipeId -> Cmd Page.Msg
 fetchIngredients flags recipeId =
     fetchList
-        { addressSuffix = Url.Builder.relative [ "recipe", recipeId, "ingredients" ] []
+        { addressSuffix = Url.Builder.relative [ "recipe", recipeId, "ingredient", "all" ] []
         , decoder = decoderIngredient
         , gotMsg = Page.GotFetchIngredientsResponse
         }
@@ -77,7 +77,7 @@ fetchList ps flags =
 addFood : { configuration : Configuration, jwt : JWT, ingredientCreation : IngredientCreation } -> Cmd Page.Msg
 addFood ps =
     HttpUtil.patchJsonWithJWT ps.jwt
-        { url = Url.Builder.relative [ ps.configuration.backendURL, "recipe", "add-ingredient" ] []
+        { url = Url.Builder.relative [ ps.configuration.backendURL, "recipe", "ingredient", "create" ] []
         , body = encoderIngredientCreation ps.ingredientCreation
         , expect = HttpUtil.expectJson Page.GotAddFoodResponse decoderIngredient
         }
@@ -87,7 +87,7 @@ saveIngredient : FlagsWithJWT -> IngredientUpdate -> Cmd Page.Msg
 saveIngredient flags ingredientUpdate =
     HttpUtil.patchJsonWithJWT
         flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "recipe", "update-ingredient" ] []
+        { url = Url.Builder.relative [ flags.configuration.backendURL, "recipe", "ingredient", "update" ] []
         , body = encoderIngredientUpdate ingredientUpdate
         , expect = HttpUtil.expectJson Page.GotSaveIngredientResponse decoderIngredient
         }
@@ -96,6 +96,6 @@ saveIngredient flags ingredientUpdate =
 deleteIngredient : FlagsWithJWT -> IngredientId -> Cmd Page.Msg
 deleteIngredient fs iid =
     HttpUtil.deleteWithJWT fs.jwt
-        { url = Url.Builder.relative [ fs.configuration.backendURL, "recipe", "delete-ingredient", iid ] []
+        { url = Url.Builder.relative [ fs.configuration.backendURL, "recipe", "ingredient", "delete", iid ] []
         , expect = HttpUtil.expectWhatever (Page.GotDeleteIngredientResponse iid)
         }
