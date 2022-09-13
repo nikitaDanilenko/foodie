@@ -1,30 +1,34 @@
 # Map static resources from the /public folder to the /assets URL path
-GET    /assets/*file             controllers.Assets.versioned(path="/public", file: Asset)
+GET    /assets/*file                           controllers.Assets.versioned(path="/public", file: Asset)
 
-GET    /recipe/measures              controllers.recipe.RecipeController.getMeasures
-GET    /recipe/foods                 controllers.recipe.RecipeController.getFoods
-GET    /recipe/all                   controllers.recipe.RecipeController.getRecipes
-GET    /recipe/:id                   controllers.recipe.RecipeController.get(id: java.util.UUID)
-POST   /recipe/create                controllers.recipe.RecipeController.create
-PATCH  /recipe/update                controllers.recipe.RecipeController.update
-DELETE /recipe/delete/:id            controllers.recipe.RecipeController.delete(id: java.util.UUID)
-GET    /recipe/:id/ingredients       controllers.recipe.RecipeController.getIngredients(id: java.util.UUID)
-PATCH  /recipe/add-ingredient        controllers.recipe.RecipeController.addIngredient
-PATCH  /recipe/update-ingredient     controllers.recipe.RecipeController.updateIngredient
-PATCH  /recipe/delete-ingredient/:id controllers.recipe.RecipeController.removeIngredient(id: java.util.UUID)
+GET    /recipe/measures                        controllers.recipe.RecipeController.getMeasures
+GET    /recipe/foods                           controllers.recipe.RecipeController.getFoods
+GET    /recipe/all                             controllers.recipe.RecipeController.getRecipes
+GET    /recipe/:id                             controllers.recipe.RecipeController.get(id: java.util.UUID)
+POST   /recipe/create                          controllers.recipe.RecipeController.create
+PATCH  /recipe/update                          controllers.recipe.RecipeController.update
+DELETE /recipe/delete/:id                      controllers.recipe.RecipeController.delete(id: java.util.UUID)
+GET    /recipe/:id/ingredients                 controllers.recipe.RecipeController.getIngredients(id: java.util.UUID)
+PATCH  /recipe/add-ingredient                  controllers.recipe.RecipeController.addIngredient
+PATCH  /recipe/update-ingredient               controllers.recipe.RecipeController.updateIngredient
+DELETE /recipe/delete-ingredient/:id           controllers.recipe.RecipeController.removeIngredient(id: java.util.UUID)
 
-GET    /meal/all                     controllers.meal.MealController.all
-GET    /meal/:id                     controllers.meal.MealController.get(id: java.util.UUID)
-POST   /meal/create                  controllers.meal.MealController.create
-PATCH  /meal/update                  controllers.meal.MealController.update
-DELETE /meal/delete/:id              controllers.meal.MealController.delete(id: java.util.UUID)
-GET    /meal/:id/meal-entries        controllers.meal.MealController.getMealEntries(id: java.util.UUID)
-POST   /meal/add-meal-entry          controllers.meal.MealController.addMealEntry
-PATCH  /meal/update-meal-entry       controllers.meal.MealController.updateMealEntry
-PATCH  /meal/delete-meal-entry/:id   controllers.meal.MealController.deleteMealEntry(id: java.util.UUID)
+GET    /meal/all                               controllers.meal.MealController.all
+GET    /meal/:id                               controllers.meal.MealController.get(id: java.util.UUID)
+POST   /meal/create                            controllers.meal.MealController.create
+PATCH  /meal/update                            controllers.meal.MealController.update
+DELETE /meal/delete/:id                        controllers.meal.MealController.delete(id: java.util.UUID)
+GET    /meal/:id/meal-entries                  controllers.meal.MealController.getMealEntries(id: java.util.UUID)
+POST   /meal/add-meal-entry                    controllers.meal.MealController.addMealEntry
+PATCH  /meal/update-meal-entry                 controllers.meal.MealController.updateMealEntry
+DELETE /meal/delete-meal-entry/:id             controllers.meal.MealController.deleteMealEntry(id: java.util.UUID)
 
-GET    /stats                        controllers.stats.StatsController.get(from: Option[String], to: Option[String])
+GET    /stats                                  controllers.stats.StatsController.get(from: Option[String], to: Option[String])
+GET    /stats/reference/all                    controllers.stats.StatsController.referenceNutrients
+POST   /stats/reference/create                 controllers.stats.StatsController.createReferenceNutrient
+PATCH  /stats/reference/update                 controllers.stats.StatsController.updateReferenceNutrient
+DELETE /stats/reference/delete/:nutrientCode   controllers.stats.StatsController.deleteReferenceNutrient(nutrientCode: Int)
 
-GET    /                             controllers.home.HomeController.home
-POST   /login                        controllers.login.LoginController.login
-POST   /create                       controllers.login.LoginController.createUser
+GET    /                                       controllers.home.HomeController.home
+POST   /login                                  controllers.login.LoginController.login
+POST   /create                                 controllers.login.LoginController.createUser

@@ -1,13 +1,17 @@
 package controllers.stats
 
 import action.JwtAction
+import cats.data.EitherT
+import errors.{ ErrorContext, ServerError }
 import io.circe.syntax._
 import io.scalaland.chimney.dsl.TransformerOps
 import javax.inject.Inject
 import play.api.libs.circe.Circe
-import play.api.mvc.{ AbstractController, Action, AnyContent, ControllerComponents }
-import services.stats.StatsService
+import play.api.mvc._
+import services.NutrientCode
+import services.stats.{ DBError, StatsService }
 import utils.date.Date
+import utils.TransformerUtils.Implicits._
 
 import scala.concurrent.ExecutionContext
 import scala.util.chaining.scalaUtilChainingOps
@@ -61,5 +65,66 @@ class StatsController @Inject() (
             BadRequest(error.getMessage)
         }
     }
+
+  def createReferenceNutrient: Action[ReferenceNutrientCreation] =
+    jwtAction.async(circe.tolerantJson[ReferenceNutrientCreation]) { request =>
+      EitherT(
+        statsService
+          .createReferenceNutrient(
+            request.user.id,
+            request.body.transformInto[services.stats.ReferenceNutrientCreation]
+          )
+      )
+        .map(
+          _.pipe(_.transformInto[ReferenceNutrient])
+            .pipe(_.asJson)
+            .pipe(Ok(_))
+        )
+        .leftMap(badRequest)
+        .merge
+        .recover(referenceNutrientErrorHandler)
+    }
+
+  def updateReferenceNutrient: Action[ReferenceNutrientUpdate] =
+    jwtAction.async(circe.tolerantJson[ReferenceNutrientUpdate]) { request =>
+      EitherT(
+        statsService
+          .updateReferenceNutrient(request.user.id, request.body.transformInto[services.stats.ReferenceNutrientUpdate])
+      )
+        .map(
+          _.pipe(_.transformInto[ReferenceNutrient])
+            .pipe(_.asJson)
+            .pipe(Ok(_))
+        )
+        .leftMap(badRequest)
+        .merge
+        .recover(referenceNutrientErrorHandler)
+    }
+
+  def deleteReferenceNutrient(nutrientCode: Int): Action[AnyContent] =
+    jwtAction.async { request =>
+      statsService
+        .deleteReferenceNutrient(request.user.id, nutrientCode.transformInto[NutrientCode])
+        .map(
+          _.pipe(_.asJson)
+            .pipe(Ok(_))
+        )
+    }
+
+  private def badRequest(serverError: ServerError): Result =
+    BadRequest(serverError.asJson)
+
+  // TODO: Consider handling errors on service level
+  private def referenceNutrientErrorHandler: PartialFunction[Throwable, Result] = {
+    case error =>
+      val context = error match {
+        case DBError.ReferenceNutrientNotFound =>
+          ErrorContext.ReferenceNutrient.NotFound
+        case _ =>
+          ErrorContext.ReferenceNutrient.General(error.getMessage)
+      }
+
+      BadRequest(context.asServerError.asJson)
+  }
 
 }

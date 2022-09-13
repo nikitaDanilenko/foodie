@@ -5,6 +5,7 @@ import java.util.UUID
 import cats.data.OptionT
 import cats.syntax.traverse._
 import db.generated.Tables
+import errors.{ ErrorContext, ServerError }
 import io.scalaland.chimney.dsl.TransformerOps
 import javax.inject.Inject
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
@@ -31,12 +32,12 @@ trait StatsService {
   def createReferenceNutrient(
       userId: UserId,
       referenceNutrientCreation: ReferenceNutrientCreation
-  ): Future[ReferenceNutrient]
+  ): Future[ServerError.Or[ReferenceNutrient]]
 
   def updateReferenceNutrient(
       userId: UserId,
       referenceNutrientUpdate: ReferenceNutrientUpdate
-  ): Future[ReferenceNutrient]
+  ): Future[ServerError.Or[ReferenceNutrient]]
 
   def deleteReferenceNutrient(
       userId: UserId,
@@ -64,14 +65,24 @@ object StatsService {
     override def createReferenceNutrient(
         userId: UserId,
         referenceNutrientCreation: ReferenceNutrientCreation
-    ): Future[ReferenceNutrient] =
+    ): Future[ServerError.Or[ReferenceNutrient]] =
       db.run(companion.createReferenceNutrient(userId, referenceNutrientCreation))
+        .map(Right(_))
+        .recover {
+          case error =>
+            Left(ErrorContext.ReferenceNutrient.Creation(error.getMessage).asServerError)
+        }
 
     override def updateReferenceNutrient(
         userId: UserId,
         referenceNutrientUpdate: ReferenceNutrientUpdate
-    ): Future[ReferenceNutrient] =
+    ): Future[ServerError.Or[ReferenceNutrient]] =
       db.run(companion.updateReferenceNutrient(userId, referenceNutrientUpdate))
+        .map(Right(_))
+        .recover {
+          case error =>
+            Left(ErrorContext.ReferenceNutrient.Update(error.getMessage).asServerError)
+        }
 
     override def deleteReferenceNutrient(
         userId: UserId,

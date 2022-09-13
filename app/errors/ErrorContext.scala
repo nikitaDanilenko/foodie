@@ -103,4 +103,25 @@ object ErrorContext {
 
   }
 
+  object ReferenceNutrient {
+
+    case object NotFound extends ServerErrorInstance("No reference nutrient with the given nutrient code found")
+
+    case class Creation(dbMessage: String)
+        extends ServerErrorInstance(
+          s"ReferenceNutrient creation failed due to: $dbMessage"
+        )
+
+    case class Update(dbMessage: String)
+        extends ServerErrorInstance(
+          s"ReferenceNutrient update failed due to: $dbMessage"
+        )
+
+    case class General(dbMessage: String)
+        extends ServerErrorInstance(
+          s"A database operation failed with the message: $dbMessage"
+        )
+
+  }
+
 }
