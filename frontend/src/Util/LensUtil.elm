@@ -1,5 +1,7 @@
 module Util.LensUtil exposing (..)
 
+import Basics.Extra exposing (flip)
+import Dict exposing (Dict)
 import List.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
@@ -26,3 +28,11 @@ jwtLens =
 jwtSubLens : Lens { a | flagsWithJWT : { b | jwt : c } } c
 jwtSubLens =
     flagsWithJWTLens |> Compose.lensWithLens jwtLens
+
+
+set : List a -> (a -> comparable) -> Lens model (Dict comparable a) -> model -> model
+set xs idOf lens md =
+    xs
+        |> List.map (\m -> ( idOf m, m ))
+        |> Dict.fromList
+        |> flip lens.set md

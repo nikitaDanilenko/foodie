@@ -135,12 +135,7 @@ update msg model =
             updateAddFood model ingredientCreationClientInput
 
 
-set : List a -> (a -> comparable) -> Lens Page.Model (Dict comparable a) -> Page.Model -> Page.Model
-set xs idOf lens md =
-    xs
-        |> List.map (\m -> ( idOf m, m ))
-        |> Dict.fromList
-        |> flip lens.set md
+
 
 
 foodIdOf : Either Ingredient (Editing Ingredient IngredientUpdateClientInput) -> FoodId
@@ -251,7 +246,7 @@ gotFetchFoodsResponse model result =
         |> Either.fromResult
         |> Either.unwrap ( model, Cmd.none )
             (\foods ->
-                ( set foods .id Page.lenses.foods model
+                ( LensUtil.set foods .id Page.lenses.foods model
                 , foods
                     |> Encode.list encoderFood
                     |> Encode.encode 0
@@ -266,7 +261,7 @@ gotFetchMeasuresResponse model result =
         |> Either.fromResult
         |> Either.unwrap ( model, Cmd.none )
             (\measures ->
-                ( set measures .id Page.lenses.measures model
+                ( LensUtil.set measures .id Page.lenses.measures model
                 , measures
                     |> Encode.list encoderMeasure
                     |> Encode.encode 0
@@ -305,7 +300,7 @@ updateFoods model =
         >> Result.toMaybe
         >> Maybe.Extra.unwrap ( model, Cmd.none )
             (\foods ->
-                ( set foods .id Page.lenses.foods model
+                ( LensUtil.set foods .id Page.lenses.foods model
                 , if List.isEmpty foods then
                     Requests.fetchFoods model.flagsWithJWT
 
@@ -321,7 +316,7 @@ updateMeasures model =
         >> Result.toMaybe
         >> Maybe.Extra.unwrap ( model, Cmd.none )
             (\measures ->
-                ( set measures .id Page.lenses.measures model
+                ( LensUtil.set measures .id Page.lenses.measures model
                 , if List.isEmpty measures then
                     Requests.fetchMeasures model.flagsWithJWT
 

@@ -8,7 +8,12 @@ port module Ports exposing
     , storeFoods
     , storeMeasures
     , storeToken
-    )
+    )measures
+measures
+measures
+measures
+measures
+measures
 
 
 port storeToken : String -> Cmd msg

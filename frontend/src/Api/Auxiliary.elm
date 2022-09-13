@@ -27,5 +27,9 @@ type alias MealEntryId =
     UUID
 
 
+type alias NutrientCode =
+    Int
+
+
 type alias JWT =
     String
