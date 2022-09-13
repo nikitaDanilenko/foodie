@@ -8,7 +8,15 @@ import bridges.elm._
 import controllers.login.Credentials
 import controllers.meal._
 import controllers.recipe._
-import controllers.stats.{ Amounts, NutrientInformation, NutrientUnit, Stats }
+import controllers.stats.{
+  Amounts,
+  NutrientInformation,
+  NutrientUnit,
+  ReferenceNutrient,
+  ReferenceNutrientCreation,
+  ReferenceNutrientUpdate,
+  Stats
+}
 import shapeless.Lazy
 import utils.date.{ Date, SimpleDate, Time }
 
@@ -98,6 +106,9 @@ object Bridge {
     mkAndWrite[Amounts]
     mkAndWrite[NutrientInformation]
     mkAndWrite[Stats]
+    mkAndWrite[ReferenceNutrient]
+    mkAndWrite[ReferenceNutrientCreation]
+    mkAndWrite[ReferenceNutrientUpdate]
   }
 
 }
