@@ -24,6 +24,7 @@ PATCH  /meal/entry/update                      controllers.meal.MealController.u
 DELETE /meal/entry/delete/:id                  controllers.meal.MealController.deleteMealEntry(id: java.util.UUID)
 
 GET    /stats                                  controllers.stats.StatsController.get(from: Option[String], to: Option[String])
+GET    /stats/nutrients                        controllers.stats.StatsController.allNutrients
 GET    /stats/reference/all                    controllers.stats.StatsController.referenceNutrients
 POST   /stats/reference/create                 controllers.stats.StatsController.createReferenceNutrient
 PATCH  /stats/reference/update                 controllers.stats.StatsController.updateReferenceNutrient

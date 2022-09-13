@@ -10,8 +10,8 @@ import controllers.meal._
 import controllers.recipe._
 import controllers.stats.{
   Amounts,
+  Nutrient,
   NutrientInformation,
-  NutrientUnit,
   ReferenceNutrient,
   ReferenceNutrientCreation,
   ReferenceNutrientUpdate,
@@ -109,6 +109,7 @@ object Bridge {
     mkAndWrite[ReferenceNutrient]
     mkAndWrite[ReferenceNutrientCreation]
     mkAndWrite[ReferenceNutrientUpdate]
+    mkAndWrite[Nutrient]
   }
 
 }
