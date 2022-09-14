@@ -117,7 +117,7 @@ viewNutrientLine nutrientMap referenceNutrientsToAdd nutrient =
         process =
             case List.Extra.find (\referenceNutrient -> referenceNutrient.nutrientCode == nutrient.code) referenceNutrientsToAdd of
                 Nothing ->
-                    [ td [] [ button [ class "button", onClick (Page.SelectNutrient nutrient.id) ] [ text "Select" ] ] ]
+                    [ td [] [ button [ class "button", onClick (Page.SelectNutrient nutrient.code) ] [ text "Select" ] ] ]
 
                 Just referenceNutrientToAdd ->
                     [ td []
@@ -141,14 +141,14 @@ viewNutrientLine nutrientMap referenceNutrientsToAdd nutrient =
                         [ button
                             [ class "button"
                             , disabled
-                                (List.Extra.find (\me -> me.nutrientCode == nutrient.id) referenceNutrientsToAdd
+                                (List.Extra.find (\me -> me.nutrientCode == nutrient.code) referenceNutrientsToAdd
                                     |> Maybe.Extra.unwrap True (.amount >> ValidatedInput.isValid >> not)
                                 )
                             , onClick addMsg
                             ]
                             [ text "Add" ]
                         ]
-                    , td [] [ button [ class "button", onClick (Page.DeselectNutrient nutrient.id) ] [ text "Cancel" ] ]
+                    , td [] [ button [ class "button", onClick (Page.DeselectNutrient nutrient.code) ] [ text "Cancel" ] ]
                     ]
     in
     tr [ id "addingNutrientLine" ]
