@@ -23,6 +23,7 @@ type Msg
     = Recipes
     | Meals
     | Statistics
+    | ReferenceNutrients
     | UpdateJWT String
 
 type alias Flags =

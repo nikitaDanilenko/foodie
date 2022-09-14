@@ -12,6 +12,7 @@ var app = Elm.Main.init({
 var tokenKey = 'foodie-user-token';
 var foodsKey = 'foodie-foods-list';
 var measuresKey = 'foodie-measures-list';
+var nutrientsKey = 'foodie-nutrients-list';
 
 app.ports.storeToken.subscribe(function(token) {
     localStorage.setItem(tokenKey, token);

@@ -40,6 +40,9 @@ update msg model =
         Page.Statistics ->
             navigate model "statistics"
 
+        Page.ReferenceNutrients ->
+            navigate model "reference-nutrients"
+
 
 updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model jwt =
