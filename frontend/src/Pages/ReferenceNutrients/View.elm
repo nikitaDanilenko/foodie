@@ -33,7 +33,7 @@ view model =
                 |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
                 |> Dict.values
                 |> List.sortBy .name
-                |> List.map (viewNutrientLine model.referenceNutrientsToAdd)
+                |> List.map ((viewNutrientLine model.nutrients) model.referenceNutrientsToAdd)
     in
     div [ id "referenceNutrient" ]
         [ div [ id "referenceNutrientView" ]
@@ -108,8 +108,8 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
         ]
 
 
-viewNutrientLine : List ReferenceNutrientCreationClientInput -> Nutrient -> Html Page.Msg
-viewNutrientLine referenceNutrientsToAdd nutrient =
+viewNutrientLine : NutrientMap -> List ReferenceNutrientCreationClientInput -> Nutrient -> Html Page.Msg
+viewNutrientLine nutrientMap referenceNutrientsToAdd nutrient =
     let
         addMsg =
             Page.AddNutrient nutrient.code
@@ -136,6 +136,7 @@ viewNutrientLine referenceNutrientsToAdd nutrient =
                             ]
                             []
                         ]
+                        , td [] [ label [] [ text (referenceNutrientToAdd.nutrientCode |> Page.nutrientUnitOrEmpty nutrientMap) ] ]
                     , td []
                         [ button
                             [ class "button"
