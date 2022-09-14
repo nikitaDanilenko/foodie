@@ -155,6 +155,7 @@ object StatsService {
               transformer.value
             }
             .map(_.flatten.toMap)
+        referenceMap <- referenceNutrientMap(userId)
       } yield {
         val nutrientMap = meals
           .flatMap(m => mealEntries(m.id))
@@ -165,7 +166,8 @@ object StatsService {
           .qsum
         Stats(
           meals = meals,
-          nutrientMap = nutrientMap
+          nutrientMap = nutrientMap,
+          referenceNutrientMap = referenceMap.getOrElse(Map.empty)
         )
       }
     }

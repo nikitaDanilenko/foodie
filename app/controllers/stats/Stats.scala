@@ -24,7 +24,8 @@ object Stats {
           unit = nutrient.unit.transformInto[NutrientUnit],
           amounts = Amounts(
             total = amount,
-            dailyAverage = daily(nutrient)
+            dailyAverage = daily(nutrient),
+            referenceDailyAverage = stats.referenceNutrientMap.get(nutrient)
           )
         )
     }.toSeq

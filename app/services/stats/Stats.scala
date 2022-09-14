@@ -8,7 +8,8 @@ import services.nutrient.NutrientMap
 
 case class Stats(
     meals: Seq[Meal],
-    nutrientMap: NutrientMap
+    nutrientMap: NutrientMap,
+    referenceNutrientMap: NutrientMap
 )
 
 object Stats {
