@@ -135,9 +135,6 @@ update msg model =
             updateAddFood model ingredientCreationClientInput
 
 
-
-
-
 foodIdOf : Either Ingredient (Editing Ingredient IngredientUpdateClientInput) -> FoodId
 foodIdOf =
     Either.unpack

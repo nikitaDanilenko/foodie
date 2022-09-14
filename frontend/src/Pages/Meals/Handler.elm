@@ -25,11 +25,11 @@ init flags =
             flags.jwt
                 |> Maybe.Extra.unwrap
                     ( "", doFetchToken () )
-                    (\t ->
-                        ( t
+                    (\token ->
+                        ( token
                         , Requests.fetchMeals
                             { configuration = flags.configuration
-                            , jwt = t
+                            , jwt = token
                             }
                         )
                     )

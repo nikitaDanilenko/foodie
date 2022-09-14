@@ -91,7 +91,7 @@ gotCreateRecipeResponse : Page.Model -> Result Error Recipe -> ( Page.Model, Cmd
 gotCreateRecipeResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.map
+        |> Either.unwrap model
             (\recipe ->
                 model
                     |> Lens.modify Page.lenses.recipes
@@ -103,7 +103,6 @@ gotCreateRecipeResponse model dataOrError =
                             recipe
                         )
             )
-        |> Either.withDefault model
     , Cmd.none
     )
 
