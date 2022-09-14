@@ -199,7 +199,10 @@ gotFetchReferenceNutrientsResponse model result =
     ( result
         |> Either.fromResult
         |> Either.unwrap model
-            (List.map Left >> flip Page.lenses.referenceNutrients.set model)
+            (List.sortBy (.nutrientCode >> Page.nutrientNameOrEmpty model.nutrients)
+                >> List.map Left
+                >> flip Page.lenses.referenceNutrients.set model
+            )
     , Cmd.none
     )
 
@@ -227,6 +230,7 @@ selectNutrient model nutrientCode =
                 { compareA = .nutrientCode >> Page.nutrientNameOrEmpty model.nutrients
                 , compareB = .nutrientCode >> Page.nutrientNameOrEmpty model.nutrients
                 , mapAB = identity
+                , replace = True
                 }
                 (ReferenceNutrientCreationClientInput.default nutrientCode)
             )
@@ -266,6 +270,7 @@ gotAddReferenceNutrientResponse model result =
                             { compareA = .nutrientCode >> Page.nutrientNameOrEmpty model.nutrients
                             , compareB = Page.nutrientCodeOf >> Page.nutrientNameOrEmpty model.nutrients
                             , mapAB = Left
+                            , replace = True
                             }
                             referenceNutrient
                         )
@@ -327,6 +332,3 @@ mapReferenceNutrientOrUpdateById ingredientId =
     Page.lenses.referenceNutrients
         |> Compose.lensWithOptional (ingredientId |> Editing.is .nutrientCode |> LensUtil.firstSuch)
         |> Optional.modify
-
-
-

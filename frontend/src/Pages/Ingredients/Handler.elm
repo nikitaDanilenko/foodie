@@ -336,6 +336,7 @@ selectFood model food =
                 { compareA = .foodId >> Page.ingredientNameOrEmpty model.foods
                 , compareB = .foodId >> Page.ingredientNameOrEmpty model.foods
                 , mapAB = identity
+                , replace = True
                 }
                 (IngredientCreationClientInput.default model.recipeId food.id (food.measures |> List.head |> Maybe.Extra.unwrap 0 .id))
             )
@@ -386,6 +387,7 @@ gotAddFoodResponse model result =
                             { compareA = .foodId >> Page.ingredientNameOrEmpty model.foods
                             , compareB = foodIdOf >> Page.ingredientNameOrEmpty model.foods
                             , mapAB = Left
+                            , replace = True
                             }
                             ingredient
                         )

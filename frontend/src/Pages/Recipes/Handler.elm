@@ -99,6 +99,7 @@ gotCreateRecipeResponse model dataOrError =
                             { compareA = .name
                             , compareB = recipeNameOf
                             , mapAB = Left
+                            , replace = True
                             }
                             recipe
                         )

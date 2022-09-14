@@ -242,6 +242,7 @@ selectRecipe model recipeId =
                 { compareA = .recipeId >> Page.recipeNameOrEmpty model.recipes
                 , compareB = .recipeId >> Page.recipeNameOrEmpty model.recipes
                 , mapAB = identity
+                , replace = True
                 }
                 (MealEntryCreationClientInput.default model.mealId recipeId)
             )
@@ -282,6 +283,7 @@ gotAddMealEntryResponse model result =
                             { compareA = .recipeId >> Page.recipeNameOrEmpty model.recipes
                             , compareB = recipeIdOf >> Page.recipeNameOrEmpty model.recipes
                             , mapAB = Left
+                            , replace = True
                             }
                             mealEntry
                         )

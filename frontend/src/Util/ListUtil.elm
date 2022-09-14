@@ -7,6 +7,7 @@ insertBy :
     { compareA : a -> comparable
     , compareB : b -> comparable
     , mapAB : a -> b
+    , replace : Bool
     }
     -> a
     -> List b
@@ -17,8 +18,14 @@ insertBy ps x list =
             [ ps.mapAB x ]
 
         Just ( e, es ) ->
-            if ps.compareB e < ps.compareA x then
+          let cmpB = ps.compareB e
+              cmpA = ps.compareA x
+          in
+            if cmpB < cmpA then
                 e :: insertBy ps x es
+
+            else if cmpB == cmpA then
+              ps.mapAB x :: if ps.replace then es else list
 
             else
                 ps.mapAB x :: list

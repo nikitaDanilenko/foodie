@@ -190,10 +190,21 @@ object StatsService {
     override def createReferenceNutrient(userId: UserId, referenceNutrientCreation: ReferenceNutrientCreation)(implicit
         ec: ExecutionContext
     ): DBIO[ReferenceNutrient] = {
-      val referenceNutrient    = ReferenceNutrientCreation.create(referenceNutrientCreation)
-      val referenceNutrientRow = (referenceNutrient, userId).transformInto[Tables.ReferenceNutrientRow]
-      (Tables.ReferenceNutrient.returning(Tables.ReferenceNutrient) += referenceNutrientRow)
-        .map(_.transformInto[ReferenceNutrient])
+      val query = referenceNutrientQuery(userId, referenceNutrientCreation.nutrientCode)
+      for {
+        exists <- query.exists.result
+        row <-
+          if (exists)
+            query
+              .map(_.amount)
+              .update(referenceNutrientCreation.amount)
+              .andThen(query.result.head)
+          else {
+            val referenceNutrient    = ReferenceNutrientCreation.create(referenceNutrientCreation)
+            val referenceNutrientRow = (referenceNutrient, userId).transformInto[Tables.ReferenceNutrientRow]
+            Tables.ReferenceNutrient.returning(Tables.ReferenceNutrient) += referenceNutrientRow
+          }
+      } yield row.transformInto[ReferenceNutrient]
     }
 
     override def updateReferenceNutrient(userId: UserId, referenceNutrientUpdate: ReferenceNutrientUpdate)(implicit
