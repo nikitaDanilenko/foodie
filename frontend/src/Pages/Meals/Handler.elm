@@ -218,8 +218,6 @@ mapMealOrUpdateById mealId =
         |> Optional.modify
 
 
-mealIdIs : MealId -> Either Meal (Editing Meal MealUpdate) -> Bool
-mealIdIs mealId =
-    Either.unpack
-        (\i -> i.id == mealId)
-        (\e -> e.original.id == mealId)
+mealIdIs : MealId -> Page.MealOrUpdate -> Bool
+mealIdIs =
+    Editing.is .id

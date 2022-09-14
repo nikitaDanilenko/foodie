@@ -330,13 +330,11 @@ mapMealEntryOrUpdateById ingredientId =
 
 
 mealEntryIdIs : MealEntryId -> Page.MealEntryOrUpdate -> Bool
-mealEntryIdIs mealEntryId =
-    Either.unpack
-        (\i -> i.id == mealEntryId)
-        (\e -> e.original.id == mealEntryId)
+mealEntryIdIs  =
+    Editing.is .id
 
 
-recipeIdOf : Either MealEntry (Editing MealEntry MealEntryUpdateClientInput) -> RecipeId
+recipeIdOf : Page.MealEntryOrUpdate -> RecipeId
 recipeIdOf =
     Either.unpack
         .recipeId

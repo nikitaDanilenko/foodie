@@ -135,18 +135,16 @@ update msg model =
             updateAddFood model ingredientCreationClientInput
 
 
-foodIdOf : Either Ingredient (Editing Ingredient IngredientUpdateClientInput) -> FoodId
+foodIdOf : Page.IngredientOrUpdate -> FoodId
 foodIdOf =
     Either.unpack
         .foodId
         (.original >> .foodId)
 
 
-ingredientIdIs : IngredientId -> Either Ingredient (Editing Ingredient IngredientUpdateClientInput) -> Bool
-ingredientIdIs ingredientId =
-    Either.unpack
-        (\i -> i.id == ingredientId)
-        (\e -> e.original.id == ingredientId)
+ingredientIdIs : IngredientId -> Page.IngredientOrUpdate -> Bool
+ingredientIdIs =
+    Editing.is .id
 
 
 mapIngredientOrUpdateById : IngredientId -> (Page.IngredientOrUpdate -> Page.IngredientOrUpdate) -> Page.Model -> Page.Model

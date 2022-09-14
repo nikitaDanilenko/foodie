@@ -15,7 +15,7 @@ import Monocle.Lens exposing (Lens)
 import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
-import Util.Editing exposing (Editing)
+import Util.Editing as Editing exposing (Editing)
 
 
 type alias Model =
@@ -74,15 +74,18 @@ nutrientUnitOrEmpty : NutrientMap -> NutrientCode -> String
 nutrientUnitOrEmpty nutrientMap =
     flip Dict.get nutrientMap >> Maybe.Extra.unwrap "" (.unit >> NutrientUnit.toString)
 
+
 nutrientCodeOf : ReferenceNutrientOrUpdate -> NutrientCode
 nutrientCodeOf =
     Either.unpack
         .nutrientCode
         (.original >> .nutrientCode)
 
+
 nutrientCodeIs : NutrientCode -> ReferenceNutrientOrUpdate -> Bool
-nutrientCodeIs nutrientCode =
-    nutrientCodeOf >> (==) nutrientCode
+nutrientCodeIs =
+    Editing.is .nutrientCode
+
 
 type Msg
     = UpdateReferenceNutrient ReferenceNutrientUpdateClientInput
