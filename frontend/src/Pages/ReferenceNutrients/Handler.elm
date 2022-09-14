@@ -130,7 +130,7 @@ saveReferenceNutrientEdit model nutrientCode =
     ( model
     , model
         |> Page.lenses.referenceNutrients.get
-        |> List.Extra.find (nutrientCodeIs nutrientCode)
+        |> List.Extra.find (Page.nutrientCodeIs nutrientCode)
         |> Maybe.andThen Either.rightToMaybe
         |> Maybe.Extra.unwrap Cmd.none
             (.update >> ReferenceNutrientUpdateClientInput.to >> Requests.saveReferenceNutrient model.flagsWithJWT)
@@ -187,7 +187,7 @@ gotDeleteReferenceNutrientResponse model nutrientCode result =
     ( result
         |> Either.fromResult
         |> Either.unwrap model
-            (Lens.modify Page.lenses.referenceNutrients (List.Extra.filterNot (nutrientCodeIs nutrientCode)) model
+            (Lens.modify Page.lenses.referenceNutrients (List.Extra.filterNot (Page.nutrientCodeIs nutrientCode)) model
                 |> always
             )
     , Cmd.none
@@ -264,7 +264,7 @@ gotAddReferenceNutrientResponse model result =
                     |> Lens.modify Page.lenses.referenceNutrients
                         (ListUtil.insertBy
                             { compareA = .nutrientCode >> Page.nutrientNameOrEmpty model.nutrients
-                            , compareB = nutrientCodeOf >> Page.nutrientNameOrEmpty model.nutrients
+                            , compareB = Page.nutrientCodeOf >> Page.nutrientNameOrEmpty model.nutrients
                             , mapAB = Left
                             }
                             referenceNutrient
@@ -329,15 +329,4 @@ mapReferenceNutrientOrUpdateById ingredientId =
         |> Optional.modify
 
 
-nutrientCodeIs : NutrientCode -> Page.ReferenceNutrientOrUpdate -> Bool
-nutrientCodeIs nutrientCode =
-    Either.unpack
-        (\i -> i.nutrientCode == nutrientCode)
-        (\e -> e.original.nutrientCode == nutrientCode)
 
-
-nutrientCodeOf : Either ReferenceNutrient (Editing ReferenceNutrient ReferenceNutrientUpdateClientInput) -> NutrientCode
-nutrientCodeOf =
-    Either.unpack
-        .nutrientCode
-        (.original >> .nutrientCode)

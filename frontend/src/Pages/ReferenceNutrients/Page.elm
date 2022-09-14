@@ -74,6 +74,15 @@ nutrientUnitOrEmpty : NutrientMap -> NutrientCode -> String
 nutrientUnitOrEmpty nutrientMap =
     flip Dict.get nutrientMap >> Maybe.Extra.unwrap "" (.unit >> NutrientUnit.toString)
 
+nutrientCodeOf : ReferenceNutrientOrUpdate -> NutrientCode
+nutrientCodeOf =
+    Either.unpack
+        .nutrientCode
+        (.original >> .nutrientCode)
+
+nutrientCodeIs : NutrientCode -> ReferenceNutrientOrUpdate -> Bool
+nutrientCodeIs nutrientCode =
+    nutrientCodeOf >> (==) nutrientCode
 
 type Msg
     = UpdateReferenceNutrient ReferenceNutrientUpdateClientInput

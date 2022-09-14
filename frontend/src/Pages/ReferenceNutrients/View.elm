@@ -33,7 +33,7 @@ view model =
                 |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
                 |> Dict.values
                 |> List.sortBy .name
-                |> List.map ((viewNutrientLine model.nutrients) model.referenceNutrientsToAdd)
+                |> List.map ((viewNutrientLine model.nutrients model.referenceNutrients) model.referenceNutrientsToAdd)
     in
     div [ id "referenceNutrient" ]
         [ div [ id "referenceNutrientView" ]
@@ -108,8 +108,8 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
         ]
 
 
-viewNutrientLine : NutrientMap -> List ReferenceNutrientCreationClientInput -> Nutrient -> Html Page.Msg
-viewNutrientLine nutrientMap referenceNutrientsToAdd nutrient =
+viewNutrientLine : Page.NutrientMap -> List Page.ReferenceNutrientOrUpdate -> List ReferenceNutrientCreationClientInput -> Nutrient -> Html Page.Msg
+viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient =
     let
         addMsg =
             Page.AddNutrient nutrient.code
@@ -146,7 +146,7 @@ viewNutrientLine nutrientMap referenceNutrientsToAdd nutrient =
                                 )
                             , onClick addMsg
                             ]
-                            [ text "Add" ]
+                            [ text (if List.Extra.find (Page.nutrientCodeIs referenceNutrientToAdd.nutrientCode) referenceNutrients |> Maybe.Extra.isNothing then "Add" else "Update") ]
                         ]
                     , td [] [ button [ class "button", onClick (Page.DeselectNutrient nutrient.code) ] [ text "Cancel" ] ]
                     ]
