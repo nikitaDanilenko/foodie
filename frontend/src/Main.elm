@@ -6,9 +6,6 @@ import Browser.Navigation as Nav
 import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
 import Monocle.Lens exposing (Lens)
-import Pages.Ingredient.Handler
-import Pages.Ingredient.Page
-import Pages.Ingredient.View
 import Pages.Ingredients.Handler
 import Pages.Ingredients.Page
 import Pages.Ingredients.View
@@ -224,6 +221,9 @@ update msg model =
         ( StatisticsMsg statisticsMsg, Statistics statistics ) ->
             stepThrough steps.statistics model (Pages.Statistics.Handler.update statisticsMsg statistics)
 
+        ( ReferenceNutrientsMsg referenceNutrientsMsg, ReferenceNutrients referenceNutrients ) ->
+            stepThrough steps.referenceNutrients model (Pages.ReferenceNutrients.Handler.update referenceNutrientsMsg referenceNutrients)
+
         _ ->
             ( model, Cmd.none )
 
@@ -253,6 +253,9 @@ stepTo url model =
 
                 StatisticsRoute flags ->
                     Pages.Statistics.Handler.init flags |> stepThrough steps.statistics model
+
+                ReferenceNutrientsRoute flags ->
+                    Pages.ReferenceNutrients.Handler.init flags |> stepThrough steps.referenceNutrients model
 
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
@@ -299,6 +302,7 @@ type Route
     | MealsRoute Pages.Meals.Page.Flags
     | MealEntriesRoute Pages.MealEntries.Page.Flags
     | StatisticsRoute Pages.Statistics.Page.Flags
+    | ReferenceNutrientsRoute Pages.ReferenceNutrients.Page.Flags
 
 
 routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
@@ -339,6 +343,9 @@ routeParser jwt configuration =
         statisticsParser =
             s "statistics" |> Parser.map flags
 
+        referenceNutrientParser =
+            s "reference-nutrients" |> Parser.map flags
+
         flags =
             { configuration = configuration, jwt = jwt }
     in
@@ -350,6 +357,7 @@ routeParser jwt configuration =
         , route mealsParser MealsRoute
         , route mealEntriesParser MealEntriesRoute
         , route statisticsParser StatisticsRoute
+        , route referenceNutrientParser ReferenceNutrientsRoute
         ]
 
 

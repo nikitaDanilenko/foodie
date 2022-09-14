@@ -1,13 +1,14 @@
 module Pages.ReferenceNutrients.Handler exposing (init, update)
 
 import Api.Auxiliary exposing (JWT, NutrientCode)
-import Api.Types.Nutrient exposing (Nutrient, decoderNutrient)
+import Api.Types.Nutrient exposing (Nutrient, decoderNutrient, encoderNutrient)
 import Api.Types.ReferenceNutrient exposing (ReferenceNutrient)
 import Basics.Extra exposing (flip)
 import Dict
 import Either exposing (Either(..))
 import Http exposing (Error)
 import Json.Decode as Decode
+import Json.Encode as Encode
 import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
@@ -205,15 +206,17 @@ gotFetchReferenceNutrientsResponse model result =
 
 gotFetchNutrientsResponse : Page.Model -> Result Error (List Nutrient) -> ( Page.Model, Cmd msg )
 gotFetchNutrientsResponse model result =
-    ( result
+    result
         |> Either.fromResult
-        |> Either.unwrap model
-            (List.map (\r -> ( r.code, r ))
-                >> Dict.fromList
-                >> flip Page.lenses.nutrients.set model
+        |> Either.unwrap ( model, Cmd.none )
+            (\nutrients ->
+                ( LensUtil.set nutrients .code Page.lenses.nutrients model
+                , nutrients
+                    |> Encode.list encoderNutrient
+                    |> Encode.encode 0
+                    |> Ports.storeNutrients
+                )
             )
-    , Cmd.none
-    )
 
 
 selectNutrient : Page.Model -> NutrientCode -> ( Page.Model, Cmd msg )
@@ -295,6 +298,7 @@ updateJWT model jwt =
     , initialFetch newModel.flagsWithJWT
     )
 
+
 updateNutrients : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 updateNutrients model =
     Decode.decodeString (Decode.list decoderNutrient)
@@ -309,6 +313,7 @@ updateNutrients model =
                     Cmd.none
                 )
             )
+
 
 setNutrientsSearchString : Page.Model -> String -> ( Page.Model, Cmd msg )
 setNutrientsSearchString model string =
