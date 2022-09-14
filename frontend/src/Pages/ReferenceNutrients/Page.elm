@@ -1,9 +1,8 @@
 module Pages.ReferenceNutrients.Page exposing (..)
 
 import Api.Auxiliary exposing (JWT, NutrientCode)
-import Api.Types.Meal exposing (Meal)
 import Api.Types.Nutrient exposing (Nutrient)
-import Api.Types.NutrientInformation exposing (NutrientInformation)
+import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
 import Api.Types.ReferenceNutrient exposing (ReferenceNutrient)
 import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
@@ -69,6 +68,11 @@ lenses =
 nutrientNameOrEmpty : NutrientMap -> NutrientCode -> String
 nutrientNameOrEmpty nutrientMap =
     flip Dict.get nutrientMap >> Maybe.Extra.unwrap "" .name
+
+
+nutrientUnitOrEmpty : NutrientMap -> NutrientCode -> String
+nutrientUnitOrEmpty nutrientMap =
+    flip Dict.get nutrientMap >> Maybe.Extra.unwrap "" (.unit >> NutrientUnit.toString)
 
 
 type Msg

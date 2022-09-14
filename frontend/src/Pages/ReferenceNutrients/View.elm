@@ -1,7 +1,7 @@
 module Pages.ReferenceNutrients.View exposing (view)
 
-import Api.Types.ReferenceNutrient exposing (ReferenceNutrient)
 import Api.Types.Nutrient exposing (Nutrient)
+import Api.Types.ReferenceNutrient exposing (ReferenceNutrient)
 import Basics.Extra exposing (flip)
 import Dict
 import Either
@@ -11,9 +11,9 @@ import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import List.Extra
 import Maybe.Extra
+import Pages.ReferenceNutrients.Page as Page exposing (NutrientMap)
 import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput as ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput as ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
-import Pages.ReferenceNutrients.Page as Page exposing (NutrientMap)
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
 
@@ -36,11 +36,12 @@ view model =
                 |> List.map (viewNutrientLine model.referenceNutrientsToAdd)
     in
     div [ id "referenceNutrient" ]
-        [  div [ id "referenceNutrientView" ]
+        [ div [ id "referenceNutrientView" ]
             (thead []
                 [ tr []
                     [ td [] [ label [] [ text "Name" ] ]
-                    , td [] [ label [] [ text "Number of servings" ] ]
+                    , td [] [ label [] [ text "Reference value" ] ]
+                    , td [] [ label [] [ text "Unit" ] ]
                     ]
                 ]
                 :: viewEditReferenceNutrients model.referenceNutrients
@@ -55,7 +56,6 @@ view model =
                 :: thead []
                     [ tr []
                         [ td [] [ label [] [ text "Name" ] ]
-                        , td [] [ label [] [ text "Description" ] ]
                         ]
                     ]
                 :: viewNutrients model.nutrientsSearchString
@@ -68,6 +68,7 @@ editOrDeleteReferenceNutrientLine nutrientMap referenceNutrient =
     tr [ id "editingReferenceNutrient" ]
         [ td [] [ label [] [ text (referenceNutrient.nutrientCode |> Page.nutrientNameOrEmpty nutrientMap) ] ]
         , td [] [ label [] [ text (referenceNutrient.amount |> String.fromFloat) ] ]
+        , td [] [ label [] [ text (referenceNutrient.nutrientCode |> Page.nutrientUnitOrEmpty nutrientMap) ] ]
         , td [] [ button [ class "button", onClick (Page.EnterEditReferenceNutrient referenceNutrient.nutrientCode) ] [ text "Edit" ] ]
         , td [] [ button [ class "button", onClick (Page.DeleteReferenceNutrient referenceNutrient.nutrientCode) ] [ text "Delete" ] ]
         ]
@@ -95,6 +96,7 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
                 ]
                 []
             ]
+        , td [] [ label [] [ text (referenceNutrient.nutrientCode |> Page.nutrientUnitOrEmpty nutrientMap) ] ]
         , td []
             [ button [ class "button", onClick (Page.SaveReferenceNutrientEdit referenceNutrient.nutrientCode) ]
                 [ text "Save" ]
