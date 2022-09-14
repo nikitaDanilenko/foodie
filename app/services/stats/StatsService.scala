@@ -20,6 +20,7 @@ import spire.implicits._
 import utils.DBIOUtil
 import utils.DBIOUtil.instances._
 import utils.TransformerUtils.Implicits._
+import utils.collection.MapUtil
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -155,6 +156,7 @@ object StatsService {
               transformer.value
             }
             .map(_.flatten.toMap)
+        allNutrients <- NutrientService.Live.all
         referenceMap <- referenceNutrientMap(userId)
       } yield {
         val nutrientMap = meals
@@ -166,7 +168,7 @@ object StatsService {
           .qsum
         Stats(
           meals = meals,
-          nutrientMap = nutrientMap,
+          nutrientMap = MapUtil.unionWith(nutrientMap, allNutrients.map(n => n -> BigDecimal(0)).toMap)((x, _) => x),
           referenceNutrientMap = referenceMap.getOrElse(Map.empty)
         )
       }

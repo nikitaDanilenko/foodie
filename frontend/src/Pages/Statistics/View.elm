@@ -35,6 +35,8 @@ view model =
                         [ td [] [ label [] [ text "Name" ] ]
                         , td [] [ label [] [ text "Total amount" ] ]
                         , td [] [ label [] [ text "Daily average amount" ] ]
+                        , td [] [ label [] [ text "Reference daily average amount" ] ]
+                        , td [] [ label [] [ text "Actual factor" ] ]
                         , td [] [ label [] [ text "Unit" ] ]
                         ]
                     ]
@@ -70,8 +72,16 @@ nutrientInformationLine nutrientInformation =
                 , span [ class "tooltipText" ] [ text <| nutrientInformation.name ]
                 ]
             ]
-        , td [] [ text <| FormatNumber.format FormatNumber.Locales.frenchLocale <| nutrientInformation.amounts.total ]
-        , td [] [ text <| FormatNumber.format FormatNumber.Locales.frenchLocale <| nutrientInformation.amounts.dailyAverage ]
+        , td [] [ text <| displayFloat <| nutrientInformation.amounts.total ]
+        , td [] [ text <| displayFloat <| nutrientInformation.amounts.dailyAverage ]
+        , td [] [ text <| Maybe.Extra.unwrap "" displayFloat <| nutrientInformation.amounts.referenceDailyAverage ]
+        , td []
+            [ text <|   Maybe.Extra.unwrap "" ((\v -> v ++ "%") << displayFloat) <|
+                    referenceFactor
+                        { actualValue = nutrientInformation.amounts.dailyAverage
+                        , referenceValue = nutrientInformation.amounts.referenceDailyAverage
+                        }
+            ]
         , td [] [ text <| nutrientUnitString ]
         ]
 
@@ -96,3 +106,28 @@ dateInput model mkCmd lens =
             )
         ]
         []
+
+
+displayFloat : Float -> String
+displayFloat =
+    FormatNumber.format FormatNumber.Locales.frenchLocale
+
+
+referenceFactor :
+    { actualValue : Float
+    , referenceValue : Maybe Float
+    }
+    -> Maybe Float
+referenceFactor vs =
+    vs.referenceValue
+        |> Maybe.Extra.filter (\x -> x > 0)
+        |> Maybe.map
+            (\r ->
+                100
+                    * (if vs.actualValue == 0 then
+                        1
+
+                       else
+                        vs.actualValue / r
+                      )
+            )
