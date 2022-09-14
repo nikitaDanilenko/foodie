@@ -1,4 +1,4 @@
-module Pages.MealEntry.Page exposing (..)
+module Pages.MealEntries.Page exposing (..)
 
 import Api.Auxiliary exposing (JWT, MealEntryId, MealId, RecipeId)
 import Api.Types.Meal exposing (Meal)
@@ -12,9 +12,9 @@ import Http exposing (Error)
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
-import Pages.MealEntry.MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
-import Pages.MealEntry.MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
-import Pages.MealEntry.MealInfo exposing (MealInfo)
+import Pages.MealEntries.MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
+import Pages.MealEntries.MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
+import Pages.MealEntries.MealInfo exposing (MealInfo)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
 

@@ -9,12 +9,15 @@ import Monocle.Lens exposing (Lens)
 import Pages.Ingredient.Handler
 import Pages.Ingredient.Page
 import Pages.Ingredient.View
+import Pages.Ingredients.Handler
+import Pages.Ingredients.Page
+import Pages.Ingredients.View
 import Pages.Login.Handler
 import Pages.Login.Page
 import Pages.Login.View
-import Pages.MealEntry.Handler
-import Pages.MealEntry.Page
-import Pages.MealEntry.View
+import Pages.MealEntries.Handler
+import Pages.MealEntries.Page
+import Pages.MealEntries.View
 import Pages.Meals.Handler
 import Pages.Meals.Page
 import Pages.Meals.View
@@ -24,11 +27,14 @@ import Pages.Overview.View
 import Pages.Recipes.Handler
 import Pages.Recipes.Page
 import Pages.Recipes.View
+import Pages.ReferenceNutrients.Handler
+import Pages.ReferenceNutrients.Page
+import Pages.ReferenceNutrients.View
 import Pages.Statistics.Handler
 import Pages.Statistics.Page
 import Pages.Statistics.View
 import Pages.Util.ParserUtil as ParserUtil
-import Ports exposing (doFetchToken, fetchFoods, fetchMeasures, fetchToken)
+import Ports exposing (doFetchToken, fetchFoods, fetchMeasures, fetchNutrients, fetchToken)
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s)
 
@@ -51,6 +57,7 @@ subscriptions _ =
         [ fetchToken FetchToken
         , fetchFoods FetchFoods
         , fetchMeasures FetchMeasures
+        , fetchNutrients FetchNutrients
         ]
 
 
@@ -71,10 +78,11 @@ type Page
     = Login Pages.Login.Page.Model
     | Overview Pages.Overview.Page.Model
     | Recipes Pages.Recipes.Page.Model
-    | Ingredient Pages.Ingredient.Page.Model
+    | Ingredients Pages.Ingredients.Page.Model
     | Meals Pages.Meals.Page.Model
-    | MealEntry Pages.MealEntry.Page.Model
+    | MealEntries Pages.MealEntries.Page.Model
     | Statistics Pages.Statistics.Page.Model
+    | ReferenceNutrients Pages.ReferenceNutrients.Page.Model
     | NotFound
 
 
@@ -84,13 +92,15 @@ type Msg
     | FetchToken String
     | FetchFoods String
     | FetchMeasures String
+    | FetchNutrients String
     | LoginMsg Pages.Login.Page.Msg
     | OverviewMsg Pages.Overview.Page.Msg
     | RecipesMsg Pages.Recipes.Page.Msg
-    | IngredientMsg Pages.Ingredient.Page.Msg
+    | IngredientsMsg Pages.Ingredients.Page.Msg
     | MealsMsg Pages.Meals.Page.Msg
-    | MealEntryMsg Pages.MealEntry.Page.Msg
+    | MealEntriesMsg Pages.MealEntries.Page.Msg
     | StatisticsMsg Pages.Statistics.Page.Msg
+    | ReferenceNutrientsMsg Pages.ReferenceNutrients.Page.Msg
 
 
 titleFor : Model -> String
@@ -124,17 +134,20 @@ view model =
         Recipes recipes ->
             Html.map RecipesMsg (Pages.Recipes.View.view recipes)
 
-        Ingredient ingredient ->
-            Html.map IngredientMsg (Pages.Ingredient.View.view ingredient)
+        Ingredients ingredients ->
+            Html.map IngredientsMsg (Pages.Ingredients.View.view ingredients)
 
         Meals meals ->
             Html.map MealsMsg (Pages.Meals.View.view meals)
 
-        MealEntry mealEntry ->
-            Html.map MealEntryMsg (Pages.MealEntry.View.view mealEntry)
+        MealEntries mealEntries ->
+            Html.map MealEntriesMsg (Pages.MealEntries.View.view mealEntries)
 
         Statistics statistics ->
             Html.map StatisticsMsg (Pages.Statistics.View.view statistics)
+
+        ReferenceNutrients referenceNutrients ->
+            Html.map ReferenceNutrientsMsg (Pages.ReferenceNutrients.View.view referenceNutrients)
 
         NotFound ->
             div [] [ text "Page not found" ]
@@ -155,7 +168,7 @@ update msg model =
             stepTo url model
 
         ( LoginMsg loginMsg, Login login ) ->
-            stepLogin model (Pages.Login.Handler.update loginMsg login)
+            stepThrough steps.login model (Pages.Login.Handler.update loginMsg login)
 
         -- todo: Check all cases, and possibly refactor to have less duplication.
         ( FetchToken token, page ) ->
@@ -164,49 +177,52 @@ update msg model =
                     ( jwtLens.set (Just token) model, Cmd.none )
 
                 Overview overview ->
-                    stepOverview model (Pages.Overview.Handler.update (Pages.Overview.Page.UpdateJWT token) overview)
+                    stepThrough steps.overview model (Pages.Overview.Handler.update (Pages.Overview.Page.UpdateJWT token) overview)
 
                 Recipes recipes ->
-                    stepRecipes model (Pages.Recipes.Handler.update (Pages.Recipes.Page.UpdateJWT token) recipes)
+                    stepThrough steps.recipes model (Pages.Recipes.Handler.update (Pages.Recipes.Page.UpdateJWT token) recipes)
 
-                Ingredient ingredient ->
-                    stepIngredient model (Pages.Ingredient.Handler.update (Pages.Ingredient.Page.UpdateJWT token) ingredient)
+                Ingredients ingredients ->
+                    stepThrough steps.ingredients model (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateJWT token) ingredients)
 
                 Meals meals ->
-                    stepMeals model (Pages.Meals.Handler.update (Pages.Meals.Page.UpdateJWT token) meals)
+                    stepThrough steps.meals model (Pages.Meals.Handler.update (Pages.Meals.Page.UpdateJWT token) meals)
 
-                MealEntry mealEntry ->
-                    stepMealEntry model (Pages.MealEntry.Handler.update (Pages.MealEntry.Page.UpdateJWT token) mealEntry)
+                MealEntries mealEntry ->
+                    stepThrough steps.mealEntries model (Pages.MealEntries.Handler.update (Pages.MealEntries.Page.UpdateJWT token) mealEntry)
 
                 Statistics statistics ->
-                    stepStatistics model (Pages.Statistics.Handler.update (Pages.Statistics.Page.UpdateJWT token) statistics)
+                    stepThrough steps.statistics model (Pages.Statistics.Handler.update (Pages.Statistics.Page.UpdateJWT token) statistics)
+
+                ReferenceNutrients referenceNutrients ->
+                    stepThrough steps.referenceNutrients model (Pages.ReferenceNutrients.Handler.update (Pages.ReferenceNutrients.Page.UpdateJWT token) referenceNutrients)
 
                 NotFound ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
-        ( FetchFoods foods, Ingredient ingredient ) ->
-            stepIngredient model (Pages.Ingredient.Handler.update (Pages.Ingredient.Page.UpdateFoods foods) ingredient)
+        ( FetchFoods foods, Ingredients ingredients ) ->
+            stepThrough steps.ingredients model (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateFoods foods) ingredients)
 
-        ( FetchMeasures measures, Ingredient ingredient ) ->
-            stepIngredient model (Pages.Ingredient.Handler.update (Pages.Ingredient.Page.UpdateMeasures measures) ingredient)
+        ( FetchMeasures measures, Ingredients ingredients ) ->
+            stepThrough steps.ingredients model (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateMeasures measures) ingredients)
 
         ( OverviewMsg overviewMsg, Overview overview ) ->
-            stepOverview model (Pages.Overview.Handler.update overviewMsg overview)
+            stepThrough steps.overview model (Pages.Overview.Handler.update overviewMsg overview)
 
         ( RecipesMsg recipesMsg, Recipes recipes ) ->
-            stepRecipes model (Pages.Recipes.Handler.update recipesMsg recipes)
+            stepThrough steps.recipes model (Pages.Recipes.Handler.update recipesMsg recipes)
 
-        ( IngredientMsg ingredientMsg, Ingredient ingredient ) ->
-            stepIngredient model (Pages.Ingredient.Handler.update ingredientMsg ingredient)
+        ( IngredientsMsg ingredientsMsg, Ingredients ingredients ) ->
+            stepThrough steps.ingredients model (Pages.Ingredients.Handler.update ingredientsMsg ingredients)
 
         ( MealsMsg mealsMsg, Meals meals ) ->
-            stepMeals model (Pages.Meals.Handler.update mealsMsg meals)
+            stepThrough steps.meals model (Pages.Meals.Handler.update mealsMsg meals)
 
-        ( MealEntryMsg mealEntryMsg, MealEntry mealEntry ) ->
-            stepMealEntry model (Pages.MealEntry.Handler.update mealEntryMsg mealEntry)
+        ( MealEntriesMsg mealEntryMsg, MealEntries mealEntry ) ->
+            stepThrough steps.mealEntries model (Pages.MealEntries.Handler.update mealEntryMsg mealEntry)
 
         ( StatisticsMsg statisticsMsg, Statistics statistics ) ->
-            stepStatistics model (Pages.Statistics.Handler.update statisticsMsg statistics)
+            stepThrough steps.statistics model (Pages.Statistics.Handler.update statisticsMsg statistics)
 
         _ ->
             ( model, Cmd.none )
@@ -218,72 +234,70 @@ stepTo url model =
         Just answer ->
             case answer of
                 LoginRoute flags ->
-                    Pages.Login.Handler.init flags |> stepLogin model
+                    Pages.Login.Handler.init flags |> stepThrough steps.login model
 
                 OverviewRoute flags ->
-                    Pages.Overview.Handler.init flags |> stepOverview model
+                    Pages.Overview.Handler.init flags |> stepThrough steps.overview model
 
                 RecipesRoute flags ->
-                    Pages.Recipes.Handler.init flags |> stepRecipes model
+                    Pages.Recipes.Handler.init flags |> stepThrough steps.recipes model
 
                 IngredientRoute flags ->
-                    Pages.Ingredient.Handler.init flags |> stepIngredient model
+                    Pages.Ingredients.Handler.init flags |> stepThrough steps.ingredients model
 
                 MealsRoute flags ->
-                    Pages.Meals.Handler.init flags |> stepMeals model
+                    Pages.Meals.Handler.init flags |> stepThrough steps.meals model
 
-                MealEntryRoute flags ->
-                    Pages.MealEntry.Handler.init flags |> stepMealEntry model
+                MealEntriesRoute flags ->
+                    Pages.MealEntries.Handler.init flags |> stepThrough steps.mealEntries model
 
                 StatisticsRoute flags ->
-                    Pages.Statistics.Handler.init flags |> stepStatistics model
+                    Pages.Statistics.Handler.init flags |> stepThrough steps.statistics model
 
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
 
-stepLogin : Model -> ( Pages.Login.Page.Model, Cmd Pages.Login.Page.Msg ) -> ( Model, Cmd Msg )
-stepLogin model ( login, cmd ) =
-    ( { model | page = Login login }, Cmd.map LoginMsg cmd )
+type alias StepParameters model msg =
+    { page : model -> Page
+    , message : msg -> Msg
+    }
 
 
-stepOverview : Model -> ( Pages.Overview.Page.Model, Cmd Pages.Overview.Page.Msg ) -> ( Model, Cmd Msg )
-stepOverview model ( overview, cmd ) =
-    ( { model | page = Overview overview }, Cmd.map OverviewMsg cmd )
+steps :
+    { login : StepParameters Pages.Login.Page.Model Pages.Login.Page.Msg
+    , overview : StepParameters Pages.Overview.Page.Model Pages.Overview.Page.Msg
+    , recipes : StepParameters Pages.Recipes.Page.Model Pages.Recipes.Page.Msg
+    , ingredients : StepParameters Pages.Ingredients.Page.Model Pages.Ingredients.Page.Msg
+    , mealEntries : StepParameters Pages.MealEntries.Page.Model Pages.MealEntries.Page.Msg
+    , meals : StepParameters Pages.Meals.Page.Model Pages.Meals.Page.Msg
+    , statistics : StepParameters Pages.Statistics.Page.Model Pages.Statistics.Page.Msg
+    , referenceNutrients : StepParameters Pages.ReferenceNutrients.Page.Model Pages.ReferenceNutrients.Page.Msg
+    }
+steps =
+    { login = StepParameters Login LoginMsg
+    , overview = StepParameters Overview OverviewMsg
+    , recipes = StepParameters Recipes RecipesMsg
+    , ingredients = StepParameters Ingredients IngredientsMsg
+    , mealEntries = StepParameters MealEntries MealEntriesMsg
+    , meals = StepParameters Meals MealsMsg
+    , statistics = StepParameters Statistics StatisticsMsg
+    , referenceNutrients = StepParameters ReferenceNutrients ReferenceNutrientsMsg
+    }
 
 
-stepRecipes : Model -> ( Pages.Recipes.Page.Model, Cmd Pages.Recipes.Page.Msg ) -> ( Model, Cmd Msg )
-stepRecipes model ( recipes, cmd ) =
-    ( { model | page = Recipes recipes }, Cmd.map RecipesMsg cmd )
-
-
-stepIngredient : Model -> ( Pages.Ingredient.Page.Model, Cmd Pages.Ingredient.Page.Msg ) -> ( Model, Cmd Msg )
-stepIngredient model ( ingredient, cmd ) =
-    ( { model | page = Ingredient ingredient }, Cmd.map IngredientMsg cmd )
-
-
-stepMealEntry : Model -> ( Pages.MealEntry.Page.Model, Cmd Pages.MealEntry.Page.Msg ) -> ( Model, Cmd Msg )
-stepMealEntry model ( mealEntry, cmd ) =
-    ( { model | page = MealEntry mealEntry }, Cmd.map MealEntryMsg cmd )
-
-
-stepMeals : Model -> ( Pages.Meals.Page.Model, Cmd Pages.Meals.Page.Msg ) -> ( Model, Cmd Msg )
-stepMeals model ( recipes, cmd ) =
-    ( { model | page = Meals recipes }, Cmd.map MealsMsg cmd )
-
-
-stepStatistics : Model -> ( Pages.Statistics.Page.Model, Cmd Pages.Statistics.Page.Msg ) -> ( Model, Cmd Msg )
-stepStatistics model ( statistics, cmd ) =
-    ( { model | page = Statistics statistics }, Cmd.map StatisticsMsg cmd )
+stepThrough : { page : model -> Page, message : msg -> Msg } -> Model -> ( model, Cmd msg ) -> ( Model, Cmd Msg )
+stepThrough ps model ( subModel, cmd ) =
+    ( { model | page = ps.page subModel }, Cmd.map ps.message cmd )
 
 
 type Route
     = LoginRoute Pages.Login.Page.Flags
     | OverviewRoute Pages.Overview.Page.Flags
     | RecipesRoute Pages.Recipes.Page.Flags
-    | IngredientRoute Pages.Ingredient.Page.Flags
+    | IngredientRoute Pages.Ingredients.Page.Flags
     | MealsRoute Pages.Meals.Page.Flags
-    | MealEntryRoute Pages.MealEntry.Page.Flags
+    | MealEntriesRoute Pages.MealEntries.Page.Flags
     | StatisticsRoute Pages.Statistics.Page.Flags
 
 
@@ -312,7 +326,7 @@ routeParser jwt configuration =
         mealsParser =
             s "meals" |> Parser.map flags
 
-        mealEntryParser =
+        mealEntriesParser =
             (s "meal-entry-editor" </> ParserUtil.uuidParser)
                 |> Parser.map
                     (\mealId ->
@@ -334,7 +348,7 @@ routeParser jwt configuration =
         , route recipesParser RecipesRoute
         , route ingredientParser IngredientRoute
         , route mealsParser MealsRoute
-        , route mealEntryParser MealEntryRoute
+        , route mealEntriesParser MealEntriesRoute
         , route statisticsParser StatisticsRoute
         ]
 

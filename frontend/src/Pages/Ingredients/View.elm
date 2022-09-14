@@ -1,4 +1,4 @@
-module Pages.Ingredient.View exposing (view)
+module Pages.Ingredients.View exposing (view)
 
 import Api.Auxiliary exposing (FoodId, IngredientId, JWT, MeasureId, RecipeId)
 import Api.Types.AmountUnit exposing (AmountUnit)
@@ -17,11 +17,11 @@ import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
-import Pages.Ingredient.AmountUnitClientInput as AmountUnitClientInput
-import Pages.Ingredient.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
-import Pages.Ingredient.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
-import Pages.Ingredient.Page as Page
-import Pages.Ingredient.RecipeInfo exposing (RecipeInfo)
+import Pages.Ingredients.AmountUnitClientInput as AmountUnitClientInput
+import Pages.Ingredients.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
+import Pages.Ingredients.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
+import Pages.Ingredients.Page as Page
+import Pages.Ingredients.RecipeInfo exposing (RecipeInfo)
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
 import Util.Editing exposing (Editing)

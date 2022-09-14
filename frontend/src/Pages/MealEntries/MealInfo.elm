@@ -1,4 +1,4 @@
-module Pages.MealEntry.MealInfo exposing (..)
+module Pages.MealEntries.MealInfo exposing (..)
 
 import Api.Types.Meal exposing (Meal)
 import Api.Types.SimpleDate exposing (SimpleDate)

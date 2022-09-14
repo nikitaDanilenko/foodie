@@ -1,4 +1,4 @@
-module Pages.MealEntry.View exposing (view)
+module Pages.MealEntries.View exposing (view)
 
 import Api.Types.MealEntry exposing (MealEntry)
 import Api.Types.Recipe exposing (Recipe)
@@ -11,9 +11,9 @@ import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import List.Extra
 import Maybe.Extra
-import Pages.MealEntry.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
-import Pages.MealEntry.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
-import Pages.MealEntry.Page as Page exposing (RecipeMap)
+import Pages.MealEntries.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
+import Pages.MealEntries.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
+import Pages.MealEntries.Page as Page exposing (RecipeMap)
 import Pages.Util.DateUtil as DateUtil
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput

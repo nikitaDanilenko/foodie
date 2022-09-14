@@ -1,4 +1,4 @@
-module Pages.MealEntry.Requests exposing
+module Pages.MealEntries.Requests exposing
     ( AddMealEntryParams
     , addMealEntry
     , deleteMealEntry
@@ -16,7 +16,7 @@ import Api.Types.MealEntryUpdate exposing (MealEntryUpdate, encoderMealEntryUpda
 import Api.Types.Recipe exposing (Recipe, decoderRecipe)
 import Configuration exposing (Configuration)
 import Json.Decode as Decode
-import Pages.MealEntry.Page exposing (Msg(..), RecipeMap)
+import Pages.MealEntries.Page exposing (Msg(..), RecipeMap)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Url.Builder
 import Util.HttpUtil as HttpUtil

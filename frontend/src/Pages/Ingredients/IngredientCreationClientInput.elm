@@ -1,9 +1,9 @@
-module Pages.Ingredient.IngredientCreationClientInput exposing (..)
+module Pages.Ingredients.IngredientCreationClientInput exposing (..)
 
 import Api.Auxiliary exposing (FoodId, MeasureId, RecipeId)
 import Api.Types.IngredientCreation exposing (IngredientCreation)
 import Monocle.Lens exposing (Lens)
-import Pages.Ingredient.AmountUnitClientInput as AmountUnitClientInput exposing (AmountUnitClientInput)
+import Pages.Ingredients.AmountUnitClientInput as AmountUnitClientInput exposing (AmountUnitClientInput)
 
 
 type alias IngredientCreationClientInput =

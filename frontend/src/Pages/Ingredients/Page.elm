@@ -1,4 +1,4 @@
-module Pages.Ingredient.Page exposing (..)
+module Pages.Ingredients.Page exposing (..)
 
 import Api.Auxiliary exposing (FoodId, IngredientId, JWT, MeasureId, RecipeId)
 import Api.Types.Food exposing (Food)
@@ -11,8 +11,8 @@ import Either exposing (Either(..))
 import Http exposing (Error)
 import Maybe.Extra
 import Monocle.Lens exposing (Lens)
-import Pages.Ingredient.IngredientCreationClientInput exposing (IngredientCreationClientInput)
-import Pages.Ingredient.IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
+import Pages.Ingredients.IngredientCreationClientInput exposing (IngredientCreationClientInput)
+import Pages.Ingredients.IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
 import Pages.Ingredient.RecipeInfo exposing (RecipeInfo)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
