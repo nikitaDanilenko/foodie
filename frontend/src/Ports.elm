@@ -1,19 +1,17 @@
 port module Ports exposing
     ( doFetchFoods
     , doFetchMeasures
+    , doFetchNutrients
     , doFetchToken
     , fetchFoods
     , fetchMeasures
+    , fetchNutrients
     , fetchToken
     , storeFoods
     , storeMeasures
+    , storeNutrients
     , storeToken
-    )measures
-measures
-measures
-measures
-measures
-measures
+    )
 
 
 port storeToken : String -> Cmd msg
