@@ -56,8 +56,8 @@ init flags =
 initialFetch : FlagsWithJWT -> Cmd Page.Msg
 initialFetch flags =
     Cmd.batch
-        [ Requests.fetchNutrients flags
-        , Requests.fetchReferenceNutrients flags
+        [ Requests.fetchReferenceNutrients flags
+        , Ports.doFetchNutrients ()
         ]
 
 

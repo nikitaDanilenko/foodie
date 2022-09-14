@@ -203,6 +203,9 @@ update msg model =
         ( FetchMeasures measures, Ingredients ingredients ) ->
             stepThrough steps.ingredients model (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateMeasures measures) ingredients)
 
+        ( FetchNutrients nutrients, ReferenceNutrients referenceNutrients ) ->
+            stepThrough steps.referenceNutrients model (Pages.ReferenceNutrients.Handler.update (Pages.ReferenceNutrients.Page.UpdateNutrients nutrients) referenceNutrients)
+
         ( OverviewMsg overviewMsg, Overview overview ) ->
             stepThrough steps.overview model (Pages.Overview.Handler.update overviewMsg overview)
 
