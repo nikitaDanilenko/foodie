@@ -140,10 +140,7 @@ viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient
                     , td []
                         [ button
                             [ class "button"
-                            , disabled
-                                (Dict.get nutrient.code referenceNutrientsToAdd
-                                    |> Maybe.Extra.unwrap True (.amount >> ValidatedInput.isValid >> not)
-                                )
+                            , disabled (referenceNutrientToAdd.amount |> ValidatedInput.isValid |> not)
                             , onClick addMsg
                             ]
                             [ text
