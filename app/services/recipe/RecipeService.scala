@@ -279,21 +279,19 @@ object RecipeService {
     )(implicit
         ec: ExecutionContext
     ): DBIO[Ingredient] = {
+      val ingredient    = IngredientCreation.create(id, ingredientCreation)
+      val ingredientRow = (ingredient, ingredientCreation.recipeId).transformInto[Tables.RecipeIngredientRow]
+      val query         = ingredientQuery(id)
       ifRecipeExists(userId, ingredientCreation.recipeId) {
-        val query = ingredientQuery(id)
         for {
           exists <- query.exists.result
           row <-
             if (exists)
               query
-                .map(r => (r.measureId, r.factor))
-                .update(ingredientCreation.amountUnit.measureId, ingredientCreation.amountUnit.factor)
+                .update(ingredientRow)
                 .andThen(query.result.head)
-            else {
-              val ingredient    = IngredientCreation.create(id, ingredientCreation)
-              val ingredientRow = (ingredient, ingredientCreation.recipeId).transformInto[Tables.RecipeIngredientRow]
+            else
               Tables.RecipeIngredient.returning(Tables.RecipeIngredient) += ingredientRow
-            }
         } yield row.transformInto[Ingredient]
       }
     }

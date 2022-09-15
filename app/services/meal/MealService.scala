@@ -1,7 +1,6 @@
 package services.meal
 
 import cats.data.OptionT
-import cats.syntax.traverse._
 import db.generated.Tables
 import errors.{ ErrorContext, ServerError }
 import io.scalaland.chimney.dsl.TransformerOps
@@ -135,12 +134,10 @@ object MealService {
 
       Tables.Meal
         .filter(m => m.userId === userId.transformInto[UUID] && dateFilter(m.consumedOnDate))
-        .map(_.id)
         .result
-        .flatMap(
-          _.traverse(id => getMeal(userId, id.transformInto[MealId]))
+        .map(
+          _.map(_.transformInto[Meal])
         )
-        .map(_.flatten)
     }
 
     override def getMeal(
@@ -203,12 +200,20 @@ object MealService {
     )(implicit
         ec: ExecutionContext
     ): DBIO[MealEntry] = {
-      val mealEntry = MealEntryCreation.create(id, mealEntryCreation)
+      val mealEntry    = MealEntryCreation.create(id, mealEntryCreation)
+      val mealEntryRow = (mealEntry, mealEntryCreation.mealId).transformInto[Tables.MealEntryRow]
+      val query        = mealEntryQuery(id)
       ifMealExists(userId, mealEntryCreation.mealId) {
-        (Tables.MealEntry
-          .returning(Tables.MealEntry) += (mealEntry, mealEntryCreation.mealId)
-          .transformInto[Tables.MealEntryRow])
-          .map(_.transformInto[MealEntry])
+        for {
+          exists <- query.exists.result
+          row <-
+            if (exists)
+              query
+                .update(mealEntryRow)
+                .andThen(query.result.head)
+            else
+              Tables.MealEntry.returning(Tables.MealEntry) += mealEntryRow
+        } yield row.transformInto[MealEntry]
       }
     }
 
