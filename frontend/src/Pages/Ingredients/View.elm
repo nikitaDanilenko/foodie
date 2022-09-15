@@ -227,7 +227,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                         [ button
                             [ class "button"
                             , disabled
-                                (ingredientToAdd.amountUnit.factor.value <= 0)
+                                (ingredientToAdd.amountUnit.factor |> ValidatedInput.isValid |> not)
                             , onClick addMsg
                             ]
                             [ text "Add" ]

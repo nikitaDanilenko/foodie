@@ -9,7 +9,6 @@ import Html exposing (Html, button, div, input, label, td, text, thead, tr)
 import Html.Attributes exposing (class, disabled, id, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
-import List.Extra
 import Maybe.Extra
 import Pages.MealEntries.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntries.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
@@ -113,14 +112,14 @@ editMealEntryLine recipeMap mealEntry mealEntryUpdateClientInput =
         ]
 
 
-viewRecipeLine : List MealEntryCreationClientInput -> Recipe -> Html Page.Msg
+viewRecipeLine : Page.AddMealEntriesMap -> Recipe -> Html Page.Msg
 viewRecipeLine mealEntriesToAdd recipe =
     let
         addMsg =
             Page.AddRecipe recipe.id
 
         process =
-            case List.Extra.find (\me -> me.recipeId == recipe.id) mealEntriesToAdd of
+            case Dict.get recipe.id mealEntriesToAdd of
                 Nothing ->
                     [ td [] [ button [ class "button", onClick (Page.SelectRecipe recipe.id) ] [ text "Select" ] ] ]
 
@@ -145,9 +144,7 @@ viewRecipeLine mealEntriesToAdd recipe =
                         [ button
                             [ class "button"
                             , disabled
-                                (List.Extra.find (\me -> me.recipeId == recipe.id) mealEntriesToAdd
-                                    |> Maybe.Extra.unwrap True (.numberOfServings >> ValidatedInput.isValid >> not)
-                                )
+                                (mealEntryToAdd.numberOfServings |> ValidatedInput.isValid |> not)
                             , onClick addMsg
                             ]
                             [ text "Add" ]

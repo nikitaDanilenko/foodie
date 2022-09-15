@@ -50,7 +50,7 @@ init flags =
       , mealEntries = []
       , recipes = Dict.empty
       , recipesSearchString = ""
-      , mealEntriesToAdd = []
+      , mealEntriesToAdd = Dict.empty
       }
     , cmd
     )
@@ -238,13 +238,8 @@ selectRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd msg )
 selectRecipe model recipeId =
     ( model
         |> Lens.modify Page.lenses.mealEntriesToAdd
-            (ListUtil.insertBy
-                { compareA = .recipeId >> Page.recipeNameOrEmpty model.recipes
-                , compareB = .recipeId >> Page.recipeNameOrEmpty model.recipes
-                , mapAB = identity
-                , replace = True
-                }
-                (MealEntryCreationClientInput.default model.mealId recipeId)
+            (Dict.update recipeId
+                (always (MealEntryCreationClientInput.default model.mealId recipeId) >> Just)
             )
     , Cmd.none
     )
@@ -253,7 +248,7 @@ selectRecipe model recipeId =
 deselectRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd Page.Msg )
 deselectRecipe model recipeId =
     ( model
-        |> Lens.modify Page.lenses.mealEntriesToAdd (List.Extra.filterNot (\me -> me.recipeId == recipeId))
+        |> Lens.modify Page.lenses.mealEntriesToAdd (Dict.remove recipeId)
     , Cmd.none
     )
 
@@ -261,7 +256,7 @@ deselectRecipe model recipeId =
 addRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd Page.Msg )
 addRecipe model recipeId =
     ( model
-    , List.Extra.find (\me -> me.recipeId == recipeId) model.mealEntriesToAdd
+    , Dict.get recipeId model.mealEntriesToAdd
         |> Maybe.map
             (MealEntryCreationClientInput.toCreation
                 >> Requests.AddMealEntryParams model.flagsWithJWT.configuration model.flagsWithJWT.jwt
@@ -287,7 +282,7 @@ gotAddMealEntryResponse model result =
                             }
                             mealEntry
                         )
-                    |> Lens.modify Page.lenses.mealEntriesToAdd (List.Extra.filterNot (\me -> me.recipeId == mealEntry.recipeId))
+                    |> Lens.modify Page.lenses.mealEntriesToAdd (Dict.remove mealEntry.recipeId)
             )
         |> Either.withDefault model
     , Cmd.none
@@ -298,10 +293,7 @@ updateAddRecipe : Page.Model -> MealEntryCreationClientInput -> ( Page.Model, Cm
 updateAddRecipe model mealEntryCreationClientInput =
     ( model
         |> Lens.modify Page.lenses.mealEntriesToAdd
-            (List.Extra.setIf
-                (\me -> me.recipeId == mealEntryCreationClientInput.recipeId)
-                mealEntryCreationClientInput
-            )
+            (Dict.update mealEntryCreationClientInput.recipeId (always mealEntryCreationClientInput >> Just))
     , Cmd.none
     )
 
@@ -332,7 +324,7 @@ mapMealEntryOrUpdateById ingredientId =
 
 
 mealEntryIdIs : MealEntryId -> Page.MealEntryOrUpdate -> Bool
-mealEntryIdIs  =
+mealEntryIdIs =
     Editing.is .id
 
 

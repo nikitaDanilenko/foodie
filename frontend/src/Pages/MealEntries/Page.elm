@@ -26,7 +26,7 @@ type alias Model =
     , mealEntries : List MealEntryOrUpdate
     , recipes : RecipeMap
     , recipesSearchString : String
-    , mealEntriesToAdd : List MealEntryCreationClientInput
+    , mealEntriesToAdd : AddMealEntriesMap
     }
 
 
@@ -37,6 +37,8 @@ type alias MealEntryOrUpdate =
 type alias RecipeMap =
     Dict RecipeId Recipe
 
+type alias AddMealEntriesMap =
+    Dict RecipeId MealEntryCreationClientInput
 
 type alias Flags =
     { configuration : Configuration
@@ -49,7 +51,7 @@ lenses :
     { jwt : Lens Model JWT
     , mealInfo : Lens Model (Maybe MealInfo)
     , mealEntries : Lens Model (List MealEntryOrUpdate)
-    , mealEntriesToAdd : Lens Model (List MealEntryCreationClientInput)
+    , mealEntriesToAdd : Lens Model AddMealEntriesMap
     , recipes : Lens Model RecipeMap
     , recipesSearchString : Lens Model String
     }
