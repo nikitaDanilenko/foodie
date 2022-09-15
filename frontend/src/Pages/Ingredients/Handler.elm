@@ -64,7 +64,7 @@ init flags =
       , foods = Dict.empty
       , measures = Dict.empty
       , foodsSearchString = ""
-      , foodsToAdd = []
+      , foodsToAdd = Dict.empty
       , recipeInfo = Nothing
       }
     , cmd
@@ -332,14 +332,7 @@ selectFood : Page.Model -> Food -> ( Page.Model, Cmd msg )
 selectFood model food =
     ( model
         |> Lens.modify Page.lenses.foodsToAdd
-            (ListUtil.insertBy
-                { compareA = .foodId >> Page.ingredientNameOrEmpty model.foods
-                , compareB = .foodId >> Page.ingredientNameOrEmpty model.foods
-                , mapAB = identity
-                , replace = True
-                }
-                (IngredientCreationClientInput.default model.recipeId food.id (food.measures |> List.head |> Maybe.Extra.unwrap 0 .id))
-            )
+            (Dict.update food.id (always (IngredientCreationClientInput.default model.recipeId food.id (food.measures |> List.head |> Maybe.Extra.unwrap 0 .id)) >> Just))
     , Cmd.none
     )
 
@@ -347,7 +340,7 @@ selectFood model food =
 deselectFood : Page.Model -> FoodId -> ( Page.Model, Cmd Page.Msg )
 deselectFood model foodId =
     ( model
-        |> Lens.modify Page.lenses.foodsToAdd (List.Extra.filterNot (\f -> f.foodId == foodId))
+        |> Lens.modify Page.lenses.foodsToAdd (Dict.remove foodId)
     , Cmd.none
     )
 
@@ -357,7 +350,7 @@ addFood model foodId =
     ( model
     , model
         |> (Page.lenses.foodsToAdd
-                |> Compose.lensWithOptional (LensUtil.firstSuch (\f -> f.foodId == foodId))
+                |> Compose.lensWithOptional (LensUtil.dictByKey foodId)
            ).getOption
         |> Maybe.Extra.unwrap Cmd.none
             (\foodToAdd ->
@@ -393,7 +386,7 @@ gotAddFoodResponse model result =
                         )
                     |> Lens.modify
                         Page.lenses.foodsToAdd
-                        (List.Extra.filterNot (\ic -> ic.foodId == ingredient.foodId))
+                        (Dict.remove ingredient.foodId)
             )
     , Cmd.none
     )
@@ -403,9 +396,6 @@ updateAddFood : Page.Model -> IngredientCreationClientInput -> ( Page.Model, Cmd
 updateAddFood model ingredientCreationClientInput =
     ( model
         |> Lens.modify Page.lenses.foodsToAdd
-            (List.Extra.setIf
-                (\f -> f.foodId == ingredientCreationClientInput.foodId)
-                ingredientCreationClientInput
-            )
+            (Dict.update ingredientCreationClientInput.foodId (always ingredientCreationClientInput >> Just))
     , Cmd.none
     )

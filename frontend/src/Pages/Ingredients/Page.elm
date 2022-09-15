@@ -27,7 +27,7 @@ type alias Model =
     , foods : FoodMap
     , measures : MeasureMap
     , foodsSearchString : String
-    , foodsToAdd : List IngredientCreationClientInput
+    , foodsToAdd : AddFoodsMap
     }
 
 
@@ -43,12 +43,16 @@ type alias MeasureMap =
     Dict MeasureId Measure
 
 
+type alias AddFoodsMap =
+    Dict FoodId IngredientCreationClientInput
+
+
 lenses :
     { jwt : Lens Model JWT
     , foods : Lens Model FoodMap
     , measures : Lens Model MeasureMap
     , ingredients : Lens Model (List IngredientOrUpdate)
-    , foodsToAdd : Lens Model (List IngredientCreationClientInput)
+    , foodsToAdd : Lens Model AddFoodsMap
     , foodsSearchString : Lens Model String
     , recipeInfo : Lens Model (Maybe RecipeInfo)
     }

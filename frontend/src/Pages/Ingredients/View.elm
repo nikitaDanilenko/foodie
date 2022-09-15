@@ -13,7 +13,6 @@ import Html exposing (Html, button, div, input, label, td, text, thead, tr)
 import Html.Attributes exposing (class, disabled, id, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
-import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
@@ -177,14 +176,14 @@ onChangeDropdown ps =
         >> ps.mkMsg
 
 
-viewFoodLine : Page.FoodMap -> Page.MeasureMap -> List IngredientCreationClientInput -> Food -> Html Page.Msg
+viewFoodLine : Page.FoodMap -> Page.MeasureMap -> Page.AddFoodsMap -> Food -> Html Page.Msg
 viewFoodLine foodMap measureMap ingredientsToAdd food =
     let
         addMsg =
             Page.AddFood food.id
 
         process =
-            case List.Extra.find (\i -> i.foodId == food.id) ingredientsToAdd of
+            case Dict.get food.id ingredientsToAdd of
                 Nothing ->
                     [ td [] [ button [ class "button", onClick (Page.SelectFood food) ] [ text "Select" ] ] ]
 
@@ -228,9 +227,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                         [ button
                             [ class "button"
                             , disabled
-                                (List.Extra.find (\f -> f.foodId == food.id) ingredientsToAdd
-                                    |> Maybe.Extra.unwrap True (\f -> f.amountUnit.factor.value <= 0)
-                                )
+                                (ingredientToAdd.amountUnit.factor.value <= 0)
                             , onClick addMsg
                             ]
                             [ text "Add" ]

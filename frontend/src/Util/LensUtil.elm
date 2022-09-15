@@ -15,6 +15,13 @@ firstSuch p =
     }
 
 
+dictByKey : comparable -> Optional (Dict comparable a) a
+dictByKey k =
+    { getOption = Dict.get k
+    , set = \v -> Dict.update k (always v >> Just)
+    }
+
+
 flagsWithJWTLens : Lens { a | flagsWithJWT : b } b
 flagsWithJWTLens =
     Lens .flagsWithJWT (\b a -> { a | flagsWithJWT = b })
