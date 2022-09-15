@@ -11,7 +11,6 @@ import Either exposing (Either(..))
 import Http exposing (Error)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens exposing (Lens)
@@ -25,7 +24,6 @@ import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Ports exposing (doFetchFoods, doFetchMeasures, doFetchToken, storeFoods, storeMeasures)
 import Util.Editing as Editing exposing (Editing)
 import Util.LensUtil as LensUtil
-import Util.ListUtil as ListUtil
 
 
 initialFetch : FlagsWithJWT -> RecipeId -> Cmd Page.Msg
@@ -60,7 +58,7 @@ init flags =
             , jwt = jwt
             }
       , recipeId = flags.recipeId
-      , ingredients = []
+      , ingredients = Dict.empty
       , foods = Dict.empty
       , measures = Dict.empty
       , foodsSearchString = ""
@@ -135,22 +133,10 @@ update msg model =
             updateAddFood model ingredientCreationClientInput
 
 
-foodIdOf : Page.IngredientOrUpdate -> FoodId
-foodIdOf =
-    Either.unpack
-        .foodId
-        (.original >> .foodId)
-
-
-ingredientIdIs : IngredientId -> Page.IngredientOrUpdate -> Bool
-ingredientIdIs =
-    Editing.is .id
-
-
 mapIngredientOrUpdateById : IngredientId -> (Page.IngredientOrUpdate -> Page.IngredientOrUpdate) -> Page.Model -> Page.Model
 mapIngredientOrUpdateById ingredientId =
     Page.lenses.ingredients
-        |> Compose.lensWithOptional (ingredientId |> Editing.is .id |> LensUtil.firstSuch)
+        |> Compose.lensWithOptional (LensUtil.dictByKey ingredientId)
         |> Optional.modify
 
 
@@ -168,7 +154,7 @@ saveIngredientEdit model ingredientId =
     ( model
     , model
         |> Page.lenses.ingredients.get
-        |> List.Extra.find (ingredientIdIs ingredientId)
+        |> Dict.get ingredientId
         |> Maybe.andThen Either.rightToMaybe
         |> Maybe.Extra.unwrap Cmd.none
             (.update >> IngredientUpdateClientInput.to >> Requests.saveIngredient model.flagsWithJWT)
@@ -219,7 +205,7 @@ gotDeleteIngredientResponse model ingredientId result =
         |> Either.unwrap model
             (model
                 |> Lens.modify Page.lenses.ingredients
-                    (List.Extra.filterNot (ingredientIdIs ingredientId))
+                    (Dict.remove ingredientId)
                 |> always
             )
     , Cmd.none
@@ -230,7 +216,11 @@ gotFetchIngredientsResponse : Page.Model -> Result Error (List Ingredient) -> ( 
 gotFetchIngredientsResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model (List.map Left >> flip Page.lenses.ingredients.set model)
+        |> Either.unwrap model
+            (List.map (\ingredient -> ( ingredient.id, Left ingredient ))
+                >> Dict.fromList
+                >> flip Page.lenses.ingredients.set model
+            )
     , Cmd.none
     )
 
@@ -376,14 +366,7 @@ gotAddFoodResponse model result =
                 model
                     |> Lens.modify
                         Page.lenses.ingredients
-                        (ListUtil.insertBy
-                            { compareA = .foodId >> Page.ingredientNameOrEmpty model.foods
-                            , compareB = foodIdOf >> Page.ingredientNameOrEmpty model.foods
-                            , mapAB = Left
-                            , replace = True
-                            }
-                            ingredient
-                        )
+                        (Dict.update ingredient.id (always ingredient >> Left >> Just))
                     |> Lens.modify
                         Page.lenses.foodsToAdd
                         (Dict.remove ingredient.foodId)

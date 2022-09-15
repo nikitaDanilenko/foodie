@@ -23,7 +23,7 @@ type alias Model =
     { flagsWithJWT : FlagsWithJWT
     , recipeId : RecipeId
     , recipeInfo : Maybe RecipeInfo
-    , ingredients : List IngredientOrUpdate
+    , ingredients : IngredientOrUpdateMap
     , foods : FoodMap
     , measures : MeasureMap
     , foodsSearchString : String
@@ -46,12 +46,15 @@ type alias MeasureMap =
 type alias AddFoodsMap =
     Dict FoodId IngredientCreationClientInput
 
+type alias IngredientOrUpdateMap =
+    Dict IngredientId IngredientOrUpdate
+
 
 lenses :
     { jwt : Lens Model JWT
     , foods : Lens Model FoodMap
     , measures : Lens Model MeasureMap
-    , ingredients : Lens Model (List IngredientOrUpdate)
+    , ingredients : Lens Model IngredientOrUpdateMap
     , foodsToAdd : Lens Model AddFoodsMap
     , foodsSearchString : Lens Model String
     , recipeInfo : Lens Model (Maybe RecipeInfo)
@@ -100,3 +103,9 @@ type alias Flags =
 ingredientNameOrEmpty : FoodMap -> FoodId -> String
 ingredientNameOrEmpty fm fi =
     Dict.get fi fm |> Maybe.Extra.unwrap "" .name
+
+foodIdOf : IngredientOrUpdate -> FoodId
+foodIdOf =
+    Either.unpack
+        .foodId
+        (.original >> .foodId)

@@ -23,7 +23,6 @@ import Pages.Ingredients.Page as Page
 import Pages.Ingredients.RecipeInfo exposing (RecipeInfo)
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
-import Util.Editing exposing (Editing)
 
 
 view : Page.Model -> Html Page.Msg
@@ -58,7 +57,12 @@ view model =
                     , td [] [ label [] [ text "Unit" ] ]
                     ]
                 ]
-                :: viewEditIngredients model.ingredients
+                :: viewEditIngredients
+                    (model.ingredients
+                        |> Dict.toList
+                        |> List.sortBy (Tuple.second >> Page.foodIdOf >> Page.ingredientNameOrEmpty model.foods)
+                        |> List.map Tuple.second
+                    )
             )
         , div [ id "addIngredientView" ]
             (div [ id "addIngredient" ]
