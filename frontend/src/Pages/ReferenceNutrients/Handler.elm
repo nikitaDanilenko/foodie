@@ -9,7 +9,6 @@ import Either exposing (Either(..))
 import Http exposing (Error)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens
@@ -22,7 +21,6 @@ import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Ports
 import Util.Editing as Editing exposing (Editing)
 import Util.LensUtil as LensUtil
-import Util.ListUtil as ListUtil
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
@@ -44,7 +42,7 @@ init flags =
             { configuration = flags.configuration
             , jwt = jwt
             }
-      , referenceNutrients = []
+      , referenceNutrients = Dict.empty
       , nutrients = Dict.empty
       , nutrientsSearchString = ""
       , referenceNutrientsToAdd = Dict.empty
@@ -130,7 +128,7 @@ saveReferenceNutrientEdit model nutrientCode =
     ( model
     , model
         |> Page.lenses.referenceNutrients.get
-        |> List.Extra.find (Page.nutrientCodeIs nutrientCode)
+        |> Dict.get nutrientCode
         |> Maybe.andThen Either.rightToMaybe
         |> Maybe.Extra.unwrap Cmd.none
             (.update >> ReferenceNutrientUpdateClientInput.to >> Requests.saveReferenceNutrient model.flagsWithJWT)
@@ -187,7 +185,7 @@ gotDeleteReferenceNutrientResponse model nutrientCode result =
     ( result
         |> Either.fromResult
         |> Either.unwrap model
-            (Lens.modify Page.lenses.referenceNutrients (List.Extra.filterNot (Page.nutrientCodeIs nutrientCode)) model
+            (Lens.modify Page.lenses.referenceNutrients (Dict.remove nutrientCode) model
                 |> always
             )
     , Cmd.none
@@ -199,8 +197,8 @@ gotFetchReferenceNutrientsResponse model result =
     ( result
         |> Either.fromResult
         |> Either.unwrap model
-            (List.sortBy (.nutrientCode >> Page.nutrientNameOrEmpty model.nutrients)
-                >> List.map Left
+            (List.map (\r -> ( r.nutrientCode, Left r ))
+                >> Dict.fromList
                 >> flip Page.lenses.referenceNutrients.set model
             )
     , Cmd.none
@@ -259,14 +257,7 @@ gotAddReferenceNutrientResponse model result =
             (\referenceNutrient ->
                 model
                     |> Lens.modify Page.lenses.referenceNutrients
-                        (ListUtil.insertBy
-                            { compareA = .nutrientCode >> Page.nutrientNameOrEmpty model.nutrients
-                            , compareB = Page.nutrientCodeOf >> Page.nutrientNameOrEmpty model.nutrients
-                            , mapAB = Left
-                            , replace = True
-                            }
-                            referenceNutrient
-                        )
+                        (Dict.update referenceNutrient.nutrientCode (always referenceNutrient >> Left >> Just))
                     |> Lens.modify Page.lenses.referenceNutrientsToAdd (Dict.remove referenceNutrient.nutrientCode)
             )
         |> Either.withDefault model
@@ -320,5 +311,5 @@ setNutrientsSearchString model string =
 mapReferenceNutrientOrUpdateById : NutrientCode -> (Page.ReferenceNutrientOrUpdate -> Page.ReferenceNutrientOrUpdate) -> Page.Model -> Page.Model
 mapReferenceNutrientOrUpdateById ingredientId =
     Page.lenses.referenceNutrients
-        |> Compose.lensWithOptional (ingredientId |> Editing.is .nutrientCode |> LensUtil.firstSuch)
+        |> Compose.lensWithOptional (LensUtil.dictByKey ingredientId)
         |> Optional.modify

@@ -15,12 +15,12 @@ import Monocle.Lens exposing (Lens)
 import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
-import Util.Editing as Editing exposing (Editing)
+import Util.Editing exposing (Editing)
 
 
 type alias Model =
     { flagsWithJWT : FlagsWithJWT
-    , referenceNutrients : List ReferenceNutrientOrUpdate
+    , referenceNutrients : ReferenceNutrientOrUpdateMap
     , nutrients : NutrientMap
     , nutrientsSearchString : String
     , referenceNutrientsToAdd : AddNutrientMap
@@ -39,6 +39,10 @@ type alias AddNutrientMap =
     Dict NutrientCode ReferenceNutrientCreationClientInput
 
 
+type alias ReferenceNutrientOrUpdateMap =
+    Dict NutrientCode ReferenceNutrientOrUpdate
+
+
 type alias Flags =
     { configuration : Configuration
     , jwt : Maybe JWT
@@ -47,7 +51,7 @@ type alias Flags =
 
 lenses :
     { jwt : Lens Model JWT
-    , referenceNutrients : Lens Model (List ReferenceNutrientOrUpdate)
+    , referenceNutrients : Lens Model ReferenceNutrientOrUpdateMap
     , referenceNutrientsToAdd : Lens Model AddNutrientMap
     , nutrients : Lens Model NutrientMap
     , nutrientsSearchString : Lens Model String
@@ -77,18 +81,6 @@ nutrientNameOrEmpty nutrientMap =
 nutrientUnitOrEmpty : NutrientMap -> NutrientCode -> String
 nutrientUnitOrEmpty nutrientMap =
     flip Dict.get nutrientMap >> Maybe.Extra.unwrap "" (.unit >> NutrientUnit.toString)
-
-
-nutrientCodeOf : ReferenceNutrientOrUpdate -> NutrientCode
-nutrientCodeOf =
-    Either.unpack
-        .nutrientCode
-        (.original >> .nutrientCode)
-
-
-nutrientCodeIs : NutrientCode -> ReferenceNutrientOrUpdate -> Bool
-nutrientCodeIs =
-    Editing.is .nutrientCode
 
 
 type Msg

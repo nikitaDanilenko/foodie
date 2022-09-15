@@ -9,8 +9,6 @@ import Html exposing (Html, button, div, input, label, td, text, thead, tr)
 import Html.Attributes exposing (class, disabled, id, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
-import List.Extra
-import Maybe.Extra
 import Pages.ReferenceNutrients.Page as Page exposing (NutrientMap)
 import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput as ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput as ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
@@ -44,7 +42,12 @@ view model =
                     , td [] [ label [] [ text "Unit" ] ]
                     ]
                 ]
-                :: viewEditReferenceNutrients model.referenceNutrients
+                :: viewEditReferenceNutrients
+                    (model.referenceNutrients
+                        |> Dict.toList
+                        |> List.sortBy (\( k, _ ) -> Page.nutrientNameOrEmpty model.nutrients k)
+                        |> List.map Tuple.second
+                    )
             )
         , div [ id "addReferenceNutrientView" ]
             (div [ id "addReferenceNutrient" ]
@@ -108,7 +111,7 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
         ]
 
 
-viewNutrientLine : Page.NutrientMap -> List Page.ReferenceNutrientOrUpdate -> Page.AddNutrientMap -> Nutrient -> Html Page.Msg
+viewNutrientLine : Page.NutrientMap -> Page.ReferenceNutrientOrUpdateMap -> Page.AddNutrientMap -> Nutrient -> Html Page.Msg
 viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient =
     let
         addMsg =
@@ -144,11 +147,11 @@ viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient
                             , onClick addMsg
                             ]
                             [ text
-                                (if List.Extra.find (Page.nutrientCodeIs referenceNutrientToAdd.nutrientCode) referenceNutrients |> Maybe.Extra.isNothing then
-                                    "Add"
+                                (if Dict.member referenceNutrientToAdd.nutrientCode referenceNutrients then
+                                    "Update"
 
                                  else
-                                    "Update"
+                                    "Add"
                                 )
                             ]
                         ]
