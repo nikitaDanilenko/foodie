@@ -15,8 +15,9 @@ import Util.LensUtil as LensUtil
 
 type alias Model =
     { flagsWithJWT : FlagsWithJWT
+    -- todo: Switch to Dict
     , meals : List MealOrUpdate
-    , mealsToAdd : List MealCreationClientInput
+    , mealToAdd : Maybe MealCreationClientInput
     }
 
 
@@ -27,12 +28,12 @@ type alias MealOrUpdate =
 lenses :
     { jwt : Lens Model JWT
     , meals : Lens Model (List MealOrUpdate)
-    , mealsToAdd : Lens Model (List MealCreationClientInput)
+    , mealToAdd : Lens Model (Maybe MealCreationClientInput)
     }
 lenses =
     { jwt = LensUtil.jwtSubLens
     , meals = Lens .meals (\b a -> { a | meals = b })
-    , mealsToAdd = Lens .mealsToAdd (\b a -> { a | mealsToAdd = b })
+    , mealToAdd = Lens .mealToAdd (\b a -> { a | mealToAdd = b })
     }
 
 
@@ -43,7 +44,8 @@ type alias Flags =
 
 
 type Msg
-    = CreateMeal
+    = UpdateMealCreation (Maybe MealCreationClientInput)
+    | CreateMeal
     | GotCreateMealResponse (Result Error Meal)
     | UpdateMeal MealUpdate
     | SaveMealEdit MealId

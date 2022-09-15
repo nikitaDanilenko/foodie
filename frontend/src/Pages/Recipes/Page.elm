@@ -14,6 +14,9 @@ import Util.LensUtil as LensUtil
 
 type alias Model =
     { flagsWithJWT : FlagsWithJWT
+      -- todo: switch to Dict
+
+      -- todo: incorporate creation logic
     , recipes : List RecipeOrUpdate
     }
 

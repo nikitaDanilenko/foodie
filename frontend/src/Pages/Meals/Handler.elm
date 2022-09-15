@@ -11,15 +11,14 @@ import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional as Optional
+import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
 import Pages.Meals.Page as Page
 import Pages.Meals.Requests as Requests
+import Pages.Util.DateUtil as DateUtil
 import Ports exposing (doFetchToken)
 import Util.Editing as Editing exposing (Editing)
 import Util.LensUtil as LensUtil
-
-
-
---todo: There is a bug in handling creation + cancel - cancel only refers to editing, but a new recipe get created anyway.
+import Util.ListUtil as ListUtil
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
@@ -43,7 +42,7 @@ init flags =
             , jwt = jwt
             }
       , meals = []
-      , mealsToAdd = []
+      , mealToAdd = Nothing
       }
     , cmd
     )
@@ -52,6 +51,9 @@ init flags =
 update : Page.Msg -> Page.Model -> ( Page.Model, Cmd Page.Msg )
 update msg model =
     case msg of
+        Page.UpdateMealCreation mealCreationClientInput ->
+            updateMealCreation model mealCreationClientInput
+
         Page.CreateMeal ->
             createMeal model
 
@@ -86,10 +88,19 @@ update msg model =
             updateJWT model jwt
 
 
+updateMealCreation : Page.Model -> Maybe MealCreationClientInput -> ( Page.Model, Cmd Page.Msg )
+updateMealCreation model mealToAdd =
+    ( model
+        |> Page.lenses.mealToAdd.set mealToAdd
+    , Cmd.none
+    )
+
+
 createMeal : Page.Model -> ( Page.Model, Cmd Page.Msg )
 createMeal model =
     ( model
-    , Requests.createMeal model.flagsWithJWT
+    , model.mealToAdd
+        |> Maybe.Extra.unwrap Cmd.none (MealCreationClientInput.toCreation >> Requests.createMeal model.flagsWithJWT)
     )
 
 
@@ -99,15 +110,17 @@ gotCreateMealResponse model dataOrError =
         |> Either.fromResult
         |> Either.unwrap model
             (\meal ->
-                Lens.modify Page.lenses.meals
-                    (\ts ->
-                        Right
-                            { original = meal
-                            , update = mealUpdateFromMeal meal
+                model
+                    |> Lens.modify Page.lenses.meals
+                        (ListUtil.insertBy
+                            { compareA = .date >> DateUtil.toString
+                            , compareB = Editing.field (.date >> DateUtil.toString)
+                            , mapAB = Left
+                            , replace = True
                             }
-                            :: ts
-                    )
-                    model
+                            meal
+                        )
+                    |> Page.lenses.mealToAdd.set Nothing
             )
     , Cmd.none
     )
@@ -191,7 +204,11 @@ gotFetchMealsResponse : Page.Model -> Result Error (List Meal) -> ( Page.Model, 
 gotFetchMealsResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unwrap model (List.map Left >> flip Page.lenses.meals.set model)
+        |> Either.unwrap model
+            (List.sortBy (.date >> DateUtil.toString)
+                >> List.map Left
+                >> flip Page.lenses.meals.set model
+            )
     , Cmd.none
     )
 

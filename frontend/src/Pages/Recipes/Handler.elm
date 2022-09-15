@@ -196,7 +196,11 @@ gotFetchRecipesResponse : Page.Model -> Result Error (List Recipe) -> ( Page.Mod
 gotFetchRecipesResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unwrap model (List.map Left >> flip Page.lenses.recipes.set model)
+        |> Either.unwrap model
+            (List.sortBy .name
+                >> List.map Left
+                >> flip Page.lenses.recipes.set model
+            )
     , Cmd.none
     )
 

@@ -2,11 +2,10 @@ module Pages.Meals.Requests exposing (createMeal, deleteMeal, fetchMeals, saveMe
 
 import Api.Auxiliary exposing (JWT, MealId)
 import Api.Types.Meal exposing (Meal, decoderMeal)
-import Api.Types.MealCreation exposing (encoderMealCreation)
+import Api.Types.MealCreation exposing (MealCreation, encoderMealCreation)
 import Api.Types.MealUpdate exposing (MealUpdate, encoderMealUpdate)
 import Configuration exposing (Configuration)
 import Json.Decode as Decode
-import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
 import Pages.Meals.Page as Page
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Url.Builder
@@ -21,14 +20,11 @@ fetchMeals flags =
         }
 
 
-createMeal : FlagsWithJWT -> Cmd Page.Msg
-createMeal flags =
+createMeal : FlagsWithJWT -> MealCreation -> Cmd Page.Msg
+createMeal flags mealCreation =
     HttpUtil.postJsonWithJWT flags.jwt
         { url = Url.Builder.relative [ flags.configuration.backendURL, "meal", "create" ] []
-        , body =
-            MealCreationClientInput.default
-                |> MealCreationClientInput.toCreation
-                |> encoderMealCreation
+        , body = encoderMealCreation mealCreation
         , expect = HttpUtil.expectJson Page.GotCreateMealResponse decoderMeal
         }
 
