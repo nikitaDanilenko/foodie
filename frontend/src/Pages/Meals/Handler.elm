@@ -18,6 +18,10 @@ import Util.Editing as Editing exposing (Editing)
 import Util.LensUtil as LensUtil
 
 
+
+--todo: There is a bug in handling creation + cancel - cancel only refers to editing, but a new recipe get created anyway.
+
+
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
