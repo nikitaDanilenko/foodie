@@ -33,7 +33,7 @@ view model =
                 |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
                 |> Dict.values
                 |> List.sortBy .name
-                |> List.map ((viewNutrientLine model.nutrients model.referenceNutrients) model.referenceNutrientsToAdd)
+                |> List.map (viewNutrientLine model.nutrients model.referenceNutrients model.referenceNutrientsToAdd)
     in
     div [ id "referenceNutrient" ]
         [ div [ id "referenceNutrientView" ]
@@ -108,14 +108,14 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
         ]
 
 
-viewNutrientLine : Page.NutrientMap -> List Page.ReferenceNutrientOrUpdate -> List ReferenceNutrientCreationClientInput -> Nutrient -> Html Page.Msg
+viewNutrientLine : Page.NutrientMap -> List Page.ReferenceNutrientOrUpdate -> Page.AddNutrientMap -> Nutrient -> Html Page.Msg
 viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient =
     let
         addMsg =
             Page.AddNutrient nutrient.code
 
         process =
-            case List.Extra.find (\referenceNutrient -> referenceNutrient.nutrientCode == nutrient.code) referenceNutrientsToAdd of
+            case Dict.get nutrient.code referenceNutrientsToAdd of
                 Nothing ->
                     [ td [] [ button [ class "button", onClick (Page.SelectNutrient nutrient.code) ] [ text "Select" ] ] ]
 
@@ -136,17 +136,24 @@ viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient
                             ]
                             []
                         ]
-                        , td [] [ label [] [ text (referenceNutrientToAdd.nutrientCode |> Page.nutrientUnitOrEmpty nutrientMap) ] ]
+                    , td [] [ label [] [ text (referenceNutrientToAdd.nutrientCode |> Page.nutrientUnitOrEmpty nutrientMap) ] ]
                     , td []
                         [ button
                             [ class "button"
                             , disabled
-                                (List.Extra.find (\me -> me.nutrientCode == nutrient.code) referenceNutrientsToAdd
+                                (Dict.get nutrient.code referenceNutrientsToAdd
                                     |> Maybe.Extra.unwrap True (.amount >> ValidatedInput.isValid >> not)
                                 )
                             , onClick addMsg
                             ]
-                            [ text (if List.Extra.find (Page.nutrientCodeIs referenceNutrientToAdd.nutrientCode) referenceNutrients |> Maybe.Extra.isNothing then "Add" else "Update") ]
+                            [ text
+                                (if List.Extra.find (Page.nutrientCodeIs referenceNutrientToAdd.nutrientCode) referenceNutrients |> Maybe.Extra.isNothing then
+                                    "Add"
+
+                                 else
+                                    "Update"
+                                )
+                            ]
                         ]
                     , td [] [ button [ class "button", onClick (Page.DeselectNutrient nutrient.code) ] [ text "Cancel" ] ]
                     ]

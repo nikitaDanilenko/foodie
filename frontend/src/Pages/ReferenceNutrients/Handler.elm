@@ -47,7 +47,7 @@ init flags =
       , referenceNutrients = []
       , nutrients = Dict.empty
       , nutrientsSearchString = ""
-      , referenceNutrientsToAdd = []
+      , referenceNutrientsToAdd = Dict.empty
       }
     , cmd
     )
@@ -226,14 +226,7 @@ selectNutrient : Page.Model -> NutrientCode -> ( Page.Model, Cmd msg )
 selectNutrient model nutrientCode =
     ( model
         |> Lens.modify Page.lenses.referenceNutrientsToAdd
-            (ListUtil.insertBy
-                { compareA = .nutrientCode >> Page.nutrientNameOrEmpty model.nutrients
-                , compareB = .nutrientCode >> Page.nutrientNameOrEmpty model.nutrients
-                , mapAB = identity
-                , replace = True
-                }
-                (ReferenceNutrientCreationClientInput.default nutrientCode)
-            )
+            (Dict.update nutrientCode (always (ReferenceNutrientCreationClientInput.default nutrientCode) >> Just))
     , Cmd.none
     )
 
@@ -241,7 +234,7 @@ selectNutrient model nutrientCode =
 deselectNutrient : Page.Model -> NutrientCode -> ( Page.Model, Cmd Page.Msg )
 deselectNutrient model nutrientCode =
     ( model
-        |> Lens.modify Page.lenses.referenceNutrientsToAdd (List.Extra.filterNot (\me -> me.nutrientCode == nutrientCode))
+        |> Lens.modify Page.lenses.referenceNutrientsToAdd (Dict.remove nutrientCode)
     , Cmd.none
     )
 
@@ -249,7 +242,7 @@ deselectNutrient model nutrientCode =
 addNutrient : Page.Model -> NutrientCode -> ( Page.Model, Cmd Page.Msg )
 addNutrient model nutrientCode =
     ( model
-    , List.Extra.find (\me -> me.nutrientCode == nutrientCode) model.referenceNutrientsToAdd
+    , Dict.get nutrientCode model.referenceNutrientsToAdd
         |> Maybe.map
             (ReferenceNutrientCreationClientInput.toCreation
                 >> Requests.addReferenceNutrient model.flagsWithJWT
@@ -274,7 +267,7 @@ gotAddReferenceNutrientResponse model result =
                             }
                             referenceNutrient
                         )
-                    |> Lens.modify Page.lenses.referenceNutrientsToAdd (List.Extra.filterNot (\me -> me.nutrientCode == referenceNutrient.nutrientCode))
+                    |> Lens.modify Page.lenses.referenceNutrientsToAdd (Dict.remove referenceNutrient.nutrientCode)
             )
         |> Either.withDefault model
     , Cmd.none
@@ -285,10 +278,7 @@ updateAddNutrient : Page.Model -> ReferenceNutrientCreationClientInput -> ( Page
 updateAddNutrient model referenceNutrientCreationClientInput =
     ( model
         |> Lens.modify Page.lenses.referenceNutrientsToAdd
-            (List.Extra.setIf
-                (\me -> me.nutrientCode == referenceNutrientCreationClientInput.nutrientCode)
-                referenceNutrientCreationClientInput
-            )
+            (Dict.update referenceNutrientCreationClientInput.nutrientCode (always referenceNutrientCreationClientInput >> Just))
     , Cmd.none
     )
 

@@ -23,7 +23,7 @@ type alias Model =
     , referenceNutrients : List ReferenceNutrientOrUpdate
     , nutrients : NutrientMap
     , nutrientsSearchString : String
-    , referenceNutrientsToAdd : List ReferenceNutrientCreationClientInput
+    , referenceNutrientsToAdd : AddNutrientMap
     }
 
 
@@ -35,6 +35,10 @@ type alias NutrientMap =
     Dict NutrientCode Nutrient
 
 
+type alias AddNutrientMap =
+    Dict NutrientCode ReferenceNutrientCreationClientInput
+
+
 type alias Flags =
     { configuration : Configuration
     , jwt : Maybe JWT
@@ -44,7 +48,7 @@ type alias Flags =
 lenses :
     { jwt : Lens Model JWT
     , referenceNutrients : Lens Model (List ReferenceNutrientOrUpdate)
-    , referenceNutrientsToAdd : Lens Model (List ReferenceNutrientCreationClientInput)
+    , referenceNutrientsToAdd : Lens Model AddNutrientMap
     , nutrients : Lens Model NutrientMap
     , nutrientsSearchString : Lens Model String
     }
