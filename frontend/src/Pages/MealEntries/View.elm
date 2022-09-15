@@ -49,7 +49,12 @@ view model =
                     , td [] [ label [] [ text "Number of servings" ] ]
                     ]
                 ]
-                :: viewEditMealEntries model.mealEntries
+                :: viewEditMealEntries
+                    (model.mealEntries
+                        |> Dict.toList
+                        |> List.sortBy (\( _, v ) -> Page.recipeNameOrEmpty model.recipes (Page.recipeIdOf v))
+                        |> List.map Tuple.second
+                    )
             )
         , div [ id "addMealEntryView" ]
             (div [ id "addMealEntry" ]

@@ -10,20 +10,20 @@ import Dict exposing (Dict)
 import Either exposing (Either)
 import Http exposing (Error)
 import Maybe.Extra
-import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.MealEntries.MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntries.MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
 import Pages.MealEntries.MealInfo exposing (MealInfo)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
+import Util.LensUtil as LensUtil
 
 
 type alias Model =
     { flagsWithJWT : FlagsWithJWT
     , mealId : MealId
     , mealInfo : Maybe MealInfo
-    , mealEntries : List MealEntryOrUpdate
+    , mealEntries : MealEntryOrUpdateMap
     , recipes : RecipeMap
     , recipesSearchString : String
     , mealEntriesToAdd : AddMealEntriesMap
@@ -37,8 +37,14 @@ type alias MealEntryOrUpdate =
 type alias RecipeMap =
     Dict RecipeId Recipe
 
+
 type alias AddMealEntriesMap =
     Dict RecipeId MealEntryCreationClientInput
+
+
+type alias MealEntryOrUpdateMap =
+    Dict MealEntryId MealEntryOrUpdate
+
 
 type alias Flags =
     { configuration : Configuration
@@ -50,21 +56,13 @@ type alias Flags =
 lenses :
     { jwt : Lens Model JWT
     , mealInfo : Lens Model (Maybe MealInfo)
-    , mealEntries : Lens Model (List MealEntryOrUpdate)
+    , mealEntries : Lens Model MealEntryOrUpdateMap
     , mealEntriesToAdd : Lens Model AddMealEntriesMap
     , recipes : Lens Model RecipeMap
     , recipesSearchString : Lens Model String
     }
 lenses =
-    { jwt =
-        let
-            flagsLens =
-                Lens .flagsWithJWT (\b a -> { a | flagsWithJWT = b })
-
-            jwtLens =
-                Lens .jwt (\b a -> { a | jwt = b })
-        in
-        flagsLens |> Compose.lensWithLens jwtLens
+    { jwt = LensUtil.jwtSubLens
     , mealInfo = Lens .mealInfo (\b a -> { a | mealInfo = b })
     , mealEntries = Lens .mealEntries (\b a -> { a | mealEntries = b })
     , mealEntriesToAdd = Lens .mealEntriesToAdd (\b a -> { a | mealEntriesToAdd = b })
@@ -76,6 +74,13 @@ lenses =
 recipeNameOrEmpty : RecipeMap -> RecipeId -> String
 recipeNameOrEmpty recipeMap =
     flip Dict.get recipeMap >> Maybe.Extra.unwrap "" .name
+
+
+recipeIdOf : MealEntryOrUpdate -> RecipeId
+recipeIdOf =
+    Either.unpack
+        .recipeId
+        (.original >> .recipeId)
 
 
 type Msg

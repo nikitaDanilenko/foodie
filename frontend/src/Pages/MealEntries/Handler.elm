@@ -8,7 +8,6 @@ import Basics.Extra exposing (flip)
 import Dict
 import Either exposing (Either(..))
 import Http exposing (Error)
-import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens
@@ -22,7 +21,6 @@ import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Ports
 import Util.Editing as Editing exposing (Editing)
 import Util.LensUtil as LensUtil
-import Util.ListUtil as ListUtil
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
@@ -47,7 +45,7 @@ init flags =
             }
       , mealId = flags.mealId
       , mealInfo = Nothing
-      , mealEntries = []
+      , mealEntries = Dict.empty
       , recipes = Dict.empty
       , recipesSearchString = ""
       , mealEntriesToAdd = Dict.empty
@@ -134,7 +132,7 @@ saveMealEntryEdit model mealEntryId =
     ( model
     , model
         |> Page.lenses.mealEntries.get
-        |> List.Extra.find (mealEntryIdIs mealEntryId)
+        |> Dict.get mealEntryId
         |> Maybe.andThen Either.rightToMaybe
         |> Maybe.Extra.unwrap Cmd.none
             (.update >> MealEntryUpdateClientInput.to >> Requests.saveMealEntry model.flagsWithJWT)
@@ -191,7 +189,7 @@ gotDeleteMealEntryResponse model mealEntryId result =
     ( result
         |> Either.fromResult
         |> Either.unwrap model
-            (Lens.modify Page.lenses.mealEntries (List.Extra.filterNot (mealEntryIdIs mealEntryId)) model
+            (Lens.modify Page.lenses.mealEntries (Dict.remove mealEntryId) model
                 |> always
             )
     , Cmd.none
@@ -203,7 +201,10 @@ gotFetchMealEntriesResponse model result =
     ( result
         |> Either.fromResult
         |> Either.unwrap model
-            (List.map Left >> flip Page.lenses.mealEntries.set model)
+            (List.map (\mealEntry -> ( mealEntry.id, Left mealEntry ))
+                >> Dict.fromList
+                >> flip Page.lenses.mealEntries.set model
+            )
     , Cmd.none
     )
 
@@ -274,14 +275,7 @@ gotAddMealEntryResponse model result =
             (\mealEntry ->
                 model
                     |> Lens.modify Page.lenses.mealEntries
-                        (ListUtil.insertBy
-                            { compareA = .recipeId >> Page.recipeNameOrEmpty model.recipes
-                            , compareB = recipeIdOf >> Page.recipeNameOrEmpty model.recipes
-                            , mapAB = Left
-                            , replace = True
-                            }
-                            mealEntry
-                        )
+                        (Dict.update mealEntry.id (always mealEntry >> Left >> Just))
                     |> Lens.modify Page.lenses.mealEntriesToAdd (Dict.remove mealEntry.recipeId)
             )
         |> Either.withDefault model
@@ -319,17 +313,5 @@ setRecipesSearchString model string =
 mapMealEntryOrUpdateById : MealEntryId -> (Page.MealEntryOrUpdate -> Page.MealEntryOrUpdate) -> Page.Model -> Page.Model
 mapMealEntryOrUpdateById ingredientId =
     Page.lenses.mealEntries
-        |> Compose.lensWithOptional (ingredientId |> Editing.is .id |> LensUtil.firstSuch)
+        |> Compose.lensWithOptional (LensUtil.dictByKey ingredientId)
         |> Optional.modify
-
-
-mealEntryIdIs : MealEntryId -> Page.MealEntryOrUpdate -> Bool
-mealEntryIdIs =
-    Editing.is .id
-
-
-recipeIdOf : Page.MealEntryOrUpdate -> RecipeId
-recipeIdOf =
-    Either.unpack
-        .recipeId
-        (.original >> .recipeId)
