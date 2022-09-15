@@ -46,6 +46,7 @@ type alias MeasureMap =
 type alias AddFoodsMap =
     Dict FoodId IngredientCreationClientInput
 
+
 type alias IngredientOrUpdateMap =
     Dict IngredientId IngredientOrUpdate
 
@@ -103,9 +104,3 @@ type alias Flags =
 ingredientNameOrEmpty : FoodMap -> FoodId -> String
 ingredientNameOrEmpty fm fi =
     Dict.get fi fm |> Maybe.Extra.unwrap "" .name
-
-foodIdOf : IngredientOrUpdate -> FoodId
-foodIdOf =
-    Either.unpack
-        .foodId
-        (.original >> .foodId)

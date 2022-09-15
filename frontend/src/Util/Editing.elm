@@ -16,7 +16,12 @@ updateLens =
 
 
 is : (a -> field) -> field -> Either a (Editing a b) -> Bool
-is fieldOf field =
+is fieldOf value =
     Either.unpack
-        (\p -> fieldOf p == field)
-        (\e -> fieldOf e.original == field)
+        (\p -> fieldOf p == value)
+        (\e -> fieldOf e.original == value)
+
+
+field : (a -> field) -> Either a (Editing a b) -> field
+field f =
+    Either.unpack f (.original >> f)

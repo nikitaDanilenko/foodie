@@ -14,8 +14,10 @@ import Pages.MealEntries.MealEntryCreationClientInput as MealEntryCreationClient
 import Pages.MealEntries.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
 import Pages.MealEntries.Page as Page exposing (RecipeMap)
 import Pages.Util.DateUtil as DateUtil
+import Pages.Util.DictUtil as DictUtil
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
+import Util.Editing as Editing
 
 
 view : Page.Model -> Html Page.Msg
@@ -33,7 +35,7 @@ view model =
                 |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
                 |> Dict.values
                 |> List.sortBy .name
-                |> List.map (viewRecipeLine model.mealEntriesToAdd)
+                |> List.map (viewRecipeLine model.mealEntriesToAdd model.mealEntries)
     in
     div [ id "mealEntry" ]
         [ div [ id "mealInfo" ]
@@ -52,7 +54,7 @@ view model =
                 :: viewEditMealEntries
                     (model.mealEntries
                         |> Dict.toList
-                        |> List.sortBy (\( _, v ) -> Page.recipeNameOrEmpty model.recipes (Page.recipeIdOf v))
+                        |> List.sortBy (\( _, v ) -> Page.recipeNameOrEmpty model.recipes (Editing.field .recipeId v))
                         |> List.map Tuple.second
                     )
             )
@@ -117,8 +119,8 @@ editMealEntryLine recipeMap mealEntry mealEntryUpdateClientInput =
         ]
 
 
-viewRecipeLine : Page.AddMealEntriesMap -> Recipe -> Html Page.Msg
-viewRecipeLine mealEntriesToAdd recipe =
+viewRecipeLine : Page.AddMealEntriesMap -> Page.MealEntryOrUpdateMap -> Recipe -> Html Page.Msg
+viewRecipeLine mealEntriesToAdd mealEntries recipe =
     let
         addMsg =
             Page.AddRecipe recipe.id
@@ -152,7 +154,14 @@ viewRecipeLine mealEntriesToAdd recipe =
                                 (mealEntryToAdd.numberOfServings |> ValidatedInput.isValid |> not)
                             , onClick addMsg
                             ]
-                            [ text "Add" ]
+                            [ text
+                                (if DictUtil.existsValue (\mealEntry -> Editing.field .recipeId mealEntry == mealEntryToAdd.recipeId) mealEntries then
+                                    "Update"
+
+                                 else
+                                    "Add"
+                                )
+                            ]
                         ]
                     , td [] [ button [ class "button", onClick (Page.DeselectRecipe recipe.id) ] [ text "Cancel" ] ]
                     ]

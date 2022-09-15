@@ -76,13 +76,6 @@ recipeNameOrEmpty recipeMap =
     flip Dict.get recipeMap >> Maybe.Extra.unwrap "" .name
 
 
-recipeIdOf : MealEntryOrUpdate -> RecipeId
-recipeIdOf =
-    Either.unpack
-        .recipeId
-        (.original >> .recipeId)
-
-
 type Msg
     = UpdateMealEntry MealEntryUpdateClientInput
     | SaveMealEntryEdit MealEntryId

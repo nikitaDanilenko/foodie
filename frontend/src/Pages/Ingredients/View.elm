@@ -21,8 +21,10 @@ import Pages.Ingredients.IngredientCreationClientInput as IngredientCreationClie
 import Pages.Ingredients.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
 import Pages.Ingredients.Page as Page
 import Pages.Ingredients.RecipeInfo exposing (RecipeInfo)
+import Pages.Util.DictUtil as DictUtil
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
+import Util.Editing as Editing
 
 
 view : Page.Model -> Html Page.Msg
@@ -40,7 +42,7 @@ view model =
                 |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
                 |> Dict.values
                 |> List.sortBy .name
-                |> List.map (viewFoodLine model.foods model.measures model.foodsToAdd)
+                |> List.map (viewFoodLine model.foods model.measures model.foodsToAdd model.ingredients)
     in
     div [ id "editor" ]
         [ div [ id "recipeInfo" ]
@@ -60,7 +62,7 @@ view model =
                 :: viewEditIngredients
                     (model.ingredients
                         |> Dict.toList
-                        |> List.sortBy (Tuple.second >> Page.foodIdOf >> Page.ingredientNameOrEmpty model.foods)
+                        |> List.sortBy (Tuple.second >> Editing.field .foodId >> Page.ingredientNameOrEmpty model.foods)
                         |> List.map Tuple.second
                     )
             )
@@ -180,8 +182,8 @@ onChangeDropdown ps =
         >> ps.mkMsg
 
 
-viewFoodLine : Page.FoodMap -> Page.MeasureMap -> Page.AddFoodsMap -> Food -> Html Page.Msg
-viewFoodLine foodMap measureMap ingredientsToAdd food =
+viewFoodLine : Page.FoodMap -> Page.MeasureMap -> Page.AddFoodsMap -> Page.IngredientOrUpdateMap -> Food -> Html Page.Msg
+viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
     let
         addMsg =
             Page.AddFood food.id
@@ -234,7 +236,14 @@ viewFoodLine foodMap measureMap ingredientsToAdd food =
                                 (ingredientToAdd.amountUnit.factor |> ValidatedInput.isValid |> not)
                             , onClick addMsg
                             ]
-                            [ text "Add" ]
+                            [ text
+                                (if DictUtil.existsValue (\i -> Editing.field .foodId i == ingredientToAdd.foodId) ingredients then
+                                    "Update"
+
+                                 else
+                                    "Add"
+                                )
+                            ]
                         ]
                     , td [] [ button [ class "button", onClick (Page.DeselectFood food.id) ] [ text "Cancel" ] ]
                     ]
