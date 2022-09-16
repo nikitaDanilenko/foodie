@@ -4,8 +4,7 @@ module Pages.Util.ValidatedInput exposing
     , lift
     , nonEmptyString
     , positive
-    , text
-    , value
+    , lenses
     )
 
 import Basics.Extra exposing (flip)
@@ -22,14 +21,16 @@ type alias ValidatedInput a =
     }
 
 
-text : Lens (ValidatedInput a) String
-text =
-    Lens .text (\b a -> { a | text = b })
-
-
-value : Lens (ValidatedInput a) a
-value =
-    Lens .value (\b a -> { a | value = b })
+lenses :
+    { text : Lens (ValidatedInput a) String
+    , value : Lens (ValidatedInput a) a
+    }
+lenses =
+    { text =
+        Lens .text (\b a -> { a | text = b })
+    , value =
+        Lens .value (\b a -> { a | value = b })
+    }
 
 
 isValid : ValidatedInput a -> Bool
@@ -51,7 +52,7 @@ setWithLens lens txt model =
         possiblyValid =
             if String.isEmpty txt || validatedInput.partial txt then
                 validatedInput
-                    |> text.set txt
+                    |> lenses.text.set txt
 
             else
                 validatedInput
@@ -59,7 +60,7 @@ setWithLens lens txt model =
     case validatedInput.parse txt of
         Ok v ->
             possiblyValid
-                |> value.set v
+                |> lenses.value.set v
                 |> flip lens.set model
 
         Err _ ->

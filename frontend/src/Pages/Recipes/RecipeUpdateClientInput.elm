@@ -30,9 +30,9 @@ lenses =
 from : Recipe -> RecipeUpdateClientInput
 from recipe =
     { id = recipe.id
-    , name = ValidatedInput.nonEmptyString |> ValidatedInput.value.set recipe.name
+    , name = ValidatedInput.nonEmptyString |> ValidatedInput.lenses.value.set recipe.name
     , description = recipe.description
-    , numberOfServings = ValidatedInput.positive |> ValidatedInput.value.set recipe.numberOfServings
+    , numberOfServings = ValidatedInput.positive |> ValidatedInput.lenses.value.set recipe.numberOfServings
     }
 
 
