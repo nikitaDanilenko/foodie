@@ -2,17 +2,9 @@ module Util.LensUtil exposing (..)
 
 import Basics.Extra exposing (flip)
 import Dict exposing (Dict)
-import List.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Monocle.Optional exposing (Optional)
-
-
-firstSuch : (a -> Bool) -> Optional (List a) a
-firstSuch p =
-    { getOption = List.Extra.find p
-    , set = List.Extra.setIf p
-    }
 
 
 dictByKey : comparable -> Optional (Dict comparable a) a
