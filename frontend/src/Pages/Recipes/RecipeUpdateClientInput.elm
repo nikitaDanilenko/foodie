@@ -9,14 +9,14 @@ import Pages.Util.ValidatedInput as ValidatedInput exposing (ValidatedInput)
 
 type alias RecipeUpdateClientInput =
     { id : UUID
-    , name : String
+    , name : ValidatedInput String
     , description : Maybe String
     , numberOfServings : ValidatedInput Float
     }
 
 
 lenses :
-    { name : Lens RecipeUpdateClientInput String
+    { name : Lens RecipeUpdateClientInput (ValidatedInput String)
     , description : Lens RecipeUpdateClientInput (Maybe String)
     , numberOfServings : Lens RecipeUpdateClientInput (ValidatedInput Float)
     }
@@ -30,7 +30,7 @@ lenses =
 from : Recipe -> RecipeUpdateClientInput
 from recipe =
     { id = recipe.id
-    , name = recipe.name
+    , name = ValidatedInput.nonEmptyString |> ValidatedInput.value.set recipe.name
     , description = recipe.description
     , numberOfServings = ValidatedInput.positive |> ValidatedInput.value.set recipe.numberOfServings
     }
@@ -39,7 +39,7 @@ from recipe =
 to : RecipeUpdateClientInput -> RecipeUpdate
 to input =
     { id = input.id
-    , name = input.name
+    , name = input.name.value
     , description = input.description
     , numberOfServings = input.numberOfServings.value
     }

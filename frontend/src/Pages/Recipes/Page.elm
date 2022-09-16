@@ -6,6 +6,7 @@ import Configuration exposing (Configuration)
 import Either exposing (Either)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
+import Pages.Recipes.RecipeCreationClientInput exposing (RecipeCreationClientInput)
 import Pages.Recipes.RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
@@ -14,10 +15,10 @@ import Util.LensUtil as LensUtil
 
 type alias Model =
     { flagsWithJWT : FlagsWithJWT
-      -- todo: switch to Dict
 
-      -- todo: incorporate creation logic
+    -- todo: switch to Dict
     , recipes : List RecipeOrUpdate
+    , recipeToAdd : Maybe RecipeCreationClientInput
     }
 
 
@@ -28,10 +29,12 @@ type alias RecipeOrUpdate =
 lenses :
     { jwt : Lens Model JWT
     , recipes : Lens Model (List RecipeOrUpdate)
+    , recipeToAdd : Lens Model (Maybe RecipeCreationClientInput)
     }
 lenses =
     { jwt = LensUtil.jwtSubLens
     , recipes = Lens .recipes (\b a -> { a | recipes = b })
+    , recipeToAdd = Lens .recipeToAdd (\b a -> { a | recipeToAdd = b })
     }
 
 
@@ -42,7 +45,8 @@ type alias Flags =
 
 
 type Msg
-    = CreateRecipe
+    = UpdateRecipeCreation (Maybe RecipeCreationClientInput)
+    | CreateRecipe
     | GotCreateRecipeResponse (Result Error Recipe)
     | UpdateRecipe RecipeUpdateClientInput
     | SaveRecipeEdit RecipeId

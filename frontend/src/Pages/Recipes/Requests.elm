@@ -20,18 +20,11 @@ fetchRecipes flags =
         }
 
 
-createRecipe : FlagsWithJWT -> Cmd Page.Msg
-createRecipe flags =
-    let
-        defaultRecipeCreation =
-            { name = ""
-            , description = Nothing
-            , numberOfServings = 1
-            }
-    in
+createRecipe : FlagsWithJWT -> RecipeCreation -> Cmd Page.Msg
+createRecipe flags recipeCreation =
     HttpUtil.postJsonWithJWT flags.jwt
         { url = Url.Builder.relative [ flags.configuration.backendURL, "recipe", "create" ] []
-        , body = encoderRecipeCreation defaultRecipeCreation
+        , body = encoderRecipeCreation recipeCreation
         , expect = HttpUtil.expectJson Page.GotCreateRecipeResponse decoderRecipe
         }
 

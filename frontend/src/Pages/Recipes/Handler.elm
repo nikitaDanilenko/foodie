@@ -11,6 +11,7 @@ import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional as Optional
 import Pages.Recipes.Page as Page exposing (RecipeOrUpdate)
+import Pages.Recipes.RecipeCreationClientInput as RecipeCreationClientInput exposing (RecipeCreationClientInput)
 import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Recipes.Requests as Requests
 import Ports exposing (doFetchToken)
@@ -40,6 +41,7 @@ init flags =
             , jwt = jwt
             }
       , recipes = []
+      , recipeToAdd = Nothing
       }
     , cmd
     )
@@ -48,6 +50,9 @@ init flags =
 update : Page.Msg -> Page.Model -> ( Page.Model, Cmd Page.Msg )
 update msg model =
     case msg of
+        Page.UpdateRecipeCreation recipeCreationClientInput ->
+            updateRecipeCreation model recipeCreationClientInput
+
         Page.CreateRecipe ->
             createRecipe model
 
@@ -82,9 +87,20 @@ update msg model =
             updateJWT model jwt
 
 
+updateRecipeCreation : Page.Model -> Maybe RecipeCreationClientInput -> ( Page.Model, Cmd Page.Msg )
+updateRecipeCreation model recipeToAdd =
+    ( model
+        |> Page.lenses.recipeToAdd.set recipeToAdd
+    , Cmd.none
+    )
+
+
 createRecipe : Page.Model -> ( Page.Model, Cmd Page.Msg )
 createRecipe model =
-    ( model, Requests.createRecipe model.flagsWithJWT )
+    ( model
+    , model.recipeToAdd
+        |> Maybe.Extra.unwrap Cmd.none (RecipeCreationClientInput.toCreation >> Requests.createRecipe model.flagsWithJWT)
+    )
 
 
 gotCreateRecipeResponse : Page.Model -> Result Error Recipe -> ( Page.Model, Cmd Page.Msg )

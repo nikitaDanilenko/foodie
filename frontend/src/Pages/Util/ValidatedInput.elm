@@ -1,11 +1,11 @@
 module Pages.Util.ValidatedInput exposing
     ( ValidatedInput
-    , emptyText
     , isValid
     , lift
+    , nonEmptyString
+    , positive
     , text
     , value
-    , positive
     )
 
 import Basics.Extra exposing (flip)
@@ -30,22 +30,6 @@ text =
 value : Lens (ValidatedInput a) a
 value =
     Lens .value (\b a -> { a | value = b })
-
-
-emptyText :
-    { ifEmptyValue : a
-    , value : a
-    , parse : String -> Result String a
-    , isPartial : String -> Bool
-    }
-    -> ValidatedInput a
-emptyText params =
-    { value = params.value
-    , ifEmptyValue = params.ifEmptyValue
-    , text = ""
-    , parse = params.parse
-    , partial = params.isPartial
-    }
 
 
 isValid : ValidatedInput a -> Bool
@@ -89,12 +73,25 @@ lift lens =
 
 positive : ValidatedInput Float
 positive =
-    { value = 0
-    , ifEmptyValue = 0
+    { value = 1
+    , ifEmptyValue = 1
     , text = ""
     , parse =
         String.toFloat
             >> Maybe.Extra.filter (\x -> x > 0)
             >> Result.fromMaybe "Error"
     , partial = \str -> List.length (String.split "." str) <= 2 && String.all (\c -> c == '.' || Char.isDigit c) str
+    }
+
+
+nonEmptyString : ValidatedInput String
+nonEmptyString =
+    { value = ""
+    , ifEmptyValue = ""
+    , text = ""
+    , parse =
+        Just
+            >> Maybe.Extra.filter (String.isEmpty >> not)
+            >> Result.fromMaybe "Error: Empty string"
+    , partial = always True
     }
