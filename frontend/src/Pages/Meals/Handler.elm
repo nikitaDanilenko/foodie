@@ -4,9 +4,9 @@ import Api.Auxiliary exposing (JWT, MealId)
 import Api.Types.Meal exposing (Meal)
 import Api.Types.MealUpdate exposing (MealUpdate)
 import Basics.Extra exposing (flip)
+import Dict
 import Either exposing (Either(..))
 import Http exposing (Error)
-import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens
@@ -14,11 +14,9 @@ import Monocle.Optional as Optional
 import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
 import Pages.Meals.Page as Page
 import Pages.Meals.Requests as Requests
-import Pages.Util.DateUtil as DateUtil
 import Ports exposing (doFetchToken)
 import Util.Editing as Editing exposing (Editing)
 import Util.LensUtil as LensUtil
-import Util.ListUtil as ListUtil
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
@@ -41,7 +39,7 @@ init flags =
             { configuration = flags.configuration
             , jwt = jwt
             }
-      , meals = []
+      , meals = Dict.empty
       , mealToAdd = Nothing
       }
     , cmd
@@ -112,14 +110,7 @@ gotCreateMealResponse model dataOrError =
             (\meal ->
                 model
                     |> Lens.modify Page.lenses.meals
-                        (ListUtil.insertBy
-                            { compareA = .date >> DateUtil.toString
-                            , compareB = Editing.field (.date >> DateUtil.toString)
-                            , mapAB = Left
-                            , replace = True
-                            }
-                            meal
-                        )
+                        (Dict.insert meal.id (Left meal))
                     |> Page.lenses.mealToAdd.set Nothing
             )
     , Cmd.none
@@ -145,7 +136,7 @@ saveMealEdit model mealId =
                 >> Requests.saveMeal model.flagsWithJWT
             )
         )
-        (List.Extra.find (Editing.is .id mealId) model.meals)
+        (Dict.get mealId model.meals)
     )
 
 
@@ -193,7 +184,7 @@ gotDeleteMealResponse model deletedId dataOrError =
         |> Either.unwrap model
             (\_ ->
                 Lens.modify Page.lenses.meals
-                    (List.Extra.filterNot (mealIdIs deletedId))
+                    (Dict.remove deletedId)
                     model
             )
     , Cmd.none
@@ -205,8 +196,8 @@ gotFetchMealsResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
         |> Either.unwrap model
-            (List.sortBy (.date >> DateUtil.toString)
-                >> List.map Left
+            (List.map (\meal -> ( meal.id, Left meal ))
+                >> Dict.fromList
                 >> flip Page.lenses.meals.set model
             )
     , Cmd.none
@@ -235,10 +226,5 @@ mealUpdateFromMeal meal =
 mapMealOrUpdateById : MealId -> (Page.MealOrUpdate -> Page.MealOrUpdate) -> Page.Model -> Page.Model
 mapMealOrUpdateById mealId =
     Page.lenses.meals
-        |> Compose.lensWithOptional (mealId |> Editing.is .id |> LensUtil.firstSuch)
+        |> Compose.lensWithOptional (LensUtil.dictByKey mealId)
         |> Optional.modify
-
-
-mealIdIs : MealId -> Page.MealOrUpdate -> Bool
-mealIdIs =
-    Editing.is .id

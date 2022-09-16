@@ -61,9 +61,8 @@ view model =
                 ]
                 :: viewEditIngredients
                     (model.ingredients
-                        |> Dict.toList
-                        |> List.sortBy (Tuple.second >> Editing.field .foodId >> Page.ingredientNameOrEmpty model.foods)
-                        |> List.map Tuple.second
+                        |> Dict.values
+                        |> List.sortBy (Editing.field .foodId >> Page.ingredientNameOrEmpty model.foods)
                     )
             )
         , div [ id "addIngredientView" ]

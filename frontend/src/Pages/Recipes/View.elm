@@ -41,9 +41,8 @@ view model =
                 ]
             :: viewEditRecipes
                 (model.recipes
-                    |> Dict.toList
-                    |> List.sortBy (Tuple.second >> Editing.field .name)
-                    |> List.map Tuple.second
+                    |> Dict.values
+                    |> List.sortBy (Editing.field .name)
                 )
         )
 

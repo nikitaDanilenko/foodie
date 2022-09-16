@@ -7,6 +7,7 @@ import Api.Types.MealUpdate exposing (MealUpdate)
 import Api.Types.SimpleDate exposing (SimpleDate)
 import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
+import Dict
 import Either
 import Html exposing (Html, button, div, input, label, td, text, thead, tr)
 import Html.Attributes exposing (class, id, type_, value)
@@ -21,6 +22,7 @@ import Pages.Util.DateUtil as DateUtil
 import Pages.Util.Links as Links
 import Parser
 import Url.Builder
+import Util.Editing as Editing
 
 
 view : Page.Model -> Html Page.Msg
@@ -41,7 +43,11 @@ view model =
                     , td [] [ label [] [ text "Description" ] ]
                     ]
                 ]
-            :: viewEditMeals model.meals
+            :: viewEditMeals
+                (model.meals
+                    |> Dict.values
+                    |> List.sortBy (Editing.field .date >> DateUtil.toString)
+                )
         )
 
 

@@ -4,6 +4,7 @@ import Api.Auxiliary exposing (JWT, MealId)
 import Api.Types.Meal exposing (Meal)
 import Api.Types.MealUpdate exposing (MealUpdate)
 import Configuration exposing (Configuration)
+import Dict exposing (Dict)
 import Either exposing (Either)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
@@ -15,8 +16,7 @@ import Util.LensUtil as LensUtil
 
 type alias Model =
     { flagsWithJWT : FlagsWithJWT
-    -- todo: Switch to Dict
-    , meals : List MealOrUpdate
+    , meals : MealOrUpdateMap
     , mealToAdd : Maybe MealCreationClientInput
     }
 
@@ -25,9 +25,13 @@ type alias MealOrUpdate =
     Either Meal (Editing Meal MealUpdate)
 
 
+type alias MealOrUpdateMap =
+    Dict MealId MealOrUpdate
+
+
 lenses :
     { jwt : Lens Model JWT
-    , meals : Lens Model (List MealOrUpdate)
+    , meals : Lens Model MealOrUpdateMap
     , mealToAdd : Lens Model (Maybe MealCreationClientInput)
     }
 lenses =
