@@ -3,9 +3,9 @@ module Pages.Recipes.Handler exposing (init, update)
 import Api.Auxiliary exposing (JWT, RecipeId)
 import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
+import Dict
 import Either exposing (Either(..))
 import Http exposing (Error)
-import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens
@@ -17,7 +17,6 @@ import Pages.Recipes.Requests as Requests
 import Ports exposing (doFetchToken)
 import Util.Editing as Editing exposing (Editing)
 import Util.LensUtil as LensUtil
-import Util.ListUtil as ListUtil
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
@@ -40,7 +39,7 @@ init flags =
             { configuration = flags.configuration
             , jwt = jwt
             }
-      , recipes = []
+      , recipes = Dict.empty
       , recipeToAdd = Nothing
       }
     , cmd
@@ -109,26 +108,12 @@ gotCreateRecipeResponse model dataOrError =
         |> Either.fromResult
         |> Either.unwrap model
             (\recipe ->
-                model
-                    |> Lens.modify Page.lenses.recipes
-                        (ListUtil.insertBy
-                            { compareA = .name
-                            , compareB = recipeNameOf
-                            , mapAB = Left
-                            , replace = True
-                            }
-                            recipe
-                        )
+                mapRecipeOrUpdateById recipe.id
+                    (Either.andThenRight (always (Left recipe)))
+                    model
             )
     , Cmd.none
     )
-
-
-recipeNameOf : Page.RecipeOrUpdate -> String
-recipeNameOf =
-    Either.unpack
-        .name
-        (.original >> .name)
 
 
 updateRecipe : Page.Model -> RecipeUpdateClientInput -> ( Page.Model, Cmd Page.Msg )
@@ -145,7 +130,7 @@ saveRecipeEdit model recipeId =
     ( model
     , model
         |> Page.lenses.recipes.get
-        |> List.Extra.find (recipeIdIs recipeId)
+        |> Dict.get recipeId
         |> Maybe.andThen Either.rightToMaybe
         |> Maybe.Extra.unwrap
             Cmd.none
@@ -201,7 +186,7 @@ gotDeleteRecipeResponse model deletedId dataOrError =
             (always
                 (model
                     |> Lens.modify Page.lenses.recipes
-                        (List.Extra.filterNot (recipeIdIs deletedId))
+                        (Dict.remove deletedId)
                 )
             )
     , Cmd.none
@@ -213,8 +198,8 @@ gotFetchRecipesResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
         |> Either.unwrap model
-            (List.sortBy .name
-                >> List.map Left
+            (List.map (\r -> ( r.id, Left r ))
+                >> Dict.fromList
                 >> flip Page.lenses.recipes.set model
             )
     , Cmd.none
@@ -235,10 +220,6 @@ updateJWT model jwt =
 mapRecipeOrUpdateById : RecipeId -> (Page.RecipeOrUpdate -> Page.RecipeOrUpdate) -> Page.Model -> Page.Model
 mapRecipeOrUpdateById recipeId =
     Page.lenses.recipes
-        |> Compose.lensWithOptional (recipeId |> recipeIdIs |> LensUtil.firstSuch)
+        |> Compose.lensWithOptional (LensUtil.dictByKey recipeId)
         |> Optional.modify
 
-
-recipeIdIs : RecipeId -> Page.RecipeOrUpdate -> Bool
-recipeIdIs =
-    Editing.is .id

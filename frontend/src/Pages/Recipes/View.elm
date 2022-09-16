@@ -3,6 +3,7 @@ module Pages.Recipes.View exposing (view)
 import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
+import Dict
 import Either exposing (Either(..))
 import Html exposing (Html, button, div, input, label, td, text, thead, tr)
 import Html.Attributes exposing (class, id, value)
@@ -16,7 +17,7 @@ import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput exposing (ValidatedInput)
 import Url.Builder
-import Util.Editing exposing (Editing)
+import Util.Editing as Editing
 
 
 view : Page.Model -> Html Page.Msg
@@ -38,7 +39,12 @@ view model =
                     , td [] [ label [] [ text "Number of servings" ] ]
                     ]
                 ]
-            :: viewEditRecipes model.recipes
+            :: viewEditRecipes
+                (model.recipes
+                    |> Dict.toList
+                    |> List.sortBy (Tuple.second >> Editing.field .name)
+                    |> List.map Tuple.second
+                )
         )
 
 

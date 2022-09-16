@@ -3,6 +3,7 @@ module Pages.Recipes.Page exposing (..)
 import Api.Auxiliary exposing (JWT, RecipeId)
 import Api.Types.Recipe exposing (Recipe)
 import Configuration exposing (Configuration)
+import Dict exposing (Dict)
 import Either exposing (Either)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
@@ -15,9 +16,7 @@ import Util.LensUtil as LensUtil
 
 type alias Model =
     { flagsWithJWT : FlagsWithJWT
-
-    -- todo: switch to Dict
-    , recipes : List RecipeOrUpdate
+    , recipes : RecipeOrUpdateMap
     , recipeToAdd : Maybe RecipeCreationClientInput
     }
 
@@ -25,10 +24,12 @@ type alias Model =
 type alias RecipeOrUpdate =
     Either Recipe (Editing Recipe RecipeUpdateClientInput)
 
+type alias RecipeOrUpdateMap =
+    Dict RecipeId RecipeOrUpdate
 
 lenses :
     { jwt : Lens Model JWT
-    , recipes : Lens Model (List RecipeOrUpdate)
+    , recipes : Lens Model RecipeOrUpdateMap
     , recipeToAdd : Lens Model (Maybe RecipeCreationClientInput)
     }
 lenses =
