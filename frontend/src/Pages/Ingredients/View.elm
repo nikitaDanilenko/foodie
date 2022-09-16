@@ -62,7 +62,7 @@ view model =
                 :: viewEditIngredients
                     (model.ingredients
                         |> Dict.values
-                        |> List.sortBy (Editing.field .foodId >> Page.ingredientNameOrEmpty model.foods)
+                        |> List.sortBy (Editing.field .foodId >> Page.ingredientNameOrEmpty model.foods >> String.toLower)
                     )
             )
         , div [ id "addIngredientView" ]

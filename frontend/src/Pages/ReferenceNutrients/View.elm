@@ -45,7 +45,7 @@ view model =
                 :: viewEditReferenceNutrients
                     (model.referenceNutrients
                         |> Dict.toList
-                        |> List.sortBy (\( k, _ ) -> Page.nutrientNameOrEmpty model.nutrients k)
+                        |> List.sortBy (\( k, _ ) -> Page.nutrientNameOrEmpty model.nutrients k |> String.toLower)
                         |> List.map Tuple.second
                     )
             )

@@ -54,7 +54,7 @@ view model =
                 :: viewEditMealEntries
                     (model.mealEntries
                         |> Dict.values
-                        |> List.sortBy (Editing.field .recipeId >> Page.recipeNameOrEmpty model.recipes)
+                        |> List.sortBy (Editing.field .recipeId >> Page.recipeNameOrEmpty model.recipes >> String.toLower)
                     )
             )
         , div [ id "addMealEntryView" ]

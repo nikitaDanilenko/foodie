@@ -42,7 +42,7 @@ view model =
             :: viewEditRecipes
                 (model.recipes
                     |> Dict.values
-                    |> List.sortBy (Editing.field .name)
+                    |> List.sortBy (Editing.field .name >> String.toLower)
                 )
         )
 

@@ -108,9 +108,10 @@ gotCreateRecipeResponse model dataOrError =
         |> Either.fromResult
         |> Either.unwrap model
             (\recipe ->
-                mapRecipeOrUpdateById recipe.id
-                    (Either.andThenRight (always (Left recipe)))
-                    model
+                model
+                    |> Lens.modify Page.lenses.recipes
+                        (Dict.insert recipe.id (Left recipe))
+                    |> Page.lenses.recipeToAdd.set Nothing
             )
     , Cmd.none
     )
@@ -222,4 +223,3 @@ mapRecipeOrUpdateById recipeId =
     Page.lenses.recipes
         |> Compose.lensWithOptional (LensUtil.dictByKey recipeId)
         |> Optional.modify
-
