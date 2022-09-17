@@ -13,66 +13,75 @@ import Maybe.Extra
 import Pages.MealEntries.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntries.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
 import Pages.MealEntries.Page as Page exposing (RecipeMap)
+import Pages.MealEntries.Status as Status
 import Pages.Util.DateUtil as DateUtil
 import Pages.Util.DictUtil as DictUtil
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
+import Pages.Util.ViewUtil as ViewUtil
 import Util.Editing as Editing
 
 
 view : Page.Model -> Html Page.Msg
 view model =
-    let
-        viewEditMealEntries =
-            List.map
-                (Either.unpack
-                    (editOrDeleteMealEntryLine model.recipes)
-                    (\e -> e.update |> editMealEntryLine model.recipes e.original)
-                )
-
-        viewRecipes searchString =
-            model.recipes
-                |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
-                |> Dict.values
-                |> List.sortBy .name
-                |> List.map (viewRecipeLine model.mealEntriesToAdd model.mealEntries)
-    in
-    div [ id "mealEntry" ]
-        [ div [ id "mealInfo" ]
-            [ label [] [ text "Date" ]
-            , label [] [ text <| Maybe.Extra.unwrap "" (.date >> DateUtil.toString) <| model.mealInfo ]
-            , label [] [ text "Name" ]
-            , label [] [ text <| Maybe.withDefault "" <| Maybe.andThen .name <| model.mealInfo ]
-            ]
-        , div [ id "mealEntryView" ]
-            (thead []
-                [ tr []
-                    [ td [] [ label [] [ text "Name" ] ]
-                    , td [] [ label [] [ text "Number of servings" ] ]
-                    ]
-                ]
-                :: viewEditMealEntries
-                    (model.mealEntries
-                        |> Dict.values
-                        |> List.sortBy (Editing.field .recipeId >> Page.recipeNameOrEmpty model.recipes >> String.toLower)
+    ViewUtil.viewWithErrorHandling
+        { isFinished = Status.isFinished
+        , initialization = .initialization
+        , flagsWithJWT = .flagsWithJWT
+        }
+        model
+    <|
+        let
+            viewEditMealEntries =
+                List.map
+                    (Either.unpack
+                        (editOrDeleteMealEntryLine model.recipes)
+                        (\e -> e.update |> editMealEntryLine model.recipes e.original)
                     )
-            )
-        , div [ id "addMealEntryView" ]
-            (div [ id "addMealEntry" ]
-                [ div [ id "searchField" ]
-                    [ label [] [ text Links.lookingGlass ]
-                    , input [ onInput Page.SetRecipesSearchString ] []
-                    ]
+
+            viewRecipes searchString =
+                model.recipes
+                    |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
+                    |> Dict.values
+                    |> List.sortBy .name
+                    |> List.map (viewRecipeLine model.mealEntriesToAdd model.mealEntries)
+        in
+        div [ id "mealEntry" ]
+            [ div [ id "mealInfo" ]
+                [ label [] [ text "Date" ]
+                , label [] [ text <| Maybe.Extra.unwrap "" (.date >> DateUtil.toString) <| model.mealInfo ]
+                , label [] [ text "Name" ]
+                , label [] [ text <| Maybe.withDefault "" <| Maybe.andThen .name <| model.mealInfo ]
                 ]
-                :: thead []
+            , div [ id "mealEntryView" ]
+                (thead []
                     [ tr []
                         [ td [] [ label [] [ text "Name" ] ]
-                        , td [] [ label [] [ text "Description" ] ]
+                        , td [] [ label [] [ text "Number of servings" ] ]
                         ]
                     ]
-                :: viewRecipes model.recipesSearchString
-            )
-        ]
+                    :: viewEditMealEntries
+                        (model.mealEntries
+                            |> Dict.values
+                            |> List.sortBy (Editing.field .recipeId >> Page.recipeNameOrEmpty model.recipes >> String.toLower)
+                        )
+                )
+            , div [ id "addMealEntryView" ]
+                (div [ id "addMealEntry" ]
+                    [ div [ id "searchField" ]
+                        [ label [] [ text Links.lookingGlass ]
+                        , input [ onInput Page.SetRecipesSearchString ] []
+                        ]
+                    ]
+                    :: thead []
+                        [ tr []
+                            [ td [] [ label [] [ text "Name" ] ]
+                            , td [] [ label [] [ text "Description" ] ]
+                            ]
+                        ]
+                    :: viewRecipes model.recipesSearchString
+                )
+            ]
 
 
 editOrDeleteMealEntryLine : Page.RecipeMap -> MealEntry -> Html Page.Msg

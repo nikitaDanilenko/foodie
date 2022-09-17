@@ -17,9 +17,12 @@ import Pages.MealEntries.MealEntryUpdateClientInput as MealEntryUpdateClientInpu
 import Pages.MealEntries.MealInfo as MealInfo
 import Pages.MealEntries.Page as Page exposing (Msg(..))
 import Pages.MealEntries.Requests as Requests
+import Pages.MealEntries.Status as Status
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Ports
 import Util.Editing as Editing exposing (Editing)
+import Util.HttpUtil as HttpUtil
+import Util.Initialization exposing (Initialization(..))
 import Util.LensUtil as LensUtil
 
 
@@ -49,6 +52,7 @@ init flags =
       , recipes = Dict.empty
       , recipesSearchString = ""
       , mealEntriesToAdd = Dict.empty
+      , initialization = Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
       }
     , cmd
     )
@@ -143,7 +147,7 @@ gotSaveMealEntryResponse : Page.Model -> Result Error MealEntry -> ( Page.Model,
 gotSaveMealEntryResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (\mealEntry ->
                 mapMealEntryOrUpdateById mealEntry.id
                     (Either.andThenRight (always (Left mealEntry)))
@@ -158,10 +162,10 @@ enterEditMealEntry model mealEntryId =
     ( model
         |> mapMealEntryOrUpdateById mealEntryId
             (Either.andThenLeft
-                (\me ->
+                (\mealEntry ->
                     Right
-                        { original = me
-                        , update = MealEntryUpdateClientInput.from me
+                        { original = mealEntry
+                        , update = MealEntryUpdateClientInput.from mealEntry
                         }
                 )
             )
@@ -188,7 +192,7 @@ gotDeleteMealEntryResponse : Page.Model -> MealEntryId -> Result Error () -> ( P
 gotDeleteMealEntryResponse model mealEntryId result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (Lens.modify Page.lenses.mealEntries (Dict.remove mealEntryId) model
                 |> always
             )
@@ -200,10 +204,11 @@ gotFetchMealEntriesResponse : Page.Model -> Result Error (List MealEntry) -> ( P
 gotFetchMealEntriesResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
-            (List.map (\mealEntry -> ( mealEntry.id, Left mealEntry ))
-                >> Dict.fromList
-                >> flip Page.lenses.mealEntries.set model
+        |> Either.unpack (flip setError model)
+            (\mealEntries ->
+                model
+                    |> Page.lenses.mealEntries.set (mealEntries |> List.map (\mealEntry -> ( mealEntry.id, Left mealEntry )) |> Dict.fromList)
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.mealEntries).set True
             )
     , Cmd.none
     )
@@ -213,10 +218,11 @@ gotFetchRecipesResponse : Page.Model -> Result Error (List Recipe) -> ( Page.Mod
 gotFetchRecipesResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
-            (List.map (\r -> ( r.id, r ))
-                >> Dict.fromList
-                >> flip Page.lenses.recipes.set model
+        |> Either.unpack (flip setError model)
+            (\recipes ->
+              model
+                |> Page.lenses.recipes.set (recipes |> List.map (\r -> ( r.id, r )) |> Dict.fromList)
+                |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.recipes).set True
             )
     , Cmd.none
     )
@@ -226,10 +232,11 @@ gotFetchMealResponse : Page.Model -> Result Error Meal -> ( Page.Model, Cmd Page
 gotFetchMealResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
-            (MealInfo.from
-                >> Just
-                >> flip Page.lenses.mealInfo.set model
+        |> Either.unpack (flip setError model)
+            (\meal ->
+                model
+                 |> Page.lenses.mealInfo.set (meal |> MealInfo.from |> Just)
+                 |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.meal).set True
             )
     , Cmd.none
     )
@@ -271,14 +278,13 @@ gotAddMealEntryResponse : Page.Model -> Result Error MealEntry -> ( Page.Model, 
 gotAddMealEntryResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.map
+        |> Either.unpack (flip setError model)
             (\mealEntry ->
                 model
                     |> Lens.modify Page.lenses.mealEntries
                         (Dict.update mealEntry.id (always mealEntry >> Left >> Just))
                     |> Lens.modify Page.lenses.mealEntriesToAdd (Dict.remove mealEntry.recipeId)
             )
-        |> Either.withDefault model
     , Cmd.none
     )
 
@@ -296,7 +302,9 @@ updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model jwt =
     let
         newModel =
-            Page.lenses.jwt.set jwt model
+            model
+                |> Page.lenses.jwt.set jwt
+                |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
     in
     ( newModel
     , initialFetch newModel.flagsWithJWT newModel.mealId
@@ -315,3 +323,8 @@ mapMealEntryOrUpdateById ingredientId =
     Page.lenses.mealEntries
         |> Compose.lensWithOptional (LensUtil.dictByKey ingredientId)
         |> Optional.modify
+
+
+setError : Error -> Page.Model -> Page.Model
+setError =
+    HttpUtil.setError Page.lenses.initialization
