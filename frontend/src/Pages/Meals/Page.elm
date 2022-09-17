@@ -9,8 +9,10 @@ import Either exposing (Either)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
 import Pages.Meals.MealCreationClientInput exposing (MealCreationClientInput)
+import Pages.Meals.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
+import Util.Initialization exposing (Initialization)
 import Util.LensUtil as LensUtil
 
 
@@ -18,6 +20,7 @@ type alias Model =
     { flagsWithJWT : FlagsWithJWT
     , meals : MealOrUpdateMap
     , mealToAdd : Maybe MealCreationClientInput
+    , initialization : Initialization Status
     }
 
 
@@ -33,11 +36,13 @@ lenses :
     { jwt : Lens Model JWT
     , meals : Lens Model MealOrUpdateMap
     , mealToAdd : Lens Model (Maybe MealCreationClientInput)
+    , initialization : Lens Model (Initialization Status)
     }
 lenses =
     { jwt = LensUtil.jwtSubLens
     , meals = Lens .meals (\b a -> { a | meals = b })
     , mealToAdd = Lens .mealToAdd (\b a -> { a | mealToAdd = b })
+    , initialization = Lens .initialization (\b a -> { a | initialization = b })
     }
 
 

@@ -14,8 +14,11 @@ import Monocle.Optional as Optional
 import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
 import Pages.Meals.Page as Page
 import Pages.Meals.Requests as Requests
+import Pages.Meals.Status as Status
 import Ports exposing (doFetchToken)
 import Util.Editing as Editing exposing (Editing)
+import Util.HttpUtil as HttpUtil
+import Util.Initialization as Initialization
 import Util.LensUtil as LensUtil
 
 
@@ -41,6 +44,7 @@ init flags =
             }
       , meals = Dict.empty
       , mealToAdd = Nothing
+      , initialization = Initialization.Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
       }
     , cmd
     )
@@ -106,7 +110,7 @@ gotCreateMealResponse : Page.Model -> Result Error Meal -> ( Page.Model, Cmd msg
 gotCreateMealResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (\meal ->
                 model
                     |> Lens.modify Page.lenses.meals
@@ -144,7 +148,7 @@ gotSaveMealResponse : Page.Model -> Result Error Meal -> ( Page.Model, Cmd Page.
 gotSaveMealResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (\meal ->
                 model
                     |> mapMealOrUpdateById meal.id
@@ -181,7 +185,7 @@ gotDeleteMealResponse : Page.Model -> MealId -> Result Error () -> ( Page.Model,
 gotDeleteMealResponse model deletedId dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (\_ ->
                 Lens.modify Page.lenses.meals
                     (Dict.remove deletedId)
@@ -195,10 +199,15 @@ gotFetchMealsResponse : Page.Model -> Result Error (List Meal) -> ( Page.Model, 
 gotFetchMealsResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unwrap model
-            (List.map (\meal -> ( meal.id, Left meal ))
-                >> Dict.fromList
-                >> flip Page.lenses.meals.set model
+        |> Either.unpack (flip setError model)
+            (\meals ->
+                model
+                    |> Page.lenses.meals.set
+                        (meals
+                            |> List.map (\meal -> ( meal.id, Left meal ))
+                            |> Dict.fromList
+                        )
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.meals).set True
             )
     , Cmd.none
     )
@@ -208,7 +217,9 @@ updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model jwt =
     let
         newModel =
-            Page.lenses.jwt.set jwt model
+            model
+                |> Page.lenses.jwt.set jwt
+                |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
     in
     ( newModel
     , Requests.fetchMeals newModel.flagsWithJWT
@@ -228,3 +239,8 @@ mapMealOrUpdateById mealId =
     Page.lenses.meals
         |> Compose.lensWithOptional (LensUtil.dictByKey mealId)
         |> Optional.modify
+
+
+setError : Error -> Page.Model -> Page.Model
+setError =
+    HttpUtil.setError Page.lenses.initialization

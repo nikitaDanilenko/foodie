@@ -18,8 +18,10 @@ import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
 import Pages.Meals.Page as Page
+import Pages.Meals.Status as Status
 import Pages.Util.DateUtil as DateUtil
 import Pages.Util.Links as Links
+import Pages.Util.ViewUtil as ViewUtil
 import Parser
 import Url.Builder
 import Util.Editing as Editing
@@ -27,28 +29,35 @@ import Util.Editing as Editing
 
 view : Page.Model -> Html Page.Msg
 view model =
-    let
-        viewEditMeals =
-            List.map
-                (Either.unpack
-                    (editOrDeleteMealLine model.flagsWithJWT.configuration)
-                    (\e -> e.update |> editMealLine)
-                )
-    in
-    div [ id "addMealView" ]
-        (createMeal model.mealToAdd
-            :: thead []
-                [ tr []
-                    [ td [] [ label [] [ text "Name" ] ]
-                    , td [] [ label [] [ text "Description" ] ]
+    ViewUtil.viewWithErrorHandling
+        { isFinished = Status.isFinished
+        , initialization = .initialization
+        , flagsWithJWT = .flagsWithJWT
+        }
+        model
+    <|
+        let
+            viewEditMeals =
+                List.map
+                    (Either.unpack
+                        (editOrDeleteMealLine model.flagsWithJWT.configuration)
+                        (\e -> e.update |> editMealLine)
+                    )
+        in
+        div [ id "addMealView" ]
+            (createMeal model.mealToAdd
+                :: thead []
+                    [ tr []
+                        [ td [] [ label [] [ text "Name" ] ]
+                        , td [] [ label [] [ text "Description" ] ]
+                        ]
                     ]
-                ]
-            :: viewEditMeals
-                (model.meals
-                    |> Dict.values
-                    |> List.sortBy (Editing.field .date >> DateUtil.toString)
-                )
-        )
+                :: viewEditMeals
+                    (model.meals
+                        |> Dict.values
+                        |> List.sortBy (Editing.field .date >> DateUtil.toString)
+                    )
+            )
 
 
 createMeal : Maybe MealCreationClientInput -> Html Page.Msg
