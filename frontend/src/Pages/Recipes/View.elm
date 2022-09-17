@@ -24,7 +24,7 @@ import Util.Editing as Editing
 
 view : Page.Model -> Html Page.Msg
 view model =
-    ViewUtil.viewWith
+    ViewUtil.viewWithErrorHandling
         { isFinished = Status.isFinished
         , initialization = Page.lenses.initialization.get
         , flagsWithJWT = .flagsWithJWT

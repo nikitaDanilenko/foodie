@@ -21,65 +21,74 @@ import Pages.Ingredients.IngredientCreationClientInput as IngredientCreationClie
 import Pages.Ingredients.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
 import Pages.Ingredients.Page as Page
 import Pages.Ingredients.RecipeInfo exposing (RecipeInfo)
+import Pages.Ingredients.Status as Status
 import Pages.Util.DictUtil as DictUtil
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
+import Pages.Util.ViewUtil as ViewUtil
 import Util.Editing as Editing
 
 
 view : Page.Model -> Html Page.Msg
 view model =
-    let
-        viewEditIngredients =
-            List.map
-                (Either.unpack
-                    (editOrDeleteIngredientLine model.measures model.foods)
-                    (\e -> e.update |> editIngredientLine model.measures model.foods e.original)
-                )
-
-        viewFoods searchString =
-            model.foods
-                |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
-                |> Dict.values
-                |> List.sortBy .name
-                |> List.map (viewFoodLine model.foods model.measures model.foodsToAdd model.ingredients)
-    in
-    div [ id "editor" ]
-        [ div [ id "recipeInfo" ]
-            [ label [] [ text "Name" ]
-            , label [] [ text <| Maybe.Extra.unwrap "" .name <| model.recipeInfo ]
-            , label [] [ text "Description" ]
-            , label [] [ text <| Maybe.withDefault "" <| Maybe.andThen .description <| model.recipeInfo ]
-            ]
-        , div [ id "ingredientsView" ]
-            (thead []
-                [ tr []
-                    [ td [] [ label [] [ text "Name" ] ]
-                    , td [] [ label [] [ text "Amount" ] ]
-                    , td [] [ label [] [ text "Unit" ] ]
-                    ]
-                ]
-                :: viewEditIngredients
-                    (model.ingredients
-                        |> Dict.values
-                        |> List.sortBy (Editing.field .foodId >> Page.ingredientNameOrEmpty model.foods >> String.toLower)
+    ViewUtil.viewWithErrorHandling
+        { isFinished = Status.isFinished
+        , initialization = .initialization
+        , flagsWithJWT = .flagsWithJWT
+        }
+        model
+    <|
+        let
+            viewEditIngredients =
+                List.map
+                    (Either.unpack
+                        (editOrDeleteIngredientLine model.measures model.foods)
+                        (\e -> e.update |> editIngredientLine model.measures model.foods e.original)
                     )
-            )
-        , div [ id "addIngredientView" ]
-            (div [ id "addIngredient" ]
-                [ div [ id "searchField" ]
-                    [ label [] [ text Links.lookingGlass ]
-                    , input [ onInput Page.SetFoodsSearchString ] []
-                    ]
+
+            viewFoods searchString =
+                model.foods
+                    |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
+                    |> Dict.values
+                    |> List.sortBy .name
+                    |> List.map (viewFoodLine model.foods model.measures model.foodsToAdd model.ingredients)
+        in
+        div [ id "editor" ]
+            [ div [ id "recipeInfo" ]
+                [ label [] [ text "Name" ]
+                , label [] [ text <| Maybe.Extra.unwrap "" .name <| model.recipeInfo ]
+                , label [] [ text "Description" ]
+                , label [] [ text <| Maybe.withDefault "" <| Maybe.andThen .description <| model.recipeInfo ]
                 ]
-                :: thead []
+            , div [ id "ingredientsView" ]
+                (thead []
                     [ tr []
                         [ td [] [ label [] [ text "Name" ] ]
+                        , td [] [ label [] [ text "Amount" ] ]
+                        , td [] [ label [] [ text "Unit" ] ]
                         ]
                     ]
-                :: viewFoods model.foodsSearchString
-            )
-        ]
+                    :: viewEditIngredients
+                        (model.ingredients
+                            |> Dict.values
+                            |> List.sortBy (Editing.field .foodId >> Page.ingredientNameOrEmpty model.foods >> String.toLower)
+                        )
+                )
+            , div [ id "addIngredientView" ]
+                (div [ id "addIngredient" ]
+                    [ div [ id "searchField" ]
+                        [ label [] [ text Links.lookingGlass ]
+                        , input [ onInput Page.SetFoodsSearchString ] []
+                        ]
+                    ]
+                    :: thead []
+                        [ tr []
+                            [ td [] [ label [] [ text "Name" ] ]
+                            ]
+                        ]
+                    :: viewFoods model.foodsSearchString
+                )
+            ]
 
 
 editOrDeleteIngredientLine : Page.MeasureMap -> Page.FoodMap -> Ingredient -> Html Page.Msg

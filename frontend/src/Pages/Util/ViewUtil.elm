@@ -8,14 +8,15 @@ import Url.Builder
 import Util.Initialization exposing (Initialization(..))
 
 
-viewWith :
-  { isFinished : status -> Bool,
-    initialization: model -> Initialization status,
-    flagsWithJWT : model -> FlagsWithJWT}
+viewWithErrorHandling :
+    { isFinished : status -> Bool
+    , initialization : model -> Initialization status
+    , flagsWithJWT : model -> FlagsWithJWT
+    }
     -> model
     -> Html msg
     -> Html msg
-viewWith params model html =
+viewWithErrorHandling params model html =
     case params.initialization model of
         Failure explanation ->
             let
