@@ -12,51 +12,60 @@ import Html.Events exposing (onClick, onInput)
 import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 import Pages.Statistics.Page as Page
+import Pages.Statistics.Status as Status
 import Pages.Util.DateUtil as DateUtil
+import Pages.Util.ViewUtil as ViewUtil
 import Parser
 
 
 view : Page.Model -> Html Page.Msg
 view model =
-    div [ id "statistics" ]
-        [ div [ id "intervalSelection" ]
-            [ label [] [ text "From" ]
-            , dateInput model Page.SetFromDate Page.lenses.from
-            , label [] [ text "To" ]
-            , dateInput model Page.SetToDate Page.lenses.to
-            , button
-                [ class "button", onClick Page.FetchStats ]
-                [ text "Compute" ]
+    ViewUtil.viewWithErrorHandling
+        { isFinished = Status.isFinished
+        , initialization = .initialization
+        , flagsWithJWT = .flagsWithJWT
+        }
+        model
+    <|
+        div [ id "statistics" ]
+            [ div [ id "intervalSelection" ]
+                [ label [] [ text "From" ]
+                , dateInput model Page.SetFromDate Page.lenses.from
+                , label [] [ text "To" ]
+                , dateInput model Page.SetToDate Page.lenses.to
+                , button
+                    [ class "button", onClick Page.FetchStats ]
+                    [ text "Compute" ]
+                ]
+            , div [ id "nutrientInformation" ]
+                (div [ id "nutrientInformationHeader" ] [ text "Nutrients" ]
+                    :: thead []
+                        [ tr []
+                            [ td [] [ label [] [ text "Name" ] ]
+                            , td [] [ label [] [ text "Total amount" ] ]
+                            , td [] [ label [] [ text "Daily average amount" ] ]
+                            , td [] [ label [] [ text "Reference daily average amount" ] ]
+                            , td [] [ label [] [ text "Actual factor" ] ]
+                            , td [] [ label [] [ text "Unit" ] ]
+                            ]
+                        ]
+                    :: List.map nutrientInformationLine model.stats.nutrients
+                )
+            , div [ id "meals" ]
+                (div [ id "mealsHeader" ] [ text "Meals" ]
+                    :: thead []
+                        [ tr []
+                            [ td [] [ label [] [ text "Name" ] ]
+                            , td [] [ label [] [ text "Description" ] ]
+                            ]
+                        ]
+                    :: (model.stats.meals
+                            |> List.sortBy (.date >> DateUtil.toString)
+                            |> List.reverse
+                            |> List.map mealLine
+                       )
+                )
             ]
-        , div [ id "nutrientInformation" ]
-            (div [ id "nutrientInformationHeader" ] [ text "Nutrients" ]
-                :: thead []
-                    [ tr []
-                        [ td [] [ label [] [ text "Name" ] ]
-                        , td [] [ label [] [ text "Total amount" ] ]
-                        , td [] [ label [] [ text "Daily average amount" ] ]
-                        , td [] [ label [] [ text "Reference daily average amount" ] ]
-                        , td [] [ label [] [ text "Actual factor" ] ]
-                        , td [] [ label [] [ text "Unit" ] ]
-                        ]
-                    ]
-                :: List.map nutrientInformationLine model.stats.nutrients
-            )
-        , div [ id "meals" ]
-            (div [ id "mealsHeader" ] [ text "Meals" ]
-                :: thead []
-                    [ tr []
-                        [ td [] [ label [] [ text "Name" ] ]
-                        , td [] [ label [] [ text "Description" ] ]
-                        ]
-                    ]
-                :: (model.stats.meals
-                        |> List.sortBy (.date >> DateUtil.toString)
-                        |> List.reverse
-                        |> List.map mealLine
-                   )
-            )
-        ]
 
 
 nutrientInformationLine : NutrientInformation -> Html Page.Msg
@@ -76,7 +85,8 @@ nutrientInformationLine nutrientInformation =
         , td [] [ text <| displayFloat <| nutrientInformation.amounts.dailyAverage ]
         , td [] [ text <| Maybe.Extra.unwrap "" displayFloat <| nutrientInformation.amounts.referenceDailyAverage ]
         , td []
-            [ text <|   Maybe.Extra.unwrap "" ((\v -> v ++ "%") << displayFloat) <|
+            [ text <|
+                Maybe.Extra.unwrap "" ((\v -> v ++ "%") << displayFloat) <|
                     referenceFactor
                         { actualValue = nutrientInformation.amounts.dailyAverage
                         , referenceValue = nutrientInformation.amounts.referenceDailyAverage

@@ -9,11 +9,14 @@ import Basics.Extra exposing (flip)
 import Either
 import Http exposing (Error)
 import Maybe.Extra
-import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Pages.Statistics.Page as Page
 import Pages.Statistics.Requests as Requests
+import Pages.Statistics.Status as Status
 import Ports
+import Util.HttpUtil as HttpUtil
+import Util.Initialization as Initialization
+import Util.LensUtil as LensUtil
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
@@ -35,6 +38,7 @@ init flags =
             }
       , requestInterval = RequestIntervalLens.default
       , stats = defaultStats
+      , initialization = Initialization.Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
       }
     , cmd
     )
@@ -86,7 +90,9 @@ setToDate model maybeDate =
 
 updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model jwt =
-    ( model |> Page.lenses.jwt.set jwt
+    ( model
+        |> Page.lenses.jwt.set jwt
+        |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
     , Cmd.none
     )
 
@@ -102,9 +108,16 @@ gotFetchStatsResponse : Page.Model -> Result Error Stats -> ( Page.Model, Cmd Pa
 gotFetchStatsResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
-            (flip Page.lenses.stats.set model
-                >> Lens.modify (Page.lenses.stats |> Compose.lensWithLens StatsLens.nutrients) (List.sortBy .name)
+        |> Either.unpack (flip setError model)
+            (\stats ->
+                model
+                    |> Page.lenses.stats.set
+                        (stats |> Lens.modify StatsLens.nutrients (List.sortBy .name))
             )
     , Cmd.none
     )
+
+
+setError : Error -> Page.Model -> Page.Model
+setError =
+    HttpUtil.setError Page.lenses.initialization

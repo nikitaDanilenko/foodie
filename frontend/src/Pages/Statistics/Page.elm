@@ -9,7 +9,9 @@ import Configuration exposing (Configuration)
 import Http exposing (Error)
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
+import Pages.Statistics.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Util.Initialization exposing (Initialization)
 import Util.LensUtil as LensUtil
 
 
@@ -17,6 +19,7 @@ type alias Model =
     { flagsWithJWT : FlagsWithJWT
     , requestInterval : RequestInterval
     , stats : Stats
+    , initialization : Initialization Status
     }
 
 
@@ -26,6 +29,7 @@ lenses :
     , from : Lens Model (Maybe Date)
     , to : Lens Model (Maybe Date)
     , stats : Lens Model Stats
+    , initialization : Lens Model (Initialization Status)
     }
 lenses =
     let
@@ -37,6 +41,7 @@ lenses =
     , from = requestInterval |> Compose.lensWithLens RequestIntervalLens.from
     , to = requestInterval |> Compose.lensWithLens RequestIntervalLens.to
     , stats = Lens .stats (\b a -> { a | stats = b })
+    , initialization = Lens .initialization (\b a -> { a | initialization = b })
     }
 
 
