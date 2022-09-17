@@ -17,7 +17,7 @@ import Pages.Recipes.Requests as Requests
 import Pages.Recipes.Status as Status
 import Ports exposing (doFetchToken)
 import Util.Editing as Editing exposing (Editing)
-import Util.HttpUtil as HttUtil
+import Util.HttpUtil as HttpUtil
 import Util.Initialization as Initialization exposing (Initialization(..))
 import Util.LensUtil as LensUtil
 
@@ -110,7 +110,7 @@ gotCreateRecipeResponse : Page.Model -> Result Error Recipe -> ( Page.Model, Cmd
 gotCreateRecipeResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (\recipe ->
                 model
                     |> Lens.modify Page.lenses.recipes
@@ -150,7 +150,7 @@ gotSaveRecipeResponse : Page.Model -> Result Error Recipe -> ( Page.Model, Cmd P
 gotSaveRecipeResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (\recipe ->
                 model
                     |> mapRecipeOrUpdateById recipe.id
@@ -187,7 +187,7 @@ gotDeleteRecipeResponse : Page.Model -> RecipeId -> Result Error () -> ( Page.Mo
 gotDeleteRecipeResponse model deletedId dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (always
                 (model
                     |> Lens.modify Page.lenses.recipes
@@ -202,7 +202,7 @@ gotFetchRecipesResponse : Page.Model -> Result Error (List Recipe) -> ( Page.Mod
 gotFetchRecipesResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unpack (HttUtil.errorToExplanation >> Failure >> flip Page.lenses.initialization.set model)
+        |> Either.unpack (flip setError model)
             (\recipes ->
                 model
                     |> Page.lenses.recipes.set (recipes |> List.map (\r -> ( r.id, Left r )) |> Dict.fromList)
@@ -230,3 +230,8 @@ mapRecipeOrUpdateById recipeId =
     Page.lenses.recipes
         |> Compose.lensWithOptional (LensUtil.dictByKey recipeId)
         |> Optional.modify
+
+
+setError : Error -> Page.Model -> Page.Model
+setError =
+    HttpUtil.setError Page.lenses.initialization
