@@ -12,58 +12,67 @@ import Html.Events.Extra exposing (onEnter)
 import Pages.ReferenceNutrients.Page as Page exposing (NutrientMap)
 import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput as ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput as ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
+import Pages.ReferenceNutrients.Status as Status
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
+import Pages.Util.ViewUtil as ViewUtil
 
 
 view : Page.Model -> Html Page.Msg
 view model =
-    let
-        viewEditReferenceNutrients =
-            List.map
-                (Either.unpack
-                    (editOrDeleteReferenceNutrientLine model.nutrients)
-                    (\e -> e.update |> editReferenceNutrientLine model.nutrients e.original)
-                )
-
-        viewNutrients searchString =
-            model.nutrients
-                |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
-                |> Dict.values
-                |> List.sortBy .name
-                |> List.map (viewNutrientLine model.nutrients model.referenceNutrients model.referenceNutrientsToAdd)
-    in
-    div [ id "referenceNutrient" ]
-        [ div [ id "referenceNutrientView" ]
-            (thead []
-                [ tr []
-                    [ td [] [ label [] [ text "Name" ] ]
-                    , td [] [ label [] [ text "Reference value" ] ]
-                    , td [] [ label [] [ text "Unit" ] ]
-                    ]
-                ]
-                :: viewEditReferenceNutrients
-                    (model.referenceNutrients
-                        |> Dict.toList
-                        |> List.sortBy (\( k, _ ) -> Page.nutrientNameOrEmpty model.nutrients k |> String.toLower)
-                        |> List.map Tuple.second
+    ViewUtil.viewWithErrorHandling
+        { isFinished = Status.isFinished
+        , initialization = .initialization
+        , flagsWithJWT = .flagsWithJWT
+        }
+        model
+    <|
+        let
+            viewEditReferenceNutrients =
+                List.map
+                    (Either.unpack
+                        (editOrDeleteReferenceNutrientLine model.nutrients)
+                        (\e -> e.update |> editReferenceNutrientLine model.nutrients e.original)
                     )
-            )
-        , div [ id "addReferenceNutrientView" ]
-            (div [ id "addReferenceNutrient" ]
-                [ div [ id "searchField" ]
-                    [ label [] [ text Links.lookingGlass ]
-                    , input [ onInput Page.SetNutrientsSearchString ] []
-                    ]
-                ]
-                :: thead []
+
+            viewNutrients searchString =
+                model.nutrients
+                    |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
+                    |> Dict.values
+                    |> List.sortBy .name
+                    |> List.map (viewNutrientLine model.nutrients model.referenceNutrients model.referenceNutrientsToAdd)
+        in
+        div [ id "referenceNutrient" ]
+            [ div [ id "referenceNutrientView" ]
+                (thead []
                     [ tr []
                         [ td [] [ label [] [ text "Name" ] ]
+                        , td [] [ label [] [ text "Reference value" ] ]
+                        , td [] [ label [] [ text "Unit" ] ]
                         ]
                     ]
-                :: viewNutrients model.nutrientsSearchString
-            )
-        ]
+                    :: viewEditReferenceNutrients
+                        (model.referenceNutrients
+                            |> Dict.toList
+                            |> List.sortBy (\( k, _ ) -> Page.nutrientNameOrEmpty model.nutrients k |> String.toLower)
+                            |> List.map Tuple.second
+                        )
+                )
+            , div [ id "addReferenceNutrientView" ]
+                (div [ id "addReferenceNutrient" ]
+                    [ div [ id "searchField" ]
+                        [ label [] [ text Links.lookingGlass ]
+                        , input [ onInput Page.SetNutrientsSearchString ] []
+                        ]
+                    ]
+                    :: thead []
+                        [ tr []
+                            [ td [] [ label [] [ text "Name" ] ]
+                            ]
+                        ]
+                    :: viewNutrients model.nutrientsSearchString
+                )
+            ]
 
 
 editOrDeleteReferenceNutrientLine : Page.NutrientMap -> ReferenceNutrient -> Html Page.Msg

@@ -17,9 +17,12 @@ import Pages.ReferenceNutrients.Page as Page exposing (Msg(..))
 import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput as ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput as ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
 import Pages.ReferenceNutrients.Requests as Requests
+import Pages.ReferenceNutrients.Status as Status
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Ports
 import Util.Editing as Editing exposing (Editing)
+import Util.HttpUtil as HttpUtil
+import Util.Initialization as Initialization
 import Util.LensUtil as LensUtil
 
 
@@ -46,6 +49,7 @@ init flags =
       , nutrients = Dict.empty
       , nutrientsSearchString = ""
       , referenceNutrientsToAdd = Dict.empty
+      , initialization = Initialization.Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
       }
     , cmd
     )
@@ -139,7 +143,7 @@ gotSaveReferenceNutrientResponse : Page.Model -> Result Error ReferenceNutrient 
 gotSaveReferenceNutrientResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (\referenceNutrient ->
                 mapReferenceNutrientOrUpdateById referenceNutrient.nutrientCode
                     (Either.andThenRight (always (Left referenceNutrient)))
@@ -184,7 +188,7 @@ gotDeleteReferenceNutrientResponse : Page.Model -> NutrientCode -> Result Error 
 gotDeleteReferenceNutrientResponse model nutrientCode result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (Lens.modify Page.lenses.referenceNutrients (Dict.remove nutrientCode) model
                 |> always
             )
@@ -196,10 +200,11 @@ gotFetchReferenceNutrientsResponse : Page.Model -> Result Error (List ReferenceN
 gotFetchReferenceNutrientsResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
-            (List.map (\r -> ( r.nutrientCode, Left r ))
-                >> Dict.fromList
-                >> flip Page.lenses.referenceNutrients.set model
+        |> Either.unpack (flip setError model)
+            (\referenceNutrients ->
+                model
+                    |> Page.lenses.referenceNutrients.set (referenceNutrients |> List.map (\r -> ( r.nutrientCode, Left r )) |> Dict.fromList)
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.referenceNutrients).set True
             )
     , Cmd.none
     )
@@ -209,9 +214,11 @@ gotFetchNutrientsResponse : Page.Model -> Result Error (List Nutrient) -> ( Page
 gotFetchNutrientsResponse model result =
     result
         |> Either.fromResult
-        |> Either.unwrap ( model, Cmd.none )
+        |> Either.unpack (\error -> ( setError error model, Cmd.none ))
             (\nutrients ->
-                ( LensUtil.set nutrients .code Page.lenses.nutrients model
+                ( model
+                    |> LensUtil.set nutrients .code Page.lenses.nutrients
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.referenceNutrients).set True
                 , nutrients
                     |> Encode.list encoderNutrient
                     |> Encode.encode 0
@@ -253,14 +260,13 @@ gotAddReferenceNutrientResponse : Page.Model -> Result Error ReferenceNutrient -
 gotAddReferenceNutrientResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.map
+        |> Either.unpack (flip setError model)
             (\referenceNutrient ->
                 model
                     |> Lens.modify Page.lenses.referenceNutrients
                         (Dict.update referenceNutrient.nutrientCode (always referenceNutrient >> Left >> Just))
                     |> Lens.modify Page.lenses.referenceNutrientsToAdd (Dict.remove referenceNutrient.nutrientCode)
             )
-        |> Either.withDefault model
     , Cmd.none
     )
 
@@ -278,7 +284,9 @@ updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model jwt =
     let
         newModel =
-            Page.lenses.jwt.set jwt model
+            model
+                |> Page.lenses.jwt.set jwt
+                |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
     in
     ( newModel
     , initialFetch newModel.flagsWithJWT
@@ -288,10 +296,16 @@ updateJWT model jwt =
 updateNutrients : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 updateNutrients model =
     Decode.decodeString (Decode.list decoderNutrient)
-        >> Result.toMaybe
-        >> Maybe.Extra.unwrap ( model, Cmd.none )
+        >> Either.fromResult
+        >> Either.unpack (\error -> ( setJsonError error model, Cmd.none ))
             (\nutrients ->
-                ( LensUtil.set nutrients .code Page.lenses.nutrients model
+                ( model
+                    |> LensUtil.set nutrients .code Page.lenses.nutrients
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.nutrients).set
+                        (nutrients
+                            |> List.isEmpty
+                            |> not
+                        )
                 , if List.isEmpty nutrients then
                     Requests.fetchNutrients model.flagsWithJWT
 
@@ -313,3 +327,13 @@ mapReferenceNutrientOrUpdateById ingredientId =
     Page.lenses.referenceNutrients
         |> Compose.lensWithOptional (LensUtil.dictByKey ingredientId)
         |> Optional.modify
+
+
+setError : Error -> Page.Model -> Page.Model
+setError =
+    HttpUtil.setError Page.lenses.initialization
+
+
+setJsonError : Decode.Error -> Page.Model -> Page.Model
+setJsonError =
+    HttpUtil.setJsonError Page.lenses.initialization

@@ -14,8 +14,10 @@ import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
+import Pages.ReferenceNutrients.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
+import Util.Initialization exposing (Initialization)
 
 
 type alias Model =
@@ -24,6 +26,7 @@ type alias Model =
     , nutrients : NutrientMap
     , nutrientsSearchString : String
     , referenceNutrientsToAdd : AddNutrientMap
+    , initialization : Initialization Status
     }
 
 
@@ -55,6 +58,7 @@ lenses :
     , referenceNutrientsToAdd : Lens Model AddNutrientMap
     , nutrients : Lens Model NutrientMap
     , nutrientsSearchString : Lens Model String
+    , initialization : Lens Model (Initialization Status)
     }
 lenses =
     { jwt =
@@ -70,6 +74,7 @@ lenses =
     , referenceNutrientsToAdd = Lens .referenceNutrientsToAdd (\b a -> { a | referenceNutrientsToAdd = b })
     , nutrients = Lens .nutrients (\b a -> { a | nutrients = b })
     , nutrientsSearchString = Lens .nutrientsSearchString (\b a -> { a | nutrientsSearchString = b })
+    , initialization = Lens .initialization (\b a -> { a | initialization = b })
     }
 
 
