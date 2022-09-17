@@ -169,7 +169,7 @@ gotSaveIngredientResponse : Page.Model -> Result Error Ingredient -> ( Page.Mode
 gotSaveIngredientResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (\ingredient ->
                 model
                     |> mapIngredientOrUpdateById ingredient.id
@@ -206,7 +206,7 @@ gotDeleteIngredientResponse : Page.Model -> IngredientId -> Result Error () -> (
 gotDeleteIngredientResponse model ingredientId result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (model
                 |> Lens.modify Page.lenses.ingredients
                     (Dict.remove ingredientId)
@@ -220,10 +220,12 @@ gotFetchIngredientsResponse : Page.Model -> Result Error (List Ingredient) -> ( 
 gotFetchIngredientsResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
-            (List.map (\ingredient -> ( ingredient.id, Left ingredient ))
-                >> Dict.fromList
-                >> flip Page.lenses.ingredients.set model
+        |> Either.unpack (flip setError model)
+            (\ingredients ->
+                model
+                    |> Page.lenses.ingredients.set
+                        (ingredients |> List.map (\ingredient -> ( ingredient.id, Left ingredient )) |> Dict.fromList)
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.ingredients).set True
             )
     , Cmd.none
     )
