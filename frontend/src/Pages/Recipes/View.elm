@@ -14,37 +14,46 @@ import Monocle.Lens exposing (Lens)
 import Pages.Recipes.Page as Page
 import Pages.Recipes.RecipeCreationClientInput as RecipeCreationClientInput exposing (RecipeCreationClientInput)
 import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
+import Pages.Recipes.Status as Status
 import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput exposing (ValidatedInput)
+import Pages.Util.ViewUtil as ViewUtil
 import Url.Builder
 import Util.Editing as Editing
 
 
 view : Page.Model -> Html Page.Msg
 view model =
-    let
-        viewEditRecipes =
-            List.map
-                (Either.unpack
-                    (editOrDeleteRecipeLine model.flagsWithJWT.configuration)
-                    (\e -> e.update |> editRecipeLine)
-                )
-    in
-    div [ id "addRecipeView" ]
-        (createRecipe model.recipeToAdd
-            :: thead []
-                [ tr []
-                    [ td [] [ label [] [ text "Name" ] ]
-                    , td [] [ label [] [ text "Description" ] ]
-                    , td [] [ label [] [ text "Number of servings" ] ]
+    ViewUtil.viewWith
+        { isFinished = Status.isFinished
+        , initialization = Page.lenses.initialization.get
+        , flagsWithJWT = .flagsWithJWT
+        }
+        model
+    <|
+        let
+            viewEditRecipes =
+                List.map
+                    (Either.unpack
+                        (editOrDeleteRecipeLine model.flagsWithJWT.configuration)
+                        (\e -> e.update |> editRecipeLine)
+                    )
+        in
+        div [ id "addRecipeView" ]
+            (createRecipe model.recipeToAdd
+                :: thead []
+                    [ tr []
+                        [ td [] [ label [] [ text "Name" ] ]
+                        , td [] [ label [] [ text "Description" ] ]
+                        , td [] [ label [] [ text "Number of servings" ] ]
+                        ]
                     ]
-                ]
-            :: viewEditRecipes
-                (model.recipes
-                    |> Dict.values
-                    |> List.sortBy (Editing.field .name >> String.toLower)
-                )
-        )
+                :: viewEditRecipes
+                    (model.recipes
+                        |> Dict.values
+                        |> List.sortBy (Editing.field .name >> String.toLower)
+                    )
+            )
 
 
 createRecipe maybeCreation =

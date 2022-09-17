@@ -1,12 +1,17 @@
 module Pages.Login.Handler exposing (init, update)
 
+import Basics.Extra exposing (flip)
 import Either
+import Http exposing (Error)
 import Monocle.Compose as Compose
 import Pages.Login.Page as Page
 import Pages.Login.Requests as Requests
+import Pages.Login.Status as Status
 import Ports
 import Util.CredentialsUtil as CredentialsUtil
-import Util.TriState exposing (TriState(..))
+import Util.HttpUtil as HttpUtil
+import Util.Initialization exposing (Initialization(..))
+import Util.LensUtil as LensUtil
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
@@ -15,7 +20,7 @@ init flags =
             { nickname = ""
             , password = ""
             }
-      , state = Initial
+      , initialization = Loading Status.initial
       , configuration = flags.configuration
       }
     , Cmd.none
@@ -67,12 +72,26 @@ login model =
     )
 
 
+gotResponse : Page.Model -> Result Error String -> ( Page.Model, Cmd Page.Msg )
 gotResponse model remoteData =
     remoteData
         |> Either.fromResult
-        |> Either.unwrap ( Page.lenses.state.set Failure model, Cmd.none )
+        |> Either.unpack
+            (\error ->
+                ( error
+                    |> HttpUtil.errorToExplanation
+                    |> Failure
+                    |> flip Page.lenses.initialization.set model
+                , Cmd.none
+                )
+            )
             (\token ->
-                ( Page.lenses.state.set Success model
+                ( (LensUtil.initializationField
+                    Page.lenses.initialization
+                    Status.lenses.jwt
+                  ).set
+                    True
+                    model
                 , Cmd.batch
                     [ Ports.storeToken token
                     , Requests.navigateToOverview model.configuration

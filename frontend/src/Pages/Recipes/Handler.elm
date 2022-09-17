@@ -14,8 +14,11 @@ import Pages.Recipes.Page as Page exposing (RecipeOrUpdate)
 import Pages.Recipes.RecipeCreationClientInput as RecipeCreationClientInput exposing (RecipeCreationClientInput)
 import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Recipes.Requests as Requests
+import Pages.Recipes.Status as Status
 import Ports exposing (doFetchToken)
 import Util.Editing as Editing exposing (Editing)
+import Util.HttpUtil as HttUtil
+import Util.Initialization as Initialization exposing (Initialization(..))
 import Util.LensUtil as LensUtil
 
 
@@ -41,6 +44,7 @@ init flags =
             }
       , recipes = Dict.empty
       , recipeToAdd = Nothing
+      , initialization = Initialization.Loading Status.initial
       }
     , cmd
     )
@@ -198,10 +202,11 @@ gotFetchRecipesResponse : Page.Model -> Result Error (List Recipe) -> ( Page.Mod
 gotFetchRecipesResponse model dataOrError =
     ( dataOrError
         |> Either.fromResult
-        |> Either.unwrap model
-            (List.map (\r -> ( r.id, Left r ))
-                >> Dict.fromList
-                >> flip Page.lenses.recipes.set model
+        |> Either.unpack (HttUtil.errorToExplanation >> Failure >> flip Page.lenses.initialization.set model)
+            (\recipes ->
+                model
+                    |> Page.lenses.recipes.set (recipes |> List.map (\r -> ( r.id, Left r )) |> Dict.fromList)
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.recipes).set True
             )
     , Cmd.none
     )
@@ -211,7 +216,9 @@ updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model jwt =
     let
         newModel =
-            Page.lenses.jwt.set jwt model
+            model
+                |> Page.lenses.jwt.set jwt
+                |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
     in
     ( newModel
     , Requests.fetchRecipes newModel.flagsWithJWT

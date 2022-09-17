@@ -21,6 +21,7 @@
             "elm-community/html-extra": "3.4.0",
             "elm-community/list-extra": "8.6.0",
             "elm-community/maybe-extra": "5.3.0",
+            "perzanko/elm-loading": "2.0.5",
             "rundis/elm-bootstrap": "5.2.0",
             "toastal/either": "3.6.3"
         },
@@ -33,7 +34,10 @@
             "elm/time": "1.0.0",
             "elm/virtual-dom": "1.0.3",
             "jinjor/elm-diff": "1.0.6",
-            "myrho/elm-round": "1.0.4"
+            "myrho/elm-round": "1.0.4",
+            "robinheghan/murmur3": "1.0.0",
+            "rtfeldman/elm-css": "17.1.1",
+            "rtfeldman/elm-hex": "1.0.0"
         }
     },
     "test-dependencies": {

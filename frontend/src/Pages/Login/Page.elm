@@ -5,23 +5,24 @@ import Api.Types.Credentials exposing (Credentials)
 import Configuration exposing (Configuration)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
-import Util.TriState exposing (TriState)
+import Pages.Login.Status exposing (Status)
+import Util.Initialization exposing (Initialization)
 
 
 type alias Model =
     { credentials : Credentials
-    , state : TriState
+    , initialization : Initialization Status
     , configuration : Configuration
     }
 
 
 lenses :
     { credentials : Lens Model Credentials
-    , state : Lens Model TriState
+    , initialization : Lens Model (Initialization Status)
     }
 lenses =
     { credentials = Lens .credentials (\b a -> { a | credentials = b })
-    , state = Lens .state (\b a -> { a | state = b })
+    , initialization = Lens .initialization (\b a -> { a | initialization = b })
     }
 
 

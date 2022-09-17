@@ -4,6 +4,7 @@ import Api.Auxiliary exposing (JWT)
 import Http exposing (Error(..), Expect, expectStringResponse)
 import Json.Decode as D
 import Json.Encode as Encode
+import Util.Initialization exposing (ErrorExplanation)
 
 
 expectJson : (Result Http.Error a -> msg) -> D.Decoder a -> Expect msg
@@ -20,8 +21,8 @@ expectJson toMsg decoder =
                 Http.NetworkError_ ->
                     Err Http.NetworkError
 
-                Http.BadStatus_ _ body ->
-                    Err (BadBody body)
+                Http.BadStatus_ metadata _ ->
+                    Err (BadStatus metadata.statusCode)
 
                 Http.GoodStatus_ _ body ->
                     case D.decodeString decoder body of
@@ -70,6 +71,45 @@ errorToString error =
 
         BadBody string ->
             string
+
+
+errorToExplanation : Error -> ErrorExplanation
+errorToExplanation error =
+    case error of
+        BadUrl string ->
+            { cause = "BadUrl: " ++ string
+            , possibleSolution = "Check address. If the error persists, please contact an administrator."
+            , redirectToLogin = False
+            }
+
+        Timeout ->
+            { cause = "Timeout"
+            , possibleSolution = "Try again later. If the error persists, please contact an administrator."
+            , redirectToLogin = False
+            }
+
+        NetworkError ->
+            { cause = "Timeout"
+            , possibleSolution = "Try again later. If the error persists, please contact an administrator."
+            , redirectToLogin = False
+            }
+
+        BadStatus code ->
+            { cause = "BadStatus: " ++ String.fromInt code
+            , possibleSolution =
+                if code == 401 then
+                    "Please log in again to continue."
+
+                else
+                    ""
+            , redirectToLogin = code == 401
+            }
+
+        BadBody string ->
+            { cause = "Bad body: " ++ string
+            , possibleSolution = ""
+            , redirectToLogin = False
+            }
 
 
 userTokenHeader : String

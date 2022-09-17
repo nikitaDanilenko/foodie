@@ -5,6 +5,7 @@ import Dict exposing (Dict)
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Monocle.Optional exposing (Optional)
+import Util.Initialization as Initialization exposing (Initialization)
 
 
 dictByKey : comparable -> Optional (Dict comparable a) a
@@ -35,3 +36,10 @@ set xs idOf lens md =
         |> List.map (\m -> ( idOf m, m ))
         |> Dict.fromList
         |> flip lens.set md
+
+
+initializationField : Lens model (Initialization status) -> Lens status Bool -> Optional model Bool
+initializationField initializationLens subLens =
+    initializationLens
+        |> Compose.lensWithOptional Initialization.lenses.loading
+        |> Compose.optionalWithLens subLens

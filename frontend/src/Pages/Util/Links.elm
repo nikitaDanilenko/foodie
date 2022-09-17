@@ -3,6 +3,7 @@ module Pages.Util.Links exposing (..)
 import Bootstrap.Button
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (href)
+import Loading
 
 
 linkButton :
@@ -19,6 +20,7 @@ linkButton params =
         ]
         params.children
 
+
 special : Int -> String
 special =
     Char.fromCode >> String.fromChar
@@ -27,3 +29,8 @@ special =
 lookingGlass : String
 lookingGlass =
     special 128269
+
+
+loadingSymbol : Html msg
+loadingSymbol =
+    Loading.render Loading.Spinner Loading.defaultConfig Loading.On
