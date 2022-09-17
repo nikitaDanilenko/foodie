@@ -14,8 +14,10 @@ import Monocle.Lens exposing (Lens)
 import Pages.Ingredients.IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.Ingredients.IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
 import Pages.Ingredients.RecipeInfo exposing (RecipeInfo)
+import Pages.Ingredients.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
+import Util.Initialization exposing (Initialization)
 import Util.LensUtil as LensUtil
 
 
@@ -28,6 +30,7 @@ type alias Model =
     , measures : MeasureMap
     , foodsSearchString : String
     , foodsToAdd : AddFoodsMap
+    , initialization : Initialization Status
     }
 
 
@@ -59,6 +62,7 @@ lenses :
     , foodsToAdd : Lens Model AddFoodsMap
     , foodsSearchString : Lens Model String
     , recipeInfo : Lens Model (Maybe RecipeInfo)
+    , initialization : Lens Model (Initialization Status)
     }
 lenses =
     { jwt = LensUtil.jwtSubLens
@@ -68,6 +72,7 @@ lenses =
     , foodsToAdd = Lens .foodsToAdd (\b a -> { a | foodsToAdd = b })
     , foodsSearchString = Lens .foodsSearchString (\b a -> { a | foodsSearchString = b })
     , recipeInfo = Lens .recipeInfo (\b a -> { a | recipeInfo = b })
+    , initialization = Lens .initialization (\b a -> { a | initialization = b })
     }
 
 

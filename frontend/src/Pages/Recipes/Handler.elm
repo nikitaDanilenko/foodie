@@ -44,7 +44,7 @@ init flags =
             }
       , recipes = Dict.empty
       , recipeToAdd = Nothing
-      , initialization = Initialization.Loading Status.initial
+      , initialization = Initialization.Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
       }
     , cmd
     )

@@ -17,6 +17,7 @@ type alias ErrorExplanation =
 
 lenses :
     { loading : Optional (Initialization status) status
+    , failure : Optional (Initialization status) ErrorExplanation
     }
 lenses =
     { loading =
@@ -37,5 +38,25 @@ lenses =
                     x ->
                         x
         }
+    , failure =
+        { getOption =
+            \initialization ->
+                case initialization of
+                    Loading _ ->
+                        Nothing
+
+                    Failure explanation ->
+                        Just explanation
+        , set =
+            \explanation initialization ->
+                case initialization of
+                    Failure _ ->
+                        Failure explanation
+
+                    x ->
+                        x
+        }
     }
+
+
 

@@ -8,7 +8,7 @@ import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
 import Dict exposing (Dict)
 import Either exposing (Either(..))
-import Http exposing (Error)
+import Http exposing (Error(..))
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Maybe.Extra
@@ -20,9 +20,12 @@ import Pages.Ingredients.IngredientUpdateClientInput as IngredientUpdateClientIn
 import Pages.Ingredients.Page as Page
 import Pages.Ingredients.RecipeInfo as RecipeInfo exposing (RecipeInfo)
 import Pages.Ingredients.Requests as Requests
+import Pages.Ingredients.Status as Status
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Ports exposing (doFetchFoods, doFetchMeasures, doFetchToken, storeFoods, storeMeasures)
 import Util.Editing as Editing exposing (Editing)
+import Util.HttpUtil as HttpUtil
+import Util.Initialization exposing (Initialization(..))
 import Util.LensUtil as LensUtil
 
 
@@ -64,6 +67,7 @@ init flags =
       , foodsSearchString = ""
       , foodsToAdd = Dict.empty
       , recipeInfo = Nothing
+      , initialization = Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
       }
     , cmd
     )
@@ -229,7 +233,7 @@ gotFetchFoodsResponse : Page.Model -> Result Error (List Food) -> ( Page.Model, 
 gotFetchFoodsResponse model result =
     result
         |> Either.fromResult
-        |> Either.unwrap ( model, Cmd.none )
+        |> Either.unpack (\error -> ( setError error model, Cmd.none ))
             (\foods ->
                 ( LensUtil.set foods .id Page.lenses.foods model
                 , foods
@@ -244,7 +248,7 @@ gotFetchMeasuresResponse : Page.Model -> Result Error (List Measure) -> ( Page.M
 gotFetchMeasuresResponse model result =
     result
         |> Either.fromResult
-        |> Either.unwrap ( model, Cmd.none )
+        |> Either.unpack (\error -> ( setError error model, Cmd.none ))
             (\measures ->
                 ( LensUtil.set measures .id Page.lenses.measures model
                 , measures
@@ -258,12 +262,13 @@ gotFetchMeasuresResponse model result =
 gotFetchRecipeResponse : Page.Model -> Result Error Recipe -> ( Page.Model, Cmd Page.Msg )
 gotFetchRecipeResponse model result =
     ( result
-        |> Result.map
-            (RecipeInfo.from
-                >> Just
-                >> flip Page.lenses.recipeInfo.set model
+        |> Either.fromResult
+        |> Either.unpack (flip setError model)
+            (\recipe ->
+                model
+                    |> Page.lenses.recipeInfo.set (RecipeInfo.from recipe |> Just)
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.recipe).set True
             )
-        |> Result.withDefault model
     , Cmd.none
     )
 
@@ -272,7 +277,9 @@ updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model token =
     let
         newModel =
-            Page.lenses.jwt.set token model
+            model
+                |> Page.lenses.jwt.set token
+                |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
     in
     ( newModel
     , initialFetch newModel.flagsWithJWT model.recipeId
@@ -282,10 +289,16 @@ updateJWT model token =
 updateFoods : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 updateFoods model =
     Decode.decodeString (Decode.list decoderFood)
-        >> Result.toMaybe
-        >> Maybe.Extra.unwrap ( model, Cmd.none )
+        >> Either.fromResult
+        >> Either.unpack (\error -> ( setJsonError error model, Cmd.none ))
             (\foods ->
-                ( LensUtil.set foods .id Page.lenses.foods model
+                ( model
+                    |> LensUtil.set foods .id Page.lenses.foods
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.foods).set
+                        (foods
+                            |> List.isEmpty
+                            |> not
+                        )
                 , if List.isEmpty foods then
                     Requests.fetchFoods model.flagsWithJWT
 
@@ -298,10 +311,16 @@ updateFoods model =
 updateMeasures : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 updateMeasures model =
     Decode.decodeString (Decode.list decoderMeasure)
-        >> Result.toMaybe
-        >> Maybe.Extra.unwrap ( model, Cmd.none )
+        >> Either.fromResult
+        >> Either.unpack (\error -> ( setJsonError error model, Cmd.none ))
             (\measures ->
-                ( LensUtil.set measures .id Page.lenses.measures model
+                ( model
+                    |> LensUtil.set measures .id Page.lenses.measures
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.measures).set
+                        (measures
+                            |> List.isEmpty
+                            |> not
+                        )
                 , if List.isEmpty measures then
                     Requests.fetchMeasures model.flagsWithJWT
 
@@ -361,7 +380,7 @@ gotAddFoodResponse : Page.Model -> Result Error Ingredient -> ( Page.Model, Cmd 
 gotAddFoodResponse model result =
     ( result
         |> Either.fromResult
-        |> Either.unwrap model
+        |> Either.unpack (flip setError model)
             (\ingredient ->
                 model
                     |> Lens.modify
@@ -382,3 +401,13 @@ updateAddFood model ingredientCreationClientInput =
             (Dict.update ingredientCreationClientInput.foodId (always ingredientCreationClientInput >> Just))
     , Cmd.none
     )
+
+
+setError : Error -> Page.Model -> Page.Model
+setError =
+    HttpUtil.setError Page.lenses.initialization
+
+
+setJsonError : Decode.Error -> Page.Model -> Page.Model
+setJsonError =
+    HttpUtil.setJsonError Page.lenses.initialization

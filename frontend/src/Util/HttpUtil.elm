@@ -2,12 +2,14 @@ module Util.HttpUtil exposing (..)
 
 import Api.Auxiliary exposing (JWT)
 import Http exposing (Error(..), Expect, expectStringResponse)
-import Json.Decode as D
+import Json.Decode as Decode
 import Json.Encode as Encode
-import Util.Initialization exposing (ErrorExplanation)
+import Monocle.Compose as Compose
+import Monocle.Lens exposing (Lens)
+import Util.Initialization as Initialization exposing (ErrorExplanation, Initialization)
 
 
-expectJson : (Result Http.Error a -> msg) -> D.Decoder a -> Expect msg
+expectJson : (Result Http.Error a -> msg) -> Decode.Decoder a -> Expect msg
 expectJson toMsg decoder =
     expectStringResponse toMsg <|
         \response ->
@@ -25,12 +27,12 @@ expectJson toMsg decoder =
                     Err (BadStatus metadata.statusCode)
 
                 Http.GoodStatus_ _ body ->
-                    case D.decodeString decoder body of
+                    case Decode.decodeString decoder body of
                         Ok value ->
                             Ok value
 
                         Err err ->
-                            Err (BadBody (D.errorToString err))
+                            Err (BadBody (Decode.errorToString err))
 
 
 expectWhatever : (Result Http.Error () -> msg) -> Expect msg
@@ -203,3 +205,16 @@ getJsonWithJWT jwt request =
         , timeout = Nothing
         , tracker = Nothing
         }
+
+
+setError : Lens model (Initialization status) -> Error -> model -> model
+setError initializationLens =
+    errorToExplanation
+        >> (initializationLens |> Compose.lensWithOptional Initialization.lenses.failure).set
+
+
+setJsonError : Lens model (Initialization status) -> Decode.Error -> model -> model
+setJsonError initializationLens =
+    Decode.errorToString
+        >> BadBody
+        >> setError initializationLens
