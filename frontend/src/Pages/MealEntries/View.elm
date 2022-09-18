@@ -20,6 +20,7 @@ import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput
 import Pages.Util.ViewUtil as ViewUtil
 import Util.Editing as Editing
+import Util.SearchUtil as SearchUtil
 
 
 view : Page.Model -> Html Page.Msg
@@ -41,7 +42,7 @@ view model =
 
             viewRecipes searchString =
                 model.recipes
-                    |> Dict.filter (\_ v -> String.contains (String.toLower searchString) (String.toLower v.name))
+                    |> Dict.filter (\_ v -> SearchUtil.search searchString v.name)
                     |> Dict.values
                     |> List.sortBy .name
                     |> List.map (viewRecipeLine model.mealEntriesToAdd model.mealEntries)
