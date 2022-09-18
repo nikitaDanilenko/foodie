@@ -218,7 +218,7 @@ gotFetchNutrientsResponse model result =
             (\nutrients ->
                 ( model
                     |> LensUtil.set nutrients .code Page.lenses.nutrients
-                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.referenceNutrients).set True
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.nutrients).set True
                 , nutrients
                     |> Encode.list encoderNutrient
                     |> Encode.encode 0
