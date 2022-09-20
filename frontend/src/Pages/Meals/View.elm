@@ -66,7 +66,7 @@ createMeal maybeCreation =
         Nothing ->
             div [ id "addMeal" ]
                 [ button
-                    [ class "button"
+                    [ class "addMealButton"
                     , onClick (MealCreationClientInput.default |> Just |> Page.UpdateMealCreation)
                     ]
                     [ text "New meal" ]

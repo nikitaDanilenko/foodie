@@ -1,24 +1,129 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
 .tooltip {
-  position: relative;
-  display: inline-block;
-  border-bottom: 1px dotted black;
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
 }
 
 .tooltip .tooltipText {
-  visibility: hidden;
-  background-color: black;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px 0;
+    visibility: hidden;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
 
-  /* Position the tooltip */
-  position: absolute;
-  z-index: 1;
-  top: -5px;
-  left: 105%;
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+    top: -5px;
+    left: 105%;
 }
 
 .tooltip:hover .tooltipText {
-  visibility: visible;
+    visibility: visible;
+}
+
+#recipesButton button,
+#mealsButton button,
+#statisticsButton button,
+#referenceNutrientsButton button {
+    border: none;
+    text-align: center;
+    padding: 5%;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: xxx-large;
+    white-space: normal;
+    word-wrap: break-word;
+    width: 95%;
+    display: block;
+    margin: auto auto 1%;
+    color: rgb(250, 250, 250);
+    background-color: rgb(66, 100, 160);
+}
+
+#recipesButton button:hover,
+#mealsButton button:hover,
+#statisticsButton button:hover,
+#referenceNutrientsButton button:hover {
+    background-color: rgb(100, 149, 237);
+}
+
+#addRecipeView .addRecipeButton,
+#addMealView .addMealButton {
+    background-color: rgb(50, 180, 50);
+    color: rgb(250, 250, 250);
+    border: none;
+    text-align: center;
+    padding: 1%;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: large;
+    white-space: normal;
+    display: inline-block;
+    margin: auto auto 1%;
+}
+
+#addRecipeView .addRecipeButton:hover,
+#addMealView .addMealButton:hover {
+    background-color: rgb(85, 225, 60);
+}
+
+#addRecipeView td label {
+    margin: 5px;
+}
+
+#addRecipeView thead td label {
+    font-size: larger;
+    font-style: italic;
+}
+
+#addRecipeView .editButton,
+#addRecipeView .editorButton,
+#addRecipeView .deleteButton,
+#addRecipeView .confirmButton,
+#addRecipeView .cancelButton {
+    color: rgb(250, 250, 250);
+    border: none;
+    text-align: center;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: large;
+    white-space: nowrap;
+    display: inline-block;
+    margin: auto;
+}
+
+
+
+#addRecipeView .editButton {
+    background-color: #ffb527;
+}
+
+#addRecipeView .editButton:hover {
+    background-color: rgba(255, 181, 39, 0.85);
+}
+
+#addRecipeView .deleteButton {
+    background-color: #d64546;
+}
+
+#addRecipeView .deleteButton:hover {
+    background-color: rgba(214, 69, 70, 0.85);
+}
+
+#addRecipeView .editorButton {
+    background-color: royalblue;
+}
+
+#addRecipeView .editorButton:hover {
+    background-color: rgba(65, 105, 225, 0.85);
+}
+
+tr:not(.tableHeader):hover {
+    background-color: rgb(220, 220, 220);
 }

@@ -42,7 +42,7 @@ view model =
         div [ id "addRecipeView" ]
             (createRecipe model.recipeToAdd
                 :: thead []
-                    [ tr []
+                    [ tr [ class "tableHeader" ]
                         [ td [] [ label [] [ text "Name" ] ]
                         , td [] [ label [] [ text "Description" ] ]
                         , td [] [ label [] [ text "Number of servings" ] ]
@@ -61,7 +61,7 @@ createRecipe maybeCreation =
         Nothing ->
             div [ id "addRecipe" ]
                 [ button
-                    [ class "button"
+                    [ class "addRecipeButton"
                     , onClick <| Page.UpdateRecipeCreation <| Just <| RecipeCreationClientInput.default
                     ]
                     [ text "New recipe" ]
@@ -77,7 +77,7 @@ editOrDeleteRecipeLine configuration recipe =
         [ td [] [ label [] [ text recipe.name ] ]
         , td [] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
         , td [] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
-        , td [] [ button [ class "button", onClick (Page.EnterEditRecipe recipe.id) ] [ text "Edit" ] ]
+        , td [] [ button [ class "editButton", onClick (Page.EnterEditRecipe recipe.id) ] [ text "Edit" ] ]
         , td []
             [ Links.linkButton
                 { url =
@@ -88,12 +88,12 @@ editOrDeleteRecipeLine configuration recipe =
                         , recipe.id
                         ]
                         []
-                , attributes = [ class "button" ]
+                , attributes = [ class "editorButton" ]
                 , children = [ text "Edit ingredients" ]
                 , isDisabled = False
                 }
             ]
-        , td [] [ button [ class "button", onClick (Page.DeleteRecipe recipe.id) ] [ text "Delete" ] ]
+        , td [] [ button [ class "deleteButton", onClick (Page.DeleteRecipe recipe.id) ] [ text "Delete" ] ]
         ]
 
 
@@ -187,11 +187,11 @@ editRecipeLineWith handling editedValue =
                 []
             ]
         , td []
-            [ button [ class "button", onClick handling.confirmOnClick ]
+            [ button [ class "confirmButton", onClick handling.confirmOnClick ]
                 [ text handling.confirmName ]
             ]
         , td []
-            [ button [ class "button", onClick handling.cancelOnClick ]
+            [ button [ class "cancelButton", onClick handling.cancelOnClick ]
                 [ text handling.cancelName ]
             ]
         ]
