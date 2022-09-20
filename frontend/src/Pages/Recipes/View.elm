@@ -45,7 +45,7 @@ view model =
                     [ tr [ class "tableHeader" ]
                         [ td [] [ label [] [ text "Name" ] ]
                         , td [] [ label [] [ text "Description" ] ]
-                        , td [] [ label [] [ text "Number of servings" ] ]
+                        , td [] [ label [] [ text "Servings" ] ]
                         ]
                     ]
                 :: viewEditRecipes
@@ -74,12 +74,12 @@ createRecipe maybeCreation =
 editOrDeleteRecipeLine : Configuration -> Recipe -> Html Page.Msg
 editOrDeleteRecipeLine configuration recipe =
     tr [ id "editingRecipe" ]
-        [ td [] [ label [] [ text recipe.name ] ]
-        , td [] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
-        , td [] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
-        , td [] [ button [ class "editButton", onClick (Page.EnterEditRecipe recipe.id) ] [ text "Edit" ] ]
+        [ td [ class "editable" ] [ label [] [ text recipe.name ] ]
+        , td [ class "editable" ] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
+        , td [ class "editable", class "numberLabel" ] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
         , td []
-            [ Links.linkButton
+            [ button [ class "editButton", onClick (Page.EnterEditRecipe recipe.id) ] [ text "Edit" ]
+            , Links.linkButton
                 { url =
                     Url.Builder.relative
                         [ configuration.mainPageURL
@@ -92,8 +92,10 @@ editOrDeleteRecipeLine configuration recipe =
                 , children = [ text "Edit ingredients" ]
                 , isDisabled = False
                 }
+            , button
+                [ class "deleteButton", onClick (Page.DeleteRecipe recipe.id) ]
+                [ text "Delete" ]
             ]
-        , td [] [ button [ class "deleteButton", onClick (Page.DeleteRecipe recipe.id) ] [ text "Delete" ] ]
         ]
 
 
@@ -144,7 +146,7 @@ editRecipeLineWith :
     -> Html Page.Msg
 editRecipeLineWith handling editedValue =
     tr [ id "recipeLine" ]
-        [ td []
+        [ td [ class "editable" ]
             [ input
                 [ value <| .value <| handling.nameLens.get <| editedValue
                 , onInput
@@ -155,7 +157,7 @@ editRecipeLineWith handling editedValue =
                 ]
                 []
             ]
-        , td []
+        , td [ class "editable" ]
             [ input
                 [ value <| Maybe.withDefault "" <| handling.descriptionLens.get <| editedValue
                 , onInput
@@ -171,7 +173,7 @@ editRecipeLineWith handling editedValue =
                 ]
                 []
             ]
-        , td []
+        , td [ class "editable" ]
             [ input
                 [ value <| String.fromFloat <| .value <| handling.numberOfServingsLens.get <| editedValue
                 , onInput
@@ -183,15 +185,14 @@ editRecipeLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
+                , class "numberLabel"
                 ]
                 []
             ]
         , td []
             [ button [ class "confirmButton", onClick handling.confirmOnClick ]
                 [ text handling.confirmName ]
-            ]
-        , td []
-            [ button [ class "cancelButton", onClick handling.cancelOnClick ]
+            , button [ class "cancelButton", onClick handling.cancelOnClick ]
                 [ text handling.cancelName ]
             ]
         ]

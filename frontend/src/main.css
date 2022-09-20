@@ -96,9 +96,17 @@ body {
     white-space: nowrap;
     display: inline-block;
     margin: auto;
+    vertical-align: center;
 }
 
+#addRecipeView .editable {
+    white-space: normal;
+    word-wrap: break-word;
+}
 
+#addRecipeView .numberLabel {
+    text-align: right;
+}
 
 #addRecipeView .editButton {
     background-color: #ffb527;
