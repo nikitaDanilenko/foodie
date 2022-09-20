@@ -48,15 +48,7 @@ lenses =
                     Failure explanation ->
                         Just explanation
         , set =
-            \explanation initialization ->
-                case initialization of
-                    Failure _ ->
-                        Failure explanation
-
-                    x ->
-                        x
+            \explanation _ ->
+                Failure explanation
         }
     }
-
-
-
