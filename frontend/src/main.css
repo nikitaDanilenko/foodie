@@ -53,8 +53,8 @@ body, button, input {
     background-color: rgb(100, 149, 237);
 }
 
-#addRecipeView .addRecipeButton,
-#addMealView .addMealButton {
+#addRecipeView .addButton,
+#addMealView .addButton {
     background-color: rgb(50, 180, 50);
     color: rgb(250, 250, 250);
     border: none;
@@ -75,6 +75,11 @@ body, button, input {
 #addRecipeView .addRecipeButton:hover,
 #addMealView .addMealButton:hover {
     background-color: rgb(85, 225, 60);
+}
+
+#addRecipeView table {
+    border-spacing: 0;
+    table-layout: fixed;
 }
 
 #addRecipeView thead th {

@@ -5,7 +5,7 @@ import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
 import Dict
 import Either exposing (Either(..))
-import Html exposing (Html, button, col, colgroup, div, input, label, tbody, td, text, th, thead, tr)
+import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (class, colspan, id, scope, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
@@ -41,38 +41,39 @@ view model =
                     )
         in
         div [ id "addRecipeView" ]
-            (createRecipe model.recipeToAdd
-                :: [ colgroup []
-                        [ col [] []
-                        , col [] []
-                        , col [] []
-                        , col [ stringProperty "span" "3" ] []
+            [ createRecipe model.recipeToAdd
+            , table []
+                [ colgroup []
+                    [ col [] []
+                    , col [] []
+                    , col [] []
+                    , col [ stringProperty "span" "3" ] []
+                    ]
+                , thead []
+                    [ tr [ class "tableHeader" ]
+                        [ th [ scope "col" ] [ label [] [ text "Name" ] ]
+                        , th [ scope "col" ] [ label [] [ text "Description" ] ]
+                        , th [ scope "col" ] [ label [] [ text "Servings" ] ]
+                        , th [ colspan 3, scope "colgroup" ] []
                         ]
-                   , thead []
-                        [ tr [ class "tableHeader" ]
-                            [ th [ scope "col" ] [ label [] [ text "Name" ] ]
-                            , th [ scope "col" ] [ label [] [ text "Description" ] ]
-                            , th [ scope "col" ] [ label [] [ text "Servings" ] ]
-                            , th [ colspan 3, scope "colgroup" ] []
-                            ]
-                        ]
-                   , tbody []
-                        (viewEditRecipes
-                            (model.recipes
-                                |> Dict.values
-                                |> List.sortBy (Editing.field .name >> String.toLower)
-                            )
+                    ]
+                , tbody []
+                    (viewEditRecipes
+                        (model.recipes
+                            |> Dict.values
+                            |> List.sortBy (Editing.field .name >> String.toLower)
                         )
-                   ]
-            )
+                    )
+                ]
+            ]
 
 
 createRecipe maybeCreation =
     case maybeCreation of
         Nothing ->
-            div [ id "addRecipe" ]
+            div [ id "add" ]
                 [ button
-                    [ class "addRecipeButton"
+                    [ class "addButton"
                     , onClick <| Page.UpdateRecipeCreation <| Just <| RecipeCreationClientInput.default
                     ]
                     [ text "New recipe" ]
