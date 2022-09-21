@@ -1,4 +1,4 @@
-body {
+body, button, input {
     font-family: Arial, sans-serif;
 }
 
@@ -68,18 +68,20 @@ body {
     margin: auto auto 1%;
 }
 
+#addRecipeView .controls  {
+    text-align: center;
+}
+
 #addRecipeView .addRecipeButton:hover,
 #addMealView .addMealButton:hover {
     background-color: rgb(85, 225, 60);
 }
 
-#addRecipeView td label {
-    margin: 5px;
-}
-
-#addRecipeView thead td label {
+#addRecipeView thead th {
     font-size: larger;
+    font-weight: lighter;
     font-style: italic;
+    text-align: left;
 }
 
 #addRecipeView .editButton,
@@ -97,10 +99,11 @@ body {
     display: inline-block;
     margin: auto;
     vertical-align: center;
+    padding: 5px;
 }
 
 #addRecipeView .editable {
-    white-space: normal;
+    white-space: nowrap;
     word-wrap: break-word;
 }
 
@@ -132,6 +135,22 @@ body {
     background-color: rgba(65, 105, 225, 0.85);
 }
 
-tr:not(.tableHeader):hover {
+#addRecipeView .confirmButton {
+    background-color: teal;
+}
+
+#addRecipeView .confirmButton:hover {
+    background-color: rgba(0, 128, 128, 0.85);
+}
+
+#addRecipeView .cancelButton {
+    background-color: coral;
+}
+
+#addRecipeView .cancelButton:hover {
+    background-color: rgba(255, 127, 80, 0.85);
+}
+
+.editing:not(.controls):hover {
     background-color: rgb(220, 220, 220);
 }

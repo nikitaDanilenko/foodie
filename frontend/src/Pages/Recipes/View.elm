@@ -5,8 +5,9 @@ import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
 import Dict
 import Either exposing (Either(..))
-import Html exposing (Html, button, div, input, label, td, text, thead, tr)
-import Html.Attributes exposing (class, id, value)
+import Html exposing (Html, button, col, colgroup, div, input, label, tbody, td, text, th, thead, tr)
+import Html.Attributes exposing (class, colspan, id, scope, value)
+import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Maybe.Extra
@@ -41,18 +42,28 @@ view model =
         in
         div [ id "addRecipeView" ]
             (createRecipe model.recipeToAdd
-                :: thead []
-                    [ tr [ class "tableHeader" ]
-                        [ td [] [ label [] [ text "Name" ] ]
-                        , td [] [ label [] [ text "Description" ] ]
-                        , td [] [ label [] [ text "Servings" ] ]
+                :: [ colgroup []
+                        [ col [] []
+                        , col [] []
+                        , col [] []
+                        , col [ stringProperty "span" "3" ] []
                         ]
-                    ]
-                :: viewEditRecipes
-                    (model.recipes
-                        |> Dict.values
-                        |> List.sortBy (Editing.field .name >> String.toLower)
-                    )
+                   , thead []
+                        [ tr [ class "tableHeader" ]
+                            [ th [ scope "col" ] [ label [] [ text "Name" ] ]
+                            , th [ scope "col" ] [ label [] [ text "Description" ] ]
+                            , th [ scope "col" ] [ label [] [ text "Servings" ] ]
+                            , th [ colspan 3, scope "colgroup" ] []
+                            ]
+                        ]
+                   , tbody []
+                        (viewEditRecipes
+                            (model.recipes
+                                |> Dict.values
+                                |> List.sortBy (Editing.field .name >> String.toLower)
+                            )
+                        )
+                   ]
             )
 
 
@@ -73,13 +84,14 @@ createRecipe maybeCreation =
 
 editOrDeleteRecipeLine : Configuration -> Recipe -> Html Page.Msg
 editOrDeleteRecipeLine configuration recipe =
-    tr [ id "editingRecipe" ]
+    tr [ class "editing" ]
         [ td [ class "editable" ] [ label [] [ text recipe.name ] ]
         , td [ class "editable" ] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
         , td [ class "editable", class "numberLabel" ] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
-        , td []
-            [ button [ class "editButton", onClick (Page.EnterEditRecipe recipe.id) ] [ text "Edit" ]
-            , Links.linkButton
+        , td [ class "controls" ]
+            [ button [ class "editButton", onClick (Page.EnterEditRecipe recipe.id) ] [ text "Edit" ] ]
+        , td [ class "controls" ]
+            [ Links.linkButton
                 { url =
                     Url.Builder.relative
                         [ configuration.mainPageURL
@@ -92,7 +104,9 @@ editOrDeleteRecipeLine configuration recipe =
                 , children = [ text "Edit ingredients" ]
                 , isDisabled = False
                 }
-            , button
+            ]
+        , td [ class "controls" ]
+            [ button
                 [ class "deleteButton", onClick (Page.DeleteRecipe recipe.id) ]
                 [ text "Delete" ]
             ]
@@ -145,7 +159,7 @@ editRecipeLineWith :
     -> editedValue
     -> Html Page.Msg
 editRecipeLineWith handling editedValue =
-    tr [ id "recipeLine" ]
+    tr [ class "editLine" ]
         [ td [ class "editable" ]
             [ input
                 [ value <| .value <| handling.nameLens.get <| editedValue
@@ -189,10 +203,12 @@ editRecipeLineWith handling editedValue =
                 ]
                 []
             ]
-        , td []
+        , td [ class "controls" ]
             [ button [ class "confirmButton", onClick handling.confirmOnClick ]
                 [ text handling.confirmName ]
-            , button [ class "cancelButton", onClick handling.cancelOnClick ]
+            ]
+        , td [ class "controls" ]
+            [ button [ class "cancelButton", onClick handling.cancelOnClick ]
                 [ text handling.cancelName ]
             ]
         ]
