@@ -53,8 +53,8 @@ view model =
                     [ tr [ class "tableHeader" ]
                         [ th [ scope "col" ] [ label [] [ text "Name" ] ]
                         , th [ scope "col" ] [ label [] [ text "Description" ] ]
-                        , th [ scope "col" ] [ label [] [ text "Servings" ] ]
-                        , th [ colspan 3, scope "colgroup" ] []
+                        , th [ scope "col", class "numberLabel" ] [ label [] [ text "Servings" ] ]
+                        , th [ colspan 3, scope "colgroup", class "controlsGroup" ] []
                         ]
                     ]
                 , tbody []
@@ -188,7 +188,7 @@ editRecipeLineWith handling editedValue =
                 ]
                 []
             ]
-        , td [ class "editable" ]
+        , td [ class "numberCell" ]
             [ input
                 [ value <| String.fromFloat <| .value <| handling.numberOfServingsLens.get <| editedValue
                 , onInput

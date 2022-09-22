@@ -68,9 +68,14 @@ body, button, input {
     margin: auto auto 1%;
 }
 
-#addRecipeView .controls  {
+#addRecipeView .controls {
     text-align: center;
+    width: 5%;
 }
+
+/*#addRecipeView .controlsGroup {*/
+/*    column-width: 100px;*/
+/*}*/
 
 #addRecipeView .addRecipeButton:hover,
 #addMealView .addMealButton:hover {
@@ -79,13 +84,16 @@ body, button, input {
 
 #addRecipeView table {
     border-spacing: 0;
-    table-layout: fixed;
+    width: 100%;
 }
 
 #addRecipeView thead th {
     font-size: larger;
     font-weight: lighter;
     font-style: italic;
+}
+
+#addRecipeView thead th:not(.numberLabel) {
     text-align: left;
 }
 
@@ -108,12 +116,23 @@ body, button, input {
 }
 
 #addRecipeView .editable {
-    white-space: nowrap;
+    white-space: break-spaces;
     word-wrap: break-word;
 }
 
-#addRecipeView .numberLabel {
+#addRecipeView td:first-child,
+#addRecipeView td:nth-child(2) {
+    width: 30%;
+}
+
+#addRecipeView td:nth-child(3) {
+    width: 10%;
+}
+
+#addRecipeView .numberLabel,
+#addRecipeView .numberCell {
     text-align: right;
+    padding-right: 5px;
 }
 
 #addRecipeView .editButton {
@@ -156,6 +175,12 @@ body, button, input {
     background-color: rgba(255, 127, 80, 0.85);
 }
 
-.editing:not(.controls):hover {
+#addRecipeView input {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.editing:not(.controls):hover,
+.editLine:hover {
     background-color: rgb(220, 220, 220);
 }
