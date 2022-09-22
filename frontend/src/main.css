@@ -68,7 +68,8 @@ body, button, input {
     margin: auto auto 1%;
 }
 
-#addRecipeView .controls {
+#addRecipeView .controls,
+#addMealView .controls {
     text-align: center;
     width: .1%;
 }
@@ -78,18 +79,22 @@ body, button, input {
     background-color: rgb(85, 225, 60);
 }
 
-#addRecipeView table {
+#addRecipeView table,
+#addMealView table {
     border-spacing: 0;
     width: 100%;
 }
 
-#addRecipeView thead th {
+#addRecipeView thead th,
+#addMealView thead th {
     font-size: larger;
     font-weight: lighter;
     font-style: italic;
 }
 
-#addRecipeView thead th:not(.numberLabel) {
+#addRecipeView thead th:not(.numberLabel),
+#addRecipeView thead th,
+#addMealView thead th {
     text-align: left;
 }
 
@@ -97,7 +102,12 @@ body, button, input {
 #addRecipeView .editorButton,
 #addRecipeView .deleteButton,
 #addRecipeView .confirmButton,
-#addRecipeView .cancelButton {
+#addRecipeView .cancelButton,
+#addMealView .editButton,
+#addMealView .editorButton,
+#addMealView .deleteButton,
+#addMealView .confirmButton,
+#addMealView .cancelButton {
     color: rgb(250, 250, 250);
     border: none;
     text-align: center;
@@ -111,18 +121,25 @@ body, button, input {
     padding: 5px;
 }
 
-#addRecipeView .editable {
+#addRecipeView .editable,
+#addMealView .editable {
     white-space: break-spaces;
     word-wrap: break-word;
 }
 
 #addRecipeView td:first-child,
-#addRecipeView td:nth-child(2) {
+#addRecipeView td:nth-child(2),
+#addMealView td:nth-child(3) {
     width: 30%;
 }
 
 #addRecipeView td:nth-child(3) {
     width: 10%;
+}
+
+#addMealView td:first-child:not(input),
+#addMealView td:nth-child(2):not(input) {
+    width: 5%;
 }
 
 #addRecipeView .numberLabel,
@@ -131,43 +148,53 @@ body, button, input {
     padding-right: 5px;
 }
 
-#addRecipeView .editButton {
+#addRecipeView .editButton,
+#addMealView .editButton {
     background-color: #ffb527;
 }
 
-#addRecipeView .editButton:hover {
+#addRecipeView .editButton:hover,
+#addMealView .editButton:hover {
     background-color: rgba(255, 181, 39, 0.85);
 }
 
-#addRecipeView .deleteButton {
+#addRecipeView .deleteButton,
+#addMealView .deleteButton {
     background-color: #d64546;
 }
 
-#addRecipeView .deleteButton:hover {
+#addRecipeView .deleteButton:hover,
+#addMealView .deleteButton:hover {
     background-color: rgba(214, 69, 70, 0.85);
 }
 
-#addRecipeView .editorButton {
+#addRecipeView .editorButton,
+#addMealView .editorButton {
     background-color: royalblue;
 }
 
-#addRecipeView .editorButton:hover {
+#addRecipeView .editorButton:hover,
+#addMealView .editorButton:hover {
     background-color: rgba(65, 105, 225, 0.85);
 }
 
-#addRecipeView .confirmButton {
+#addRecipeView .confirmButton,
+#addMealView .confirmButton {
     background-color: teal;
 }
 
-#addRecipeView .confirmButton:hover {
+#addRecipeView .confirmButton:hover,
+#addMealView .confirmButton:hover {
     background-color: rgba(0, 128, 128, 0.85);
 }
 
-#addRecipeView .cancelButton {
+#addRecipeView .cancelButton,
+#addMealView .cancelButton {
     background-color: coral;
 }
 
-#addRecipeView .cancelButton:hover {
+#addRecipeView .cancelButton:hover,
+#addMealView .cancelButton:hover {
     background-color: rgba(255, 127, 80, 0.85);
 }
 
