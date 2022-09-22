@@ -39,35 +39,41 @@ view model =
                         (editOrDeleteRecipeLine model.flagsWithJWT.configuration)
                         (\e -> e.update |> editRecipeLine)
                     )
+
+            ( button, creationLine ) =
+                createRecipe model.recipeToAdd |> Either.unpack (\l -> ( [ l ], [] )) (\r -> ( [], [ r ] ))
         in
         div [ id "addRecipeView" ]
-            [ createRecipe model.recipeToAdd
-            , table []
-                [ colgroup []
-                    [ col [] []
-                    , col [] []
-                    , col [] []
-                    , col [ stringProperty "span" "3" ] []
-                    ]
-                , thead []
-                    [ tr [ class "tableHeader" ]
-                        [ th [ scope "col" ] [ label [] [ text "Name" ] ]
-                        , th [ scope "col" ] [ label [] [ text "Description" ] ]
-                        , th [ scope "col", class "numberLabel" ] [ label [] [ text "Servings" ] ]
-                        , th [ colspan 3, scope "colgroup", class "controlsGroup" ] []
+            (button
+                ++ [ table []
+                        [ colgroup []
+                            [ col [] []
+                            , col [] []
+                            , col [] []
+                            , col [ stringProperty "span" "3" ] []
+                            ]
+                        , thead []
+                            [ tr [ class "tableHeader" ]
+                                [ th [ scope "col" ] [ label [] [ text "Name" ] ]
+                                , th [ scope "col" ] [ label [] [ text "Description" ] ]
+                                , th [ scope "col", class "numberLabel" ] [ label [] [ text "Servings" ] ]
+                                , th [ colspan 3, scope "colgroup", class "controlsGroup" ] []
+                                ]
+                            ]
+                        , tbody []
+                            (creationLine
+                                ++ viewEditRecipes
+                                    (model.recipes
+                                        |> Dict.values
+                                        |> List.sortBy (Editing.field .name >> String.toLower)
+                                    )
+                            )
                         ]
-                    ]
-                , tbody []
-                    (viewEditRecipes
-                        (model.recipes
-                            |> Dict.values
-                            |> List.sortBy (Editing.field .name >> String.toLower)
-                        )
-                    )
-                ]
-            ]
+                   ]
+            )
 
 
+createRecipe : Maybe RecipeCreationClientInput -> Either (Html Page.Msg) (Html Page.Msg)
 createRecipe maybeCreation =
     case maybeCreation of
         Nothing ->
@@ -78,9 +84,10 @@ createRecipe maybeCreation =
                     ]
                     [ text "New recipe" ]
                 ]
+                |> Left
 
         Just creation ->
-            createRecipeLine creation
+            createRecipeLine creation |> Right
 
 
 editOrDeleteRecipeLine : Configuration -> Recipe -> Html Page.Msg
