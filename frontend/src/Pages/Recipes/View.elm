@@ -99,6 +99,11 @@ editOrDeleteRecipeLine configuration recipe =
         , td [ class "controls" ]
             [ button [ class "editButton", onClick (Page.EnterEditRecipe recipe.id) ] [ text "Edit" ] ]
         , td [ class "controls" ]
+            [ button
+                [ class "deleteButton", onClick (Page.DeleteRecipe recipe.id) ]
+                [ text "Delete" ]
+            ]
+        , td [ class "controls" ]
             [ Links.linkButton
                 { url =
                     Url.Builder.relative
@@ -112,11 +117,6 @@ editOrDeleteRecipeLine configuration recipe =
                 , children = [ text "Edit ingredients" ]
                 , isDisabled = False
                 }
-            ]
-        , td [ class "controls" ]
-            [ button
-                [ class "deleteButton", onClick (Page.DeleteRecipe recipe.id) ]
-                [ text "Delete" ]
             ]
         ]
 
@@ -219,4 +219,5 @@ editRecipeLineWith handling editedValue =
             [ button [ class "cancelButton", onClick handling.cancelOnClick ]
                 [ text handling.cancelName ]
             ]
+        , td [] []
         ]
