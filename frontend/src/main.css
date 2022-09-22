@@ -70,15 +70,11 @@ body, button, input {
 
 #addRecipeView .controls {
     text-align: center;
-    width: 5%;
+    width: .1%;
 }
 
-/*#addRecipeView .controlsGroup {*/
-/*    column-width: 100px;*/
-/*}*/
-
-#addRecipeView .addRecipeButton:hover,
-#addMealView .addMealButton:hover {
+#addRecipeView .addButton:hover,
+#addMealView .addButton:hover {
     background-color: rgb(85, 225, 60);
 }
 
