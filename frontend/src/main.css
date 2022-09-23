@@ -102,6 +102,7 @@ body, button, input {
     text-align: left;
 }
 
+/*todo: Consider styling all buttons at once!*/
 #addRecipeView .editButton,
 #addRecipeView .editorButton,
 #addRecipeView .deleteButton,
@@ -126,7 +127,7 @@ body, button, input {
 }
 
 #addRecipeView .editable,
-#addMealView .editable,
+#addMealView .editable:not(.date, .time),
 #ingredientEditor .editable {
     white-space: break-spaces;
     word-wrap: break-word;
@@ -142,9 +143,12 @@ body, button, input {
     width: 7%;
 }
 
-#addMealView th:first-child:not(input),
+#addMealView th:first-child {
+    width: 12%;
+}
+
 #addMealView th:nth-child(2):not(input) {
-    width: 5%;
+    width: 12%;
 }
 
 #addRecipeView .numberLabel,
@@ -222,7 +226,8 @@ body, button, input {
     white-space: break-spaces;
 }
 
-#addRecipeView input {
+#addRecipeView input,
+#addMealView input{
     box-sizing: border-box;
     width: 100%;
 }

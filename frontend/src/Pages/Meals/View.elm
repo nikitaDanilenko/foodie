@@ -10,7 +10,7 @@ import Configuration exposing (Configuration)
 import Dict
 import Either exposing (Either(..))
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (class, colspan, id, scope, size, type_, value)
+import Html.Attributes exposing (class, colspan, id, scope, type_, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
@@ -114,7 +114,7 @@ editOrDeleteMealLine configuration meal =
                         ]
                         []
                 , attributes = [ class "editorButton" ]
-                , children = [ text "Edit meal entries" ]
+                , children = [ text "Entries" ]
                 , isDisabled = False
                 }
             ]
@@ -172,7 +172,7 @@ editMealLineWith handling editedValue =
             Maybe.withDefault "" <| handling.nameLens.get <| editedValue
     in
     tr [ class "editLine" ]
-        [ td [ class "editable" ]
+        [ td [ class "editable", class "date" ]
             [ input
                 [ type_ "date"
                 , value <| DateUtil.dateToString <| date.date
@@ -187,11 +187,10 @@ editMealLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
-                , size 10
                 ]
                 []
             ]
-        , td [ class "editable" ]
+        , td [ class "editable", class "time" ]
             [ input
                 [ type_ "time"
                 , value <| Maybe.Extra.unwrap "" DateUtil.timeToString <| date.time
@@ -206,7 +205,6 @@ editMealLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
-                , size 8
                 ]
                 []
             ]
