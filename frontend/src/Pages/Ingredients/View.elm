@@ -9,8 +9,9 @@ import Basics.Extra exposing (flip)
 import Dict exposing (Dict)
 import Dropdown exposing (Item, dropdown)
 import Either exposing (Either(..))
-import Html exposing (Html, button, div, input, label, td, text, thead, tr)
-import Html.Attributes exposing (class, disabled, id, value)
+import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
+import Html.Attributes exposing (class, colspan, disabled, id, scope, value)
+import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Maybe.Extra
@@ -54,60 +55,84 @@ view model =
                     |> List.sortBy .name
                     |> List.map (viewFoodLine model.foods model.measures model.foodsToAdd model.ingredients)
         in
-        div [ id "editor" ]
-            [ div [ id "recipeInfo" ]
-                [ label [] [ text "Name" ]
-                , label [] [ text <| Maybe.Extra.unwrap "" .name <| model.recipeInfo ]
-                , label [] [ text "Description" ]
-                , label [] [ text <| Maybe.withDefault "" <| Maybe.andThen .description <| model.recipeInfo ]
-                ]
-            , div [ id "ingredientsView" ]
-                (thead []
+        div [ id "ingredientEditor"]
+            [ div []
+                [ table [ class "info" ]
                     [ tr []
-                        [ td [] [ label [] [ text "Name" ] ]
-                        , td [] [ label [] [ text "Amount" ] ]
-                        , td [] [ label [] [ text "Unit" ] ]
+                        [ td [ class "descriptionColumn" ] [ label [] [ text "Name" ] ]
+                        , td [] [ label [] [ text <| Maybe.Extra.unwrap "" .name <| model.recipeInfo ] ]
+                        ]
+                    , tr []
+                        [ td [ class "descriptionColumn" ] [ label [] [ text "Description" ] ]
+                        , td [] [ label [] [ text <| Maybe.withDefault "" <| Maybe.andThen .description <| model.recipeInfo ] ]
                         ]
                     ]
-                    :: viewEditIngredients
-                        (model.ingredients
-                            |> Dict.values
-                            |> List.sortBy (Editing.field .foodId >> Page.ingredientNameOrEmpty model.foods >> String.toLower)
-                        )
-                )
-            , div [ id "addIngredientView" ]
-                (div [ id "addIngredient" ]
-                    [ div [ id "searchField" ]
-                        [ label [] [ text Links.lookingGlass ]
-                        , input [ onInput Page.SetFoodsSearchString ] []
+                ]
+            , div [ class "elements" ] [ label [] [ text "Ingredients" ] ]
+            , div [ class "choices" ]
+                [ table []
+                    [ colgroup []
+                        [ col [] []
+                        , col [] []
+                        , col [] []
+                        , col [ stringProperty "span" "2" ] []
                         ]
-                    ]
-                    :: thead []
+                    , thead []
                         [ tr []
-                            [ td [] [ label [] [ text "Name" ] ]
+                            [ th [ scope "col" ] [ label [] [ text "Name" ] ]
+                            , th [ scope "col", class "numberLabel" ] [ label [] [ text "Amount" ] ]
+                            , th [ scope "col", class "numberLabel" ] [ label [] [ text "Unit" ] ]
+                            , th [ colspan 2, scope "colgroup", class "controlsGroup" ] []
                             ]
                         ]
-                    :: viewFoods model.foodsSearchString
-                )
+                    , tbody []
+                        (viewEditIngredients
+                            (model.ingredients
+                                |> Dict.values
+                                |> List.sortBy (Editing.field .foodId >> Page.ingredientNameOrEmpty model.foods >> String.toLower)
+                            )
+                        )
+                    ]
+                ]
+            , div [ class "addView" ]
+                [ div [ class "addElement" ]
+                    [ div [ id "searchField" ]
+                        [ label [] [ text Links.lookingGlass ]
+                        , input
+                            [ onInput Page.SetFoodsSearchString
+                            , class "searchField"
+                            ]
+                            []
+                        ]
+                    , table [ class "choiceTable" ]
+                        [ thead []
+                            [ th []
+                                [ td [] [ label [] [ text "Name" ] ]
+                                ]
+                            ]
+                        , tbody [] (viewFoods model.foodsSearchString)
+                        ]
+                    ]
+                ]
             ]
 
 
 editOrDeleteIngredientLine : Page.MeasureMap -> Page.FoodMap -> Ingredient -> Html Page.Msg
 editOrDeleteIngredientLine measureMap foodMap ingredient =
-    tr [ id "editingIngredient" ]
-        [ td [] [ label [] [ text (ingredient.foodId |> Page.ingredientNameOrEmpty foodMap) ] ]
-        , td [] [ label [] [ text (ingredient.amountUnit.factor |> String.fromFloat) ] ]
-        , td [] [ label [] [ text (ingredient.amountUnit.measureId |> flip Dict.get measureMap |> Maybe.Extra.unwrap "" .name) ] ]
-        , td [] [ button [ class "button", onClick (Page.EnterEditIngredient ingredient.id) ] [ text "Edit" ] ]
-        , td [] [ button [ class "button", onClick (Page.DeleteIngredient ingredient.id) ] [ text "Delete" ] ]
+    tr [ class "editing" ]
+        [ td [ class "editable" ] [ label [] [ text <| Page.ingredientNameOrEmpty foodMap <| ingredient.foodId ] ]
+        , td [ class "editable", class "numberLabel" ] [ label [] [ text <| String.fromFloat <| ingredient.amountUnit.factor ] ]
+        , td [ class "editable", class "numberLabel" ] [ label [] [ text <| Maybe.Extra.unwrap "" .name <| flip Dict.get measureMap <| ingredient.amountUnit.measureId ] ]
+        , td [ class "controls" ] [ button [ class "editButton", onClick (Page.EnterEditIngredient ingredient.id) ] [ text "Edit" ] ]
+        , td [ class "controls" ] [ button [ class "deleteButton", onClick (Page.DeleteIngredient ingredient.id) ] [ text "Delete" ] ]
         ]
 
 
 editIngredientLine : Page.MeasureMap -> Page.FoodMap -> Ingredient -> IngredientUpdateClientInput -> Html Page.Msg
 editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
-    tr [ id "ingredientLine" ]
+    tr [ class "editLine" ]
         [ td [] [ label [] [ text (ingredient.foodId |> Page.ingredientNameOrEmpty foodMap) ] ]
-        , td []
+        , td [ class "numberLabel" ]
             [ input
                 [ value
                     (ingredientUpdateClientInput.amountUnit.factor.value
@@ -147,11 +172,11 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                 )
             ]
         , td []
-            [ button [ class "button", onClick (Page.SaveIngredientEdit ingredient.id) ]
+            [ button [ class "confirmButton", onClick (Page.SaveIngredientEdit ingredient.id) ]
                 [ text "Save" ]
             ]
         , td []
-            [ button [ class "button", onClick (Page.ExitEditIngredientAt ingredient.id) ]
+            [ button [ class "cancelButton", onClick (Page.ExitEditIngredientAt ingredient.id) ]
                 [ text "Cancel" ]
             ]
         ]
@@ -200,10 +225,10 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
         process =
             case Dict.get food.id ingredientsToAdd of
                 Nothing ->
-                    [ td [] [ button [ class "button", onClick (Page.SelectFood food) ] [ text "Select" ] ] ]
+                    [ td [ class "editing" ] [ button [ class "editButton", onClick (Page.SelectFood food) ] [ text "Select" ] ] ]
 
                 Just ingredientToAdd ->
-                    [ td []
+                    [ td [ class "editing" ]
                         [ label [] [ text "Amount" ]
                         , input
                             [ value ingredientToAdd.amountUnit.factor.text
@@ -240,7 +265,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                         ]
                     , td []
                         [ button
-                            [ class "button"
+                            [ class "confirmButton"
                             , disabled
                                 (ingredientToAdd.amountUnit.factor |> ValidatedInput.isValid |> not)
                             , onClick addMsg
@@ -257,7 +282,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                     , td [] [ button [ class "button", onClick (Page.DeselectFood food.id) ] [ text "Cancel" ] ]
                     ]
     in
-    tr [ id "addingFoodLine" ]
+    tr [ class "editing" ]
         (td [] [ label [] [ text food.name ] ]
             :: process
         )
