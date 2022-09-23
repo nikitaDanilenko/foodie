@@ -80,13 +80,16 @@ body, button, input {
 }
 
 #addRecipeView table,
-#addMealView table {
+#addMealView table,
+#ingredientEditor table:not(.info) {
     border-spacing: 0;
     width: 100%;
+    table-layout: fixed;
 }
 
 #addRecipeView thead th,
-#addMealView thead th {
+#addMealView thead th,
+#ingredientEditor thead th {
     font-size: larger;
     font-weight: lighter;
     font-style: italic;
@@ -94,7 +97,8 @@ body, button, input {
 
 #addRecipeView thead th:not(.numberLabel),
 #addRecipeView thead th,
-#addMealView thead th {
+#addMealView thead th,
+#ingredientEditor thead th {
     text-align: left;
 }
 
@@ -122,28 +126,31 @@ body, button, input {
 }
 
 #addRecipeView .editable,
-#addMealView .editable {
+#addMealView .editable,
+#ingredientEditor .editable {
     white-space: break-spaces;
     word-wrap: break-word;
 }
 
-#addRecipeView td:first-child,
-#addRecipeView td:nth-child(2),
-#addMealView td:nth-child(3) {
+#addRecipeView th:first-child,
+#addRecipeView th:nth-child(2),
+#addMealView th:nth-child(3) {
     width: 30%;
 }
 
-#addRecipeView td:nth-child(3) {
-    width: 10%;
+#addRecipeView th:nth-child(3) {
+    width: 7%;
 }
 
-#addMealView td:first-child:not(input),
-#addMealView td:nth-child(2):not(input) {
+#addMealView th:first-child:not(input),
+#addMealView th:nth-child(2):not(input) {
     width: 5%;
 }
 
 #addRecipeView .numberLabel,
-#addRecipeView .numberCell {
+#addRecipeView .numberCell,
+#ingredientEditor .numberLabel,
+#ingredientEditor .numberCell {
     text-align: right;
     padding-right: 5px;
 }
@@ -198,6 +205,23 @@ body, button, input {
     background-color: rgba(255, 127, 80, 0.85);
 }
 
+#addRecipeView .editButton,
+#addMealView .editButton,
+#addRecipeView .deleteButton,
+#addMealView .deleteButton,
+#addRecipeView .editorButton,
+#addMealView .editorButton,
+#addRecipeView .confirmButton,
+#addMealView .confirmButton,
+#addRecipeView .cancelButton,
+#addMealView .cancelButton {
+    border: 0;
+    height: 100%;
+    width: 100%;
+    word-wrap: break-word;
+    white-space: break-spaces;
+}
+
 #addRecipeView input {
     box-sizing: border-box;
     width: 100%;
@@ -206,4 +230,19 @@ body, button, input {
 .editing:not(.controls):hover,
 .editLine:hover {
     background-color: rgb(220, 220, 220);
+}
+
+.descriptionColumn {
+    font-size: larger;
+}
+
+.elements {
+    font-size: x-large;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.searchField {
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
