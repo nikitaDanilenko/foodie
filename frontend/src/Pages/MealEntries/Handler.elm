@@ -319,9 +319,9 @@ setRecipesSearchString model string =
 
 
 mapMealEntryOrUpdateById : MealEntryId -> (Page.MealEntryOrUpdate -> Page.MealEntryOrUpdate) -> Page.Model -> Page.Model
-mapMealEntryOrUpdateById ingredientId =
+mapMealEntryOrUpdateById mealEntryId =
     Page.lenses.mealEntries
-        |> Compose.lensWithOptional (LensUtil.dictByKey ingredientId)
+        |> Compose.lensWithOptional (LensUtil.dictByKey mealEntryId)
         |> Optional.modify
 
 
