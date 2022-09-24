@@ -103,27 +103,26 @@ body, button, input {
 }
 
 /*todo: Consider styling all buttons at once!*/
-#addRecipeView .editButton,
-#addRecipeView .editorButton,
-#addRecipeView .deleteButton,
-#addRecipeView .confirmButton,
-#addRecipeView .cancelButton,
-#addMealView .editButton,
-#addMealView .editorButton,
-#addMealView .deleteButton,
-#addMealView .confirmButton,
-#addMealView .cancelButton {
+.editButton,
+.editorButton,
+.deleteButton,
+.confirmButton,
+.cancelButton {
     color: rgb(250, 250, 250);
     border: none;
     text-align: center;
     border-radius: 5px;
     text-decoration: none;
     font-size: large;
-    white-space: nowrap;
     display: inline-block;
     margin: auto;
     vertical-align: center;
     padding: 5px;
+    border: 0;
+    height: 100%;
+    width: 100%;
+    word-wrap: break-word;
+    white-space: break-spaces;
 }
 
 #addRecipeView .editable,
@@ -133,9 +132,15 @@ body, button, input {
     word-wrap: break-word;
 }
 
+th {
+    white-space: break-spaces;
+    word-wrap: break-word;
+}
+
 #addRecipeView th:first-child,
 #addRecipeView th:nth-child(2),
-#addMealView th:nth-child(3) {
+#addMealView th:nth-child(3),
+#ingredientEditor .choices th:first-child {
     width: 30%;
 }
 
@@ -143,11 +148,10 @@ body, button, input {
     width: 7%;
 }
 
-#addMealView th:first-child {
-    width: 12%;
-}
-
-#addMealView th:nth-child(2):not(input) {
+#addMealView th:first-child,
+#addMealView th:nth-child(2):not(input),
+#ingredientEditor .choices th:nth-child(2),
+#ingredientEditor .choices th:nth-child(3) {
     width: 12%;
 }
 
@@ -159,77 +163,56 @@ body, button, input {
     padding-right: 5px;
 }
 
-#addRecipeView .editButton,
-#addMealView .editButton {
+.editButton {
     background-color: #ffb527;
 }
 
-#addRecipeView .editButton:hover,
-#addMealView .editButton:hover {
+.editButton:hover {
     background-color: rgba(255, 181, 39, 0.85);
 }
 
-#addRecipeView .deleteButton,
-#addMealView .deleteButton {
+.deleteButton {
     background-color: #d64546;
 }
 
-#addRecipeView .deleteButton:hover,
-#addMealView .deleteButton:hover {
+.deleteButton:hover {
     background-color: rgba(214, 69, 70, 0.85);
 }
 
-#addRecipeView .editorButton,
-#addMealView .editorButton {
+.editorButton {
     background-color: royalblue;
 }
 
-#addRecipeView .editorButton:hover,
-#addMealView .editorButton:hover {
+.editorButton:hover {
     background-color: rgba(65, 105, 225, 0.85);
 }
 
-#addRecipeView .confirmButton,
-#addMealView .confirmButton {
+.confirmButton {
     background-color: teal;
 }
 
-#addRecipeView .confirmButton:hover,
-#addMealView .confirmButton:hover {
+.confirmButton:hover {
     background-color: rgba(0, 128, 128, 0.85);
 }
 
-#addRecipeView .cancelButton,
-#addMealView .cancelButton {
+.cancelButton {
     background-color: coral;
 }
 
-#addRecipeView .cancelButton:hover,
-#addMealView .cancelButton:hover {
+.cancelButton:hover {
     background-color: rgba(255, 127, 80, 0.85);
 }
 
-#addRecipeView .editButton,
-#addMealView .editButton,
-#addRecipeView .deleteButton,
-#addMealView .deleteButton,
-#addRecipeView .editorButton,
-#addMealView .editorButton,
-#addRecipeView .confirmButton,
-#addMealView .confirmButton,
-#addRecipeView .cancelButton,
-#addMealView .cancelButton {
-    border: 0;
-    height: 100%;
-    width: 100%;
-    word-wrap: break-word;
-    white-space: break-spaces;
-}
-
 #addRecipeView input,
-#addMealView input{
+#addMealView input,
+#ingredientEditor input:not(.searchField) {
     box-sizing: border-box;
     width: 100%;
+}
+
+.searchField {
+    width: 50%;
+    box-sizing: border-box;
 }
 
 .editing:not(.controls):hover,

@@ -55,7 +55,7 @@ view model =
                     |> List.sortBy .name
                     |> List.map (viewFoodLine model.foods model.measures model.foodsToAdd model.ingredients)
         in
-        div [ id "ingredientEditor"]
+        div [ id "ingredientEditor" ]
             [ div []
                 [ table [ class "info" ]
                     [ tr []
@@ -78,7 +78,7 @@ view model =
                         , col [ stringProperty "span" "2" ] []
                         ]
                     , thead []
-                        [ tr []
+                        [ tr [ class "tableHeader" ]
                             [ th [ scope "col" ] [ label [] [ text "Name" ] ]
                             , th [ scope "col", class "numberLabel" ] [ label [] [ text "Amount" ] ]
                             , th [ scope "col", class "numberLabel" ] [ label [] [ text "Unit" ] ]
@@ -96,7 +96,7 @@ view model =
                 ]
             , div [ class "addView" ]
                 [ div [ class "addElement" ]
-                    [ div [ id "searchField" ]
+                    [ div [ class "searchField" ]
                         [ label [] [ text Links.lookingGlass ]
                         , input
                             [ onInput Page.SetFoodsSearchString
@@ -132,7 +132,7 @@ editIngredientLine : Page.MeasureMap -> Page.FoodMap -> Ingredient -> Ingredient
 editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
     tr [ class "editLine" ]
         [ td [] [ label [] [ text (ingredient.foodId |> Page.ingredientNameOrEmpty foodMap) ] ]
-        , td [ class "numberLabel" ]
+        , td [ class "numberCell" ]
             [ input
                 [ value
                     (ingredientUpdateClientInput.amountUnit.factor.value
@@ -149,10 +149,11 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                         >> Page.UpdateIngredient
                     )
                 , onEnter (Page.SaveIngredientEdit ingredient.id)
+                , class "numberLabel"
                 ]
                 []
             ]
-        , td []
+        , td [ class "numberCell" ]
             [ dropdown
                 { items = unitDropdown foodMap ingredient.foodId
                 , emptyItem =
@@ -165,7 +166,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                         , input = ingredientUpdateClientInput
                         }
                 }
-                []
+                [ class "numberLabel" ]
                 (ingredient.amountUnit.measureId
                     |> flip Dict.get measureMap
                     |> Maybe.map .name
@@ -228,7 +229,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                     [ td [ class "editing" ] [ button [ class "editButton", onClick (Page.SelectFood food) ] [ text "Select" ] ] ]
 
                 Just ingredientToAdd ->
-                    [ td [ class "editing" ]
+                    [ td [ class "editable" ]
                         [ label [] [ text "Amount" ]
                         , input
                             [ value ingredientToAdd.amountUnit.factor.text
