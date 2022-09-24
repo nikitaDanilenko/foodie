@@ -8,3 +8,10 @@ existsValue p =
     Dict.filter (always p)
         >> Dict.isEmpty
         >> not
+
+
+firstSuch : (v -> Bool) -> Dict comparable v -> Maybe v
+firstSuch p =
+    Dict.filter (always p)
+        >> Dict.values
+        >> List.head
