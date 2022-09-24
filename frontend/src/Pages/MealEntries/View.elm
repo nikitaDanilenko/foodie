@@ -168,13 +168,13 @@ editMealEntryLine recipeMap mealEntry mealEntryUpdateClientInput =
                         mealEntryUpdateClientInput
                         >> Page.UpdateMealEntry
                     )
-                , onEnter (Page.SaveMealEntryEdit mealEntry.id)
+                , onEnter (Page.SaveMealEntryEdit mealEntryUpdateClientInput)
                 , class "numberLabel"
                 ]
                 []
             ]
         , td []
-            [ button [ class "confirmButton", onClick (Page.SaveMealEntryEdit mealEntry.id) ]
+            [ button [ class "confirmButton", onClick (Page.SaveMealEntryEdit mealEntryUpdateClientInput) ]
                 [ text "Save" ]
             ]
         , td []
@@ -199,6 +199,24 @@ viewRecipeLine mealEntriesToAdd mealEntries recipe =
                     ]
 
                 Just mealEntryToAdd ->
+                    let
+                        ( confirmName, confirmMsg ) =
+                            case DictUtil.firstSuch (\mealEntry -> Editing.field .recipeId mealEntry == mealEntryToAdd.recipeId) mealEntries of
+                                Nothing ->
+                                    ( "Add", addMsg )
+
+                                Just mealEntryOrUpdate ->
+                                    let
+                                        mealEntry =
+                                            Editing.field identity mealEntryOrUpdate
+                                    in
+                                    ( "Update"
+                                    , mealEntry
+                                        |> MealEntryUpdateClientInput.from
+                                        |> MealEntryUpdateClientInput.lenses.numberOfServings.set mealEntryToAdd.numberOfServings
+                                        |> Page.SaveMealEntryEdit
+                                    )
+                    in
                     [ td [ class "numberCell" ]
                         [ input
                             [ value mealEntryToAdd.numberOfServings.text
@@ -210,7 +228,7 @@ viewRecipeLine mealEntriesToAdd mealEntries recipe =
                                     mealEntryToAdd
                                     >> Page.UpdateAddRecipe
                                 )
-                            , onEnter addMsg
+                            , onEnter confirmMsg
                             , class "numberLabel"
                             ]
                             []
@@ -220,16 +238,9 @@ viewRecipeLine mealEntriesToAdd mealEntries recipe =
                             [ class "confirmButton"
                             , disabled
                                 (mealEntryToAdd.numberOfServings |> ValidatedInput.isValid |> not)
-                            , onClick addMsg
+                            , onClick confirmMsg
                             ]
-                            [ text
-                                (if DictUtil.existsValue (\mealEntry -> Editing.field .recipeId mealEntry == mealEntryToAdd.recipeId) mealEntries then
-                                    "Update"
-
-                                 else
-                                    "Add"
-                                )
-                            ]
+                            [ text confirmName ]
                         ]
                     , td [ class "controls" ] [ button [ class "cancelButton", onClick (Page.DeselectRecipe recipe.id) ] [ text "Cancel" ] ]
                     ]

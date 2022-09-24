@@ -88,7 +88,7 @@ descriptionOrEmpty recipeMap =
 
 type Msg
     = UpdateMealEntry MealEntryUpdateClientInput
-    | SaveMealEntryEdit MealEntryId
+    | SaveMealEntryEdit MealEntryUpdateClientInput
     | GotSaveMealEntryResponse (Result Error MealEntry)
     | EnterEditMealEntry MealEntryId
     | ExitEditMealEntryAt MealEntryId
