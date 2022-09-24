@@ -29,8 +29,7 @@ type alias Model =
     , recipes : RecipeMap
     , recipesSearchString : String
     , mealEntriesToAdd : AddMealEntriesMap
-    , initialization: Initialization Status
-
+    , initialization : Initialization Status
     }
 
 
@@ -80,6 +79,11 @@ lenses =
 recipeNameOrEmpty : RecipeMap -> RecipeId -> String
 recipeNameOrEmpty recipeMap =
     flip Dict.get recipeMap >> Maybe.Extra.unwrap "" .name
+
+
+descriptionOrEmpty : RecipeMap -> RecipeId -> String
+descriptionOrEmpty recipeMap =
+    flip Dict.get recipeMap >> Maybe.andThen .description >> Maybe.withDefault ""
 
 
 type Msg
