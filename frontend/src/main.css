@@ -144,6 +144,11 @@ body, button, input {
     white-space: break-spaces;
 }
 
+select {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
 .editButton:disabled,
 .editorButton:disabled,
 .deleteButton:disabled,
@@ -192,10 +197,13 @@ th {
 }
 
 #ingredientEditor .choices th:nth-child(2),
-#ingredientEditor .choices th:nth-child(3),
-#ingredientEditor .choiceTable th:nth-child(2),
-#ingredientEditor .choiceTable th:nth-child(3) {
+#ingredientEditor .choiceTable th:nth-child(2) {
     width: 12%;
+}
+
+#ingredientEditor .choices th:nth-child(3),
+#ingredientEditor .choiceTable th:nth-child(3) {
+    width: 35%;
 }
 
 #ingredientEditor .choiceTable th:nth-child(3) {
