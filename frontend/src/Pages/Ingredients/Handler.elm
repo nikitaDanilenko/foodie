@@ -79,8 +79,8 @@ update msg model =
         Page.UpdateIngredient ingredientUpdate ->
             updateIngredient model ingredientUpdate
 
-        Page.SaveIngredientEdit ingredientId ->
-            saveIngredientEdit model ingredientId
+        Page.SaveIngredientEdit ingredientUpdateClientInput ->
+            saveIngredientEdit model ingredientUpdateClientInput
 
         Page.GotSaveIngredientResponse result ->
             gotSaveIngredientResponse model result
@@ -153,15 +153,12 @@ updateIngredient model ingredientUpdate =
     )
 
 
-saveIngredientEdit : Page.Model -> IngredientId -> ( Page.Model, Cmd Page.Msg )
-saveIngredientEdit model ingredientId =
+saveIngredientEdit : Page.Model -> IngredientUpdateClientInput -> ( Page.Model, Cmd Page.Msg )
+saveIngredientEdit model ingredientUpdateClientInput =
     ( model
-    , model
-        |> Page.lenses.ingredients.get
-        |> Dict.get ingredientId
-        |> Maybe.andThen Either.rightToMaybe
-        |> Maybe.Extra.unwrap Cmd.none
-            (.update >> IngredientUpdateClientInput.to >> Requests.saveIngredient model.flagsWithJWT)
+    , ingredientUpdateClientInput
+        |> IngredientUpdateClientInput.to
+        |> Requests.saveIngredient model.flagsWithJWT
     )
 
 
@@ -173,7 +170,8 @@ gotSaveIngredientResponse model result =
             (\ingredient ->
                 model
                     |> mapIngredientOrUpdateById ingredient.id
-                        (Either.andThenRight (always (Left ingredient)))
+                        (always (Left ingredient))
+                    |> Lens.modify Page.lenses.foodsToAdd (Dict.remove ingredient.foodId)
             )
     , Cmd.none
     )

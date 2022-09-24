@@ -78,7 +78,7 @@ lenses =
 
 type Msg
     = UpdateIngredient IngredientUpdateClientInput
-    | SaveIngredientEdit IngredientId
+    | SaveIngredientEdit IngredientUpdateClientInput
     | GotSaveIngredientResponse (Result Error Ingredient)
     | EnterEditIngredient IngredientId
     | ExitEditIngredientAt IngredientId

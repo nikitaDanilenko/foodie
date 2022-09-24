@@ -13,9 +13,13 @@ type alias IngredientUpdateClientInput =
     }
 
 
-amountUnit : Lens IngredientUpdateClientInput AmountUnitClientInput
-amountUnit =
-    Lens .amountUnit (\b a -> { a | amountUnit = b })
+lenses :
+    { amountUnit : Lens IngredientUpdateClientInput AmountUnitClientInput
+    }
+lenses =
+    { amountUnit =
+        Lens .amountUnit (\b a -> { a | amountUnit = b })
+    }
 
 
 from : Ingredient -> IngredientUpdateClientInput

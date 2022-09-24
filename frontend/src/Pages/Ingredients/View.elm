@@ -169,14 +169,14 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                 , onInput
                     (flip
                         (ValidatedInput.lift
-                            (IngredientUpdateClientInput.amountUnit
+                            (IngredientUpdateClientInput.lenses.amountUnit
                                 |> Compose.lensWithLens AmountUnitClientInput.factor
                             )
                         ).set
                         ingredientUpdateClientInput
                         >> Page.UpdateIngredient
                     )
-                , onEnter (Page.SaveIngredientEdit ingredient.id)
+                , onEnter (Page.SaveIngredientEdit ingredientUpdateClientInput)
                 , class "numberLabel"
                 ]
                 []
@@ -188,7 +188,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                     Just <| startingDropdownUnit measureMap ingredient.amountUnit.measureId
                 , onChange =
                     onChangeDropdown
-                        { amountUnitLens = IngredientUpdateClientInput.amountUnit
+                        { amountUnitLens = IngredientUpdateClientInput.lenses.amountUnit
                         , measureIdOf = .amountUnit >> .measureId
                         , mkMsg = Page.UpdateIngredient
                         , input = ingredientUpdateClientInput
@@ -201,7 +201,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                 )
             ]
         , td []
-            [ button [ class "confirmButton", onClick (Page.SaveIngredientEdit ingredient.id) ]
+            [ button [ class "confirmButton", onClick (Page.SaveIngredientEdit ingredientUpdateClientInput) ]
                 [ text "Save" ]
             ]
         , td []
@@ -261,6 +261,24 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                     ]
 
                 Just ingredientToAdd ->
+                    let
+                        ( confirmName, confirmMsg ) =
+                            case DictUtil.firstSuch (\ingredient -> Editing.field .foodId ingredient == ingredientToAdd.foodId) ingredients of
+                                Nothing ->
+                                    ( "Add", addMsg )
+
+                                Just ingredientOrUpdate ->
+                                    let
+                                        ingredient =
+                                            Editing.field identity ingredientOrUpdate
+                                    in
+                                    ( "Update"
+                                    , ingredient
+                                        |> IngredientUpdateClientInput.from
+                                        |> IngredientUpdateClientInput.lenses.amountUnit.set ingredientToAdd.amountUnit
+                                        |> Page.SaveIngredientEdit
+                                    )
+                    in
                     [ td [ class "numberCell" ]
                         [ input
                             [ value ingredientToAdd.amountUnit.factor.text
@@ -274,7 +292,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                                     ingredientToAdd
                                     >> Page.UpdateAddFood
                                 )
-                            , onEnter addMsg
+                            , onEnter confirmMsg
                             , class "numberLabel"
                             ]
                             []
@@ -300,15 +318,9 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                             [ class "confirmButton"
                             , disabled
                                 (ingredientToAdd.amountUnit.factor |> ValidatedInput.isValid |> not)
-                            , onClick addMsg
+                            , onClick confirmMsg
                             ]
-                            [ text
-                                (if DictUtil.existsValue (\i -> Editing.field .foodId i == ingredientToAdd.foodId) ingredients then
-                                    "Update"
-
-                                 else
-                                    "Add"
-                                )
+                            [ text confirmName
                             ]
                         ]
                     , td [ class "controls" ]
