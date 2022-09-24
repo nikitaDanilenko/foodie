@@ -68,12 +68,6 @@ body, button, input {
     margin: auto auto 1%;
 }
 
-#addRecipeView .controls,
-#addMealView .controls {
-    text-align: center;
-    width: .1%;
-}
-
 #addRecipeView .addButton:hover,
 #addMealView .addButton:hover {
     background-color: rgb(85, 225, 60);
@@ -85,6 +79,30 @@ body, button, input {
     border-spacing: 0;
     width: 100%;
     table-layout: fixed;
+    border-collapse: collapse;
+    position: relative;
+}
+
+.searchArea {
+    display: inline-block;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.searchArea input {
+    width: 50%;
+    margin: 3px;
+}
+
+.searchArea label,
+.searchArea button {
+    width: 20%
+}
+
+.searchArea label,
+.searchArea input {
+    font-size: larger;
 }
 
 #addRecipeView thead th,
@@ -107,7 +125,8 @@ body, button, input {
 .editorButton,
 .deleteButton,
 .confirmButton,
-.cancelButton {
+.cancelButton,
+.selectButton {
     color: rgb(250, 250, 250);
     border: none;
     text-align: center;
@@ -125,6 +144,15 @@ body, button, input {
     white-space: break-spaces;
 }
 
+.editButton:disabled,
+.editorButton:disabled,
+.deleteButton:disabled,
+.confirmButton:disabled,
+.cancelButton:disabled {
+    background-color: gray;
+    cursor: not-allowed;
+}
+
 #addRecipeView .editable,
 #addMealView .editable:not(.date, .time),
 #ingredientEditor .editable {
@@ -135,24 +163,43 @@ body, button, input {
 th {
     white-space: break-spaces;
     word-wrap: break-word;
+    position: sticky;
+    top: 0;
+    background: white;
 }
 
 #addRecipeView th:first-child,
-#addRecipeView th:nth-child(2),
 #addMealView th:nth-child(3),
 #ingredientEditor .choices th:first-child {
     width: 30%;
 }
 
+#addRecipeView th:nth-child(2) {
+    width: 25%;
+}
+
+#ingredientEditor .choiceTable th:first-child {
+    width: 40%
+}
+
 #addRecipeView th:nth-child(3) {
-    width: 7%;
+    width: 10%;
 }
 
 #addMealView th:first-child,
-#addMealView th:nth-child(2):not(input),
+#addMealView th:nth-child(2):not(input) {
+    width: 15%;
+}
+
 #ingredientEditor .choices th:nth-child(2),
-#ingredientEditor .choices th:nth-child(3) {
+#ingredientEditor .choices th:nth-child(3),
+#ingredientEditor .choiceTable th:nth-child(2),
+#ingredientEditor .choiceTable th:nth-child(3) {
     width: 12%;
+}
+
+#ingredientEditor .choiceTable th:nth-child(3) {
+    width: 20%;
 }
 
 #addRecipeView .numberLabel,
@@ -167,7 +214,7 @@ th {
     background-color: #ffb527;
 }
 
-.editButton:hover {
+.editButton:hover:enabled {
     background-color: rgba(255, 181, 39, 0.85);
 }
 
@@ -175,7 +222,7 @@ th {
     background-color: #d64546;
 }
 
-.deleteButton:hover {
+.deleteButton:hover:enabled {
     background-color: rgba(214, 69, 70, 0.85);
 }
 
@@ -183,7 +230,7 @@ th {
     background-color: royalblue;
 }
 
-.editorButton:hover {
+.editorButton:hover:enabled {
     background-color: rgba(65, 105, 225, 0.85);
 }
 
@@ -191,7 +238,7 @@ th {
     background-color: teal;
 }
 
-.confirmButton:hover {
+.confirmButton:hover:enabled {
     background-color: rgba(0, 128, 128, 0.85);
 }
 
@@ -199,8 +246,16 @@ th {
     background-color: coral;
 }
 
-.cancelButton:hover {
+.cancelButton:hover:enabled {
     background-color: rgba(255, 127, 80, 0.85);
+}
+
+.selectButton {
+    background-color: limegreen;
+}
+
+.selectButton:hover:enabled {
+    background-color: #36d936 ;
 }
 
 #addRecipeView input,
@@ -210,9 +265,10 @@ th {
     width: 100%;
 }
 
-.searchField {
-    width: 50%;
-    box-sizing: border-box;
+#addRecipeView input,
+#addMealView input,
+#ingredientEditor input:not(.searchField) {
+    font-size: larger;
 }
 
 .editing:not(.controls):hover,
@@ -220,7 +276,7 @@ th {
     background-color: rgb(220, 220, 220);
 }
 
-.descriptionColumn {
+.descriptionColumn, select {
     font-size: larger;
 }
 

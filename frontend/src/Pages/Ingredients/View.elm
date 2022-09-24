@@ -54,12 +54,24 @@ view model =
                     |> Dict.values
                     |> List.sortBy .name
                     |> List.map (viewFoodLine model.foods model.measures model.foodsToAdd model.ingredients)
+
+            anySelection =
+                model.foodsToAdd
+                    |> Dict.isEmpty
+                    |> not
+
+            ( amount, unit ) =
+                if anySelection then
+                    ( "Amount", "Unit" )
+
+                else
+                    ( "", "" )
         in
         div [ id "ingredientEditor" ]
             [ div []
                 [ table [ class "info" ]
                     [ tr []
-                        [ td [ class "descriptionColumn" ] [ label [] [ text "Name" ] ]
+                        [ td [ class "descriptionColumn" ] [ label [] [ text "Recipe" ] ]
                         , td [] [ label [] [ text <| Maybe.Extra.unwrap "" .name <| model.recipeInfo ] ]
                         ]
                     , tr []
@@ -96,18 +108,34 @@ view model =
                 ]
             , div [ class "addView" ]
                 [ div [ class "addElement" ]
-                    [ div [ class "searchField" ]
+                    [ div [ class "searchArea" ]
                         [ label [] [ text Links.lookingGlass ]
                         , input
                             [ onInput Page.SetFoodsSearchString
+                            , value <| model.foodsSearchString
                             , class "searchField"
                             ]
                             []
+                        , button
+                            [ class "cancelButton"
+                            , onClick (Page.SetFoodsSearchString "")
+                            , disabled <| String.isEmpty <| model.foodsSearchString
+                            ]
+                            [ text "Clear" ]
                         ]
                     , table [ class "choiceTable" ]
-                        [ thead []
-                            [ th []
-                                [ td [] [ label [] [ text "Name" ] ]
+                        [ colgroup []
+                            [ col [] []
+                            , col [] []
+                            , col [] []
+                            , col [ stringProperty "span" "2" ] []
+                            ]
+                        , thead []
+                            [ tr [ class "tableHeader" ]
+                                [ th [ scope "col" ] [ label [] [ text "Name" ] ]
+                                , th [ scope "col", class "numberLabel" ] [ label [] [ text amount ] ]
+                                , th [ scope "col", class "numberLabel" ] [ label [] [ text unit ] ]
+                                , th [ colspan 2, scope "colgroup", class "controlsGroup" ] []
                                 ]
                             ]
                         , tbody [] (viewFoods model.foodsSearchString)
@@ -226,12 +254,15 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
         process =
             case Dict.get food.id ingredientsToAdd of
                 Nothing ->
-                    [ td [ class "editing" ] [ button [ class "editButton", onClick (Page.SelectFood food) ] [ text "Select" ] ] ]
+                    [ td [ class "editable", class "numberCell" ] []
+                    , td [ class "editable", class "numberCell" ] []
+                    , td [ class "controls" ] []
+                    , td [ class "controls" ] [ button [ class "selectButton", onClick (Page.SelectFood food) ] [ text "Select" ] ]
+                    ]
 
                 Just ingredientToAdd ->
-                    [ td [ class "editable" ]
-                        [ label [] [ text "Amount" ]
-                        , input
+                    [ td [ class "numberCell" ]
+                        [ input
                             [ value ingredientToAdd.amountUnit.factor.text
                             , onInput
                                 (flip
@@ -244,12 +275,12 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                                     >> Page.UpdateAddFood
                                 )
                             , onEnter addMsg
+                            , class "numberLabel"
                             ]
                             []
                         ]
-                    , td []
-                        [ label [] [ text "Unit" ]
-                        , dropdown
+                    , td [ class "numberCell" ]
+                        [ dropdown
                             { items = unitDropdown foodMap food.id
                             , emptyItem =
                                 Just <| startingDropdownUnit measureMap ingredientToAdd.amountUnit.measureId
@@ -261,10 +292,10 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                                     , input = ingredientToAdd
                                     }
                             }
-                            []
+                            [ class "numberLabel" ]
                             (ingredientToAdd.amountUnit.measureId |> String.fromInt |> Just)
                         ]
-                    , td []
+                    , td [ class "controls" ]
                         [ button
                             [ class "confirmButton"
                             , disabled
@@ -280,10 +311,11 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                                 )
                             ]
                         ]
-                    , td [] [ button [ class "button", onClick (Page.DeselectFood food.id) ] [ text "Cancel" ] ]
+                    , td [ class "controls" ]
+                        [ button [ class "cancelButton", onClick (Page.DeselectFood food.id) ] [ text "Cancel" ] ]
                     ]
     in
     tr [ class "editing" ]
-        (td [] [ label [] [ text food.name ] ]
+        (td [ class "editable" ] [ label [] [ text food.name ] ]
             :: process
         )

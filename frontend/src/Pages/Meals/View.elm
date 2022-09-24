@@ -187,6 +187,7 @@ editMealLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
+                , class "date"
                 ]
                 []
             ]
@@ -205,6 +206,7 @@ editMealLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
+                , class "time"
                 ]
                 []
             ]
