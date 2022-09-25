@@ -248,6 +248,18 @@ th {
     width: 5%;
 }
 
+#statistics .meals th:first-child {
+    width: 12%;
+}
+
+#statistics .meals th:nth-child(2) {
+    width: 8%;
+}
+
+#statistics .meals th:nth-child(3) {
+    width: 35%;
+}
+
 #statistics .high {
     color: #fa8128; /* tangerine */
 }
