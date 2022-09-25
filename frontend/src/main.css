@@ -274,11 +274,13 @@ th {
     background-color: rgba(255, 181, 39, 0.85);
 }
 
-.deleteButton {
+.deleteButton,
+.cancelButton {
     background-color: #d64546;
 }
 
-.deleteButton:hover:enabled {
+.deleteButton:hover:enabled,
+.cancelButton:hover:enabled {
     background-color: rgba(214, 69, 70, 0.85);
 }
 
@@ -290,27 +292,13 @@ th {
     background-color: rgba(65, 105, 225, 0.85);
 }
 
+.selectButton,
 .confirmButton {
-    background-color: teal;
-}
-
-.confirmButton:hover:enabled {
-    background-color: rgba(0, 128, 128, 0.85);
-}
-
-.cancelButton {
-    background-color: coral;
-}
-
-.cancelButton:hover:enabled {
-    background-color: rgba(255, 127, 80, 0.85);
-}
-
-.selectButton {
     background-color: limegreen;
 }
 
-.selectButton:hover:enabled {
+.selectButton:hover:enabled,
+.confirmButton:hover:enabled {
     background-color: #36d936;
 }
 

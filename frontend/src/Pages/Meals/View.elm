@@ -10,7 +10,7 @@ import Configuration exposing (Configuration)
 import Dict
 import Either exposing (Either(..))
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (class, colspan, id, scope, type_, value)
+import Html.Attributes exposing (colspan, id, scope, type_, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
@@ -22,6 +22,7 @@ import Pages.Meals.Page as Page
 import Pages.Meals.Status as Status
 import Pages.Util.DateUtil as DateUtil
 import Pages.Util.Links as Links
+import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil
 import Parser
 import Url.Builder
@@ -58,11 +59,11 @@ view model =
                             , col [ stringProperty "span" "3" ] []
                             ]
                         , thead []
-                            [ tr [ class "tableHeader" ]
+                            [ tr [ Style.classes.tableHeader ]
                                 [ th [ scope "col" ] [ label [] [ text "Date" ] ]
                                 , th [ scope "col" ] [ label [] [ text "Time" ] ]
                                 , th [ scope "col" ] [ label [] [ text "Name" ] ]
-                                , th [ colspan 3, scope "colgroup", class "controlsGroup" ] []
+                                , th [ colspan 3, scope "colgroup", Style.classes.controlsGroup ] []
                                 ]
                             ]
                         , tbody []
@@ -84,7 +85,7 @@ createMeal maybeCreation =
         Nothing ->
             div [ id "addMeal" ]
                 [ button
-                    [ class "addButton"
+                    [ Style.classes.button.add
                     , onClick (MealCreationClientInput.default |> Just |> Page.UpdateMealCreation)
                     ]
                     [ text "New meal" ]
@@ -97,13 +98,13 @@ createMeal maybeCreation =
 
 editOrDeleteMealLine : Configuration -> Meal -> Html Page.Msg
 editOrDeleteMealLine configuration meal =
-    tr [ class "editing" ]
-        [ td [ class "editable" ] [ label [] [ text <| DateUtil.dateToString <| meal.date.date ] ]
-        , td [ class "editable" ] [ label [] [ text <| Maybe.Extra.unwrap "" DateUtil.timeToString <| meal.date.time ] ]
-        , td [ class "editable" ] [ label [] [ text <| Maybe.withDefault "" <| meal.name ] ]
-        , td [ class "controls" ] [ button [ class "editButton", onClick (Page.EnterEditMeal meal.id) ] [ text "Edit" ] ]
-        , td [ class "controls" ] [ button [ class "deleteButton", onClick (Page.DeleteMeal meal.id) ] [ text "Delete" ] ]
-        , td [ class "controls" ]
+    tr [ Style.classes.editing ]
+        [ td [ Style.classes.editable ] [ label [] [ text <| DateUtil.dateToString <| meal.date.date ] ]
+        , td [ Style.classes.editable ] [ label [] [ text <| Maybe.Extra.unwrap "" DateUtil.timeToString <| meal.date.time ] ]
+        , td [ Style.classes.editable ] [ label [] [ text <| Maybe.withDefault "" <| meal.name ] ]
+        , td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick (Page.EnterEditMeal meal.id) ] [ text "Edit" ] ]
+        , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Page.DeleteMeal meal.id) ] [ text "Delete" ] ]
+        , td [ Style.classes.controls ]
             [ Links.linkButton
                 { url =
                     Url.Builder.relative
@@ -113,7 +114,7 @@ editOrDeleteMealLine configuration meal =
                         , meal.id
                         ]
                         []
-                , attributes = [ class "editorButton" ]
+                , attributes = [ Style.classes.button.editor ]
                 , children = [ text "Entries" ]
                 , isDisabled = False
                 }
@@ -171,8 +172,8 @@ editMealLineWith handling editedValue =
         name =
             Maybe.withDefault "" <| handling.nameLens.get <| editedValue
     in
-    tr [ class "editLine" ]
-        [ td [ class "editable", class "date" ]
+    tr [ Style.classes.editLine ]
+        [ td [ Style.classes.editable, Style.classes.date ]
             [ input
                 [ type_ "date"
                 , value <| DateUtil.dateToString <| date.date
@@ -187,11 +188,11 @@ editMealLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
-                , class "date"
+                , Style.classes.date
                 ]
                 []
             ]
-        , td [ class "editable", class "time" ]
+        , td [ Style.classes.editable, Style.classes.time ]
             [ input
                 [ type_ "time"
                 , value <| Maybe.Extra.unwrap "" DateUtil.timeToString <| date.time
@@ -206,11 +207,11 @@ editMealLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
-                , class "time"
+                , Style.classes.time
                 ]
                 []
             ]
-        , td [ class "editable" ]
+        , td [ Style.classes.editable ]
             [ input
                 [ value <| name
                 , onInput
@@ -223,12 +224,12 @@ editMealLineWith handling editedValue =
                 ]
                 []
             ]
-        , td [ class "controls" ]
-            [ button [ class "confirmButton", onClick handling.confirmOnClick ]
+        , td [ Style.classes.controls ]
+            [ button [ Style.classes.button.confirm, onClick handling.confirmOnClick ]
                 [ text handling.confirmName ]
             ]
-        , td [ class "controls" ]
-            [ button [ class "cancelButton", onClick handling.cancelOnClick ]
+        , td [ Style.classes.controls ]
+            [ button [ Style.classes.button.cancel, onClick handling.cancelOnClick ]
                 [ text handling.cancelName ]
             ]
         ]

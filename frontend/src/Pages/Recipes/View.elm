@@ -6,7 +6,7 @@ import Configuration exposing (Configuration)
 import Dict
 import Either exposing (Either(..))
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (class, colspan, id, scope, value)
+import Html.Attributes exposing (colspan, id, scope, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
@@ -17,6 +17,7 @@ import Pages.Recipes.RecipeCreationClientInput as RecipeCreationClientInput expo
 import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Recipes.Status as Status
 import Pages.Util.Links as Links
+import Pages.Util.Style as Style
 import Pages.Util.ValidatedInput as ValidatedInput exposing (ValidatedInput)
 import Pages.Util.ViewUtil as ViewUtil
 import Url.Builder
@@ -53,11 +54,11 @@ view model =
                             , col [ stringProperty "span" "3" ] []
                             ]
                         , thead []
-                            [ tr [ class "tableHeader" ]
+                            [ tr [ Style.classes.tableHeader ]
                                 [ th [ scope "col" ] [ label [] [ text "Name" ] ]
                                 , th [ scope "col" ] [ label [] [ text "Description" ] ]
-                                , th [ scope "col", class "numberLabel" ] [ label [] [ text "Servings" ] ]
-                                , th [ colspan 3, scope "colgroup", class "controlsGroup" ] []
+                                , th [ scope "col", Style.classes.numberLabel ] [ label [] [ text "Servings" ] ]
+                                , th [ colspan 3, scope "colgroup", Style.classes.controlsGroup ] []
                                 ]
                             ]
                         , tbody []
@@ -79,7 +80,7 @@ createRecipe maybeCreation =
         Nothing ->
             div [ id "add" ]
                 [ button
-                    [ class "addButton"
+                    [ Style.classes.button.add
                     , onClick <| Page.UpdateRecipeCreation <| Just <| RecipeCreationClientInput.default
                     ]
                     [ text "New recipe" ]
@@ -92,18 +93,18 @@ createRecipe maybeCreation =
 
 editOrDeleteRecipeLine : Configuration -> Recipe -> Html Page.Msg
 editOrDeleteRecipeLine configuration recipe =
-    tr [ class "editing" ]
-        [ td [ class "editable" ] [ label [] [ text recipe.name ] ]
-        , td [ class "editable" ] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
-        , td [ class "editable", class "numberLabel" ] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
-        , td [ class "controls" ]
-            [ button [ class "editButton", onClick (Page.EnterEditRecipe recipe.id) ] [ text "Edit" ] ]
-        , td [ class "controls" ]
+    tr [ Style.classes.editing ]
+        [ td [ Style.classes.editable ] [ label [] [ text recipe.name ] ]
+        , td [ Style.classes.editable ] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
+        , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
+        , td [ Style.classes.controls ]
+            [ button [ Style.classes.button.edit, onClick (Page.EnterEditRecipe recipe.id) ] [ text "Edit" ] ]
+        , td [ Style.classes.controls ]
             [ button
-                [ class "deleteButton", onClick (Page.DeleteRecipe recipe.id) ]
+                [ Style.classes.button.delete, onClick (Page.DeleteRecipe recipe.id) ]
                 [ text "Delete" ]
             ]
-        , td [ class "controls" ]
+        , td [ Style.classes.controls ]
             [ Links.linkButton
                 { url =
                     Url.Builder.relative
@@ -113,7 +114,7 @@ editOrDeleteRecipeLine configuration recipe =
                         , recipe.id
                         ]
                         []
-                , attributes = [ class "editorButton" ]
+                , attributes = [ Style.classes.button.editor ]
                 , children = [ text "Ingredients" ]
                 , isDisabled = False
                 }
@@ -167,8 +168,8 @@ editRecipeLineWith :
     -> editedValue
     -> Html Page.Msg
 editRecipeLineWith handling editedValue =
-    tr [ class "editLine" ]
-        [ td [ class "editable" ]
+    tr [ Style.classes.editLine ]
+        [ td [ Style.classes.editable ]
             [ input
                 [ value <| .value <| handling.nameLens.get <| editedValue
                 , onInput
@@ -179,7 +180,7 @@ editRecipeLineWith handling editedValue =
                 ]
                 []
             ]
-        , td [ class "editable" ]
+        , td [ Style.classes.editable ]
             [ input
                 [ value <| Maybe.withDefault "" <| handling.descriptionLens.get <| editedValue
                 , onInput
@@ -195,7 +196,7 @@ editRecipeLineWith handling editedValue =
                 ]
                 []
             ]
-        , td [ class "numberCell" ]
+        , td [ Style.classes.numberCell ]
             [ input
                 [ value <| String.fromFloat <| .value <| handling.numberOfServingsLens.get <| editedValue
                 , onInput
@@ -207,16 +208,16 @@ editRecipeLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
-                , class "numberLabel"
+                , Style.classes.numberLabel
                 ]
                 []
             ]
-        , td [ class "controls" ]
-            [ button [ class "confirmButton", onClick handling.confirmOnClick ]
+        , td [ Style.classes.controls ]
+            [ button [ Style.classes.button.confirm, onClick handling.confirmOnClick ]
                 [ text handling.confirmName ]
             ]
-        , td [ class "controls" ]
-            [ button [ class "cancelButton", onClick handling.cancelOnClick ]
+        , td [ Style.classes.controls ]
+            [ button [ Style.classes.button.cancel, onClick handling.cancelOnClick ]
                 [ text handling.cancelName ]
             ]
         , td [] []

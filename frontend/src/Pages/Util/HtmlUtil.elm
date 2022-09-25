@@ -4,6 +4,7 @@ import Html exposing (Html, button, div, input, label, text)
 import Html.Attributes exposing (class, disabled, value)
 import Html.Events exposing (onClick, onInput)
 import Pages.Util.Links as Links
+import Pages.Util.Style as Style
 
 
 searchAreaWith :
@@ -21,7 +22,7 @@ searchAreaWith ps =
             ]
             []
         , button
-            [ class "cancelButton"
+            [ Style.classes.button.cancel
             , onClick (ps.msg "")
             , disabled <| String.isEmpty <| ps.searchString
             ]

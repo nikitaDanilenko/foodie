@@ -6,7 +6,7 @@ import Api.Types.NutrientInformation exposing (NutrientInformation)
 import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
 import FormatNumber
 import FormatNumber.Locales
-import Html exposing (Html, button, col, colgroup, div, input, label, span, table, tbody, td, text, th, thead, tr)
+import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (class, colspan, id, scope, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Maybe.Extra
@@ -14,6 +14,7 @@ import Monocle.Lens exposing (Lens)
 import Pages.Statistics.Page as Page
 import Pages.Statistics.Status as Status
 import Pages.Util.DateUtil as DateUtil
+import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil
 import Parser
 
@@ -37,43 +38,43 @@ view model =
                         , col [] []
                         ]
                     , thead []
-                        [ tr [ class "tableHeader" ]
+                        [ tr [ Style.classes.tableHeader ]
                             [ th [ scope "col" ] [ label [] [ text "From" ] ]
                             , th [ scope "col" ] [ label [] [ text "To" ] ]
-                            , th [ colspan 2, scope "col", class "controlsGroup" ] []
+                            , th [ colspan 2, scope "col", Style.classes.controlsGroup ] []
                             ]
                         ]
                     , tbody []
                         [ tr []
-                            [ td [ class "editable", class "date" ] [ dateInput model Page.SetFromDate Page.lenses.from ]
-                            , td [ class "editable", class "date" ] [ dateInput model Page.SetToDate Page.lenses.to ]
-                            , td [ class "controls" ]
+                            [ td [ Style.classes.editable, Style.classes.date ] [ dateInput model Page.SetFromDate Page.lenses.from ]
+                            , td [ Style.classes.editable, Style.classes.date ] [ dateInput model Page.SetToDate Page.lenses.to ]
+                            , td [ Style.classes.controls ]
                                 [ button
-                                    [ class "selectButton", onClick Page.FetchStats ]
+                                    [ Style.classes.button.select, onClick Page.FetchStats ]
                                     [ text "Compute" ]
                                 ]
-                            , td [ class "controls" ] []
+                            , td [ Style.classes.controls ] []
                             ]
                         ]
                     ]
                 ]
-            , div [ class "elements" ] [ text "Nutrients" ]
+            , div [ Style.classes.elements ] [ text "Nutrients" ]
             , div [ class "information", class "nutrients" ]
                 [ table []
                     [ thead []
-                        [ tr [ class "tableHeader" ]
+                        [ tr [ Style.classes.tableHeader ]
                             [ th [] [ label [] [ text "Name" ] ]
-                            , th [ class "numberLabel" ] [ label [] [ text "Total" ] ]
-                            , th [ class "numberLabel" ] [ label [] [ text "Daily average" ] ]
-                            , th [ class "numberLabel" ] [ label [] [ text "Reference daily average" ] ]
-                            , th [ class "numberLabel" ] [ label [] [ text "Unit" ] ]
-                            , th [ class "numberLabel" ] [ label [] [ text "Percentage" ] ]
+                            , th [ Style.classes.numberLabel ] [ label [] [ text "Total" ] ]
+                            , th [ Style.classes.numberLabel ] [ label [] [ text "Daily average" ] ]
+                            , th [ Style.classes.numberLabel ] [ label [] [ text "Reference daily average" ] ]
+                            , th [ Style.classes.numberLabel ] [ label [] [ text "Unit" ] ]
+                            , th [ Style.classes.numberLabel ] [ label [] [ text "Percentage" ] ]
                             ]
                         ]
                     , tbody [] (List.map nutrientInformationLine model.stats.nutrients)
                     ]
                 ]
-            , div [ class "elements" ] [ text "Meals" ]
+            , div [ Style.classes.elements ] [ text "Meals" ]
             , div [ class "information", class "meals" ]
                 [ table []
                     [ thead []
@@ -120,18 +121,13 @@ nutrientInformationLine nutrientInformation =
                 )
                 factor
     in
-    tr [ class "editLine" ]
-        [ td []
-            [ div [ class "tooltip" ]
-                [ text <| nutrientInformation.symbol
-                , span [ class "tooltipText" ] [ text <| nutrientInformation.name ]
-                ]
-            ]
-        , td [ class "numberCell" ] [ label [] [ text <| displayFloat <| nutrientInformation.amounts.total ] ]
-        , td [ class "numberCell" ] [ label [] [ text <| displayFloat <| nutrientInformation.amounts.dailyAverage ] ]
-        , td [ class "numberCell" ] [ label [] [ text <| Maybe.Extra.unwrap "" displayFloat <| nutrientInformation.amounts.referenceDailyAverage ] ]
-        , td [ class "numberCell" ] [ label [] [ text <| NutrientUnit.toString <| nutrientInformation.unit ] ]
-        , td [ class "numberCell" ]
+    tr [ Style.classes.editLine ]
+        [ td [] [ label [] [ text <| nutrientInformation.name ] ]
+        , td [ Style.classes.numberCell ] [ label [] [ text <| displayFloat <| nutrientInformation.amounts.total ] ]
+        , td [ Style.classes.numberCell ] [ label [] [ text <| displayFloat <| nutrientInformation.amounts.dailyAverage ] ]
+        , td [ Style.classes.numberCell ] [ label [] [ text <| Maybe.Extra.unwrap "" displayFloat <| nutrientInformation.amounts.referenceDailyAverage ] ]
+        , td [ Style.classes.numberCell ] [ label [] [ text <| NutrientUnit.toString <| nutrientInformation.unit ] ]
+        , td [ Style.classes.numberCell ]
             [ label factorStyle
                 [ text <|
                     Maybe.Extra.unwrap "" ((\v -> v ++ "%") << displayFloat) <|
@@ -143,10 +139,10 @@ nutrientInformationLine nutrientInformation =
 
 mealLine : Meal -> Html Page.Msg
 mealLine meal =
-    tr [ class "editLine" ]
-        [ td [ class "editable", class "date" ] [ label [] [ text <| DateUtil.dateToString <| meal.date.date ] ]
-        , td [ class "editable", class "time" ] [ label [] [ text <| Maybe.Extra.unwrap "" DateUtil.timeToString <| meal.date.time ] ]
-        , td [ class "editable" ] [ label [] [ text <| Maybe.withDefault "" <| meal.name ] ]
+    tr [ Style.classes.editLine ]
+        [ td [ Style.classes.editable, Style.classes.date ] [ label [] [ text <| DateUtil.dateToString <| meal.date.date ] ]
+        , td [ Style.classes.editable, Style.classes.time ] [ label [] [ text <| Maybe.Extra.unwrap "" DateUtil.timeToString <| meal.date.time ] ]
+        , td [ Style.classes.editable ] [ label [] [ text <| Maybe.withDefault "" <| meal.name ] ]
         ]
 
 
@@ -160,7 +156,7 @@ dateInput model mkCmd lens =
                 >> Result.toMaybe
                 >> mkCmd
             )
-        , class "date"
+        , Style.classes.date
         ]
         []
 
