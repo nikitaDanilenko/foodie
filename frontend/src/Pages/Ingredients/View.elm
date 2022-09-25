@@ -10,7 +10,7 @@ import Dict exposing (Dict)
 import Dropdown exposing (Item, dropdown)
 import Either exposing (Either(..))
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (colspan, disabled, id, scope, value)
+import Html.Attributes exposing (colspan, disabled, scope, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
@@ -68,7 +68,7 @@ view model =
                 else
                     ( "", "" )
         in
-        div [ id "ingredientEditor" ]
+        div [ Style.ids.ingredientEditor ]
             [ div []
                 [ table [ Style.classes.info ]
                     [ tr []

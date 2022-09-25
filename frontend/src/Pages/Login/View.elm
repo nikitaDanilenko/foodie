@@ -1,7 +1,7 @@
 module Pages.Login.View exposing (..)
 
 import Html exposing (Html, button, div, input, label, text)
-import Html.Attributes exposing (autocomplete, id, type_)
+import Html.Attributes exposing (autocomplete, type_)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Pages.Login.Page as Page
@@ -10,7 +10,7 @@ import Pages.Util.Style as Style
 
 view : Page.Model -> Html Page.Msg
 view _ =
-    div [ id "login" ]
+    div [ Style.ids.login ]
         [ div []
             [ label [ ] [ text "Nickname" ]
             , input

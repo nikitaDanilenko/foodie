@@ -6,7 +6,7 @@ import Configuration exposing (Configuration)
 import Dict
 import Either exposing (Either(..))
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (colspan, id, scope, value)
+import Html.Attributes exposing (colspan, scope, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
@@ -44,7 +44,7 @@ view model =
             ( button, creationLine ) =
                 createRecipe model.recipeToAdd |> Either.unpack (\l -> ( [ l ], [] )) (\r -> ( [], [ r ] ))
         in
-        div [ id "addRecipeView" ]
+        div [ Style.ids.addRecipeView ]
             (button
                 ++ [ table []
                         [ colgroup []
@@ -78,7 +78,7 @@ createRecipe : Maybe RecipeCreationClientInput -> Either (Html Page.Msg) (Html P
 createRecipe maybeCreation =
     case maybeCreation of
         Nothing ->
-            div [ id "add" ]
+            div [ Style.ids.add ]
                 [ button
                     [ Style.classes.button.add
                     , onClick <| Page.UpdateRecipeCreation <| Just <| RecipeCreationClientInput.default

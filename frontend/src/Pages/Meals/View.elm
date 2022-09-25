@@ -10,7 +10,7 @@ import Configuration exposing (Configuration)
 import Dict
 import Either exposing (Either(..))
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (colspan, id, scope, type_, value)
+import Html.Attributes exposing (colspan, scope, type_, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
@@ -49,7 +49,7 @@ view model =
             ( button, creationLine ) =
                 createMeal model.mealToAdd |> Either.unpack (\l -> ( [ l ], [] )) (\r -> ( [], [ r ] ))
         in
-        div [ id "addMealView" ]
+        div [ Style.ids.addMealView ]
             (button
                 ++ [ table []
                         [ colgroup []
@@ -83,7 +83,7 @@ createMeal : Maybe MealCreationClientInput -> Either (Html Page.Msg) (Html Page.
 createMeal maybeCreation =
     case maybeCreation of
         Nothing ->
-            div [ id "addMeal" ]
+            div [ Style.ids.add ]
                 [ button
                     [ Style.classes.button.add
                     , onClick (MealCreationClientInput.default |> Just |> Page.UpdateMealCreation)

@@ -6,7 +6,7 @@ import Basics.Extra exposing (flip)
 import Dict
 import Either
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (colspan, disabled, id, scope, value)
+import Html.Attributes exposing (colspan, disabled, scope, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
@@ -61,7 +61,7 @@ view model =
                 else
                     ""
         in
-        div [ id "mealEntryEditor" ]
+        div [ Style.ids.mealEntryEditor ]
             [ div []
                 [ table [ Style.classes.info ]
                     [ tr []

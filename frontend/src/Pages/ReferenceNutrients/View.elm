@@ -6,7 +6,7 @@ import Basics.Extra exposing (flip)
 import Dict
 import Either
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (colspan, disabled, id, scope, value)
+import Html.Attributes exposing (colspan, disabled, scope, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
@@ -58,7 +58,7 @@ view model =
                 else
                     ( "", "" )
         in
-        div [ id "referenceNutrientEditor" ]
+        div [ Style.ids.referenceNutrientEditor ]
             [ div []
                 [ table []
                     [ colgroup []
@@ -130,7 +130,7 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
         saveMsg =
             Page.SaveReferenceNutrientEdit referenceNutrientUpdateClientInput
     in
-    tr [ id "editLine" ]
+    tr [ Style.ids.editLine ]
         [ td [] [ label [] [ text (referenceNutrient.nutrientCode |> Page.nutrientNameOrEmpty nutrientMap) ] ]
         , td [ Style.classes.numberCell ]
             [ input

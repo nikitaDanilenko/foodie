@@ -7,7 +7,7 @@ import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
 import FormatNumber
 import FormatNumber.Locales
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (colspan, id, scope, type_, value)
+import Html.Attributes exposing (colspan, scope, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Maybe.Extra
 import Monocle.Lens exposing (Lens)
@@ -28,7 +28,7 @@ view model =
         }
         model
     <|
-        div [ id "statistics" ]
+        div [ Style.ids.statistics ]
             [ div []
                 [ table [ Style.classes.intervalSelection ]
                     [ colgroup []
