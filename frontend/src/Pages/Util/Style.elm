@@ -23,6 +23,7 @@ classes :
     , controls : Attribute msg
     , date : Attribute msg
     , descriptionColumn : Attribute msg
+    , disabled : Attribute msg
     , editable : Attribute msg
     , editing : Attribute msg
     , editLine : Attribute msg
@@ -55,7 +56,7 @@ classes =
         , delete = class "deleteButton"
         , edit = class "editButton"
         , editor = class "editorButton"
-        , navigation = class "navigation"
+        , navigation = class "navigationButton"
         , select = class "selectButton"
         }
     , choices = class "choices"
@@ -64,6 +65,7 @@ classes =
     , controls = class "controls"
     , date = class "date"
     , descriptionColumn = class "descriptionColumn"
+    , disabled = class "disabled"
     , editable = class "editable"
     , editing = class "editing"
     , editLine = class "editLine"

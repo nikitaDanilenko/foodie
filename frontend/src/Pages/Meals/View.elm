@@ -117,7 +117,6 @@ editOrDeleteMealLine configuration meal =
                         []
                 , attributes = [ Style.classes.button.editor ]
                 , children = [ text "Entries" ]
-                , isDisabled = False
                 }
             ]
         ]

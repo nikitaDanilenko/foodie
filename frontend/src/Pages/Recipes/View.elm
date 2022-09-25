@@ -117,7 +117,6 @@ editOrDeleteRecipeLine configuration recipe =
                         []
                 , attributes = [ Style.classes.button.editor ]
                 , children = [ text "Ingredients" ]
-                , isDisabled = False
                 }
             ]
         ]

@@ -10,13 +10,11 @@ linkButton :
     { url : String
     , attributes : List (Attribute msg)
     , children : List (Html msg)
-    , isDisabled : Bool
     }
     -> Html msg
 linkButton params =
     Bootstrap.Button.linkButton
-        [ Bootstrap.Button.disabled params.isDisabled
-        , Bootstrap.Button.attrs (href params.url :: params.attributes)
+        [ Bootstrap.Button.attrs (href params.url :: params.attributes)
         ]
         params.children
 

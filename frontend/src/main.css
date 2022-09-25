@@ -2,31 +2,6 @@ body, button, input {
     font-family: Arial, sans-serif;
 }
 
-.tooltip {
-    position: relative;
-    display: inline-block;
-    border-bottom: 1px dotted black;
-}
-
-.tooltip .tooltipText {
-    visibility: hidden;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 0;
-
-    /* Position the tooltip */
-    position: absolute;
-    z-index: 1;
-    top: -5px;
-    left: 105%;
-}
-
-.tooltip:hover .tooltipText {
-    visibility: visible;
-}
-
 #recipesButton button,
 #mealsButton button,
 #statisticsButton button,
@@ -49,7 +24,8 @@ body, button, input {
 #recipesButton button:hover,
 #mealsButton button:hover,
 #statisticsButton button:hover,
-#referenceNutrientsButton button:hover {
+#referenceNutrientsButton button:hover,
+.navigationButton:hover:not(.disabled){
     background-color: rgb(100, 149, 237);
 }
 
@@ -76,7 +52,8 @@ body, button, input {
 #ingredientEditor table:not(.info),
 #mealEntryEditor table:not(.info),
 #referenceNutrientEditor table,
-#statistics table {
+#statistics table,
+#navigation table {
     border-spacing: 0;
     width: 100%;
     table-layout: fixed;
@@ -159,8 +136,10 @@ select {
 .deleteButton:disabled,
 .confirmButton:disabled,
 .cancelButton:disabled,
-.selectButton:disabled {
+.selectButton:disabled,
+.navigationButton:disabled {
     background-color: gray;
+
     cursor: not-allowed;
 }
 
@@ -355,7 +334,7 @@ th {
     width: 100%;
 }
 
-#login input ,
+#login input,
 #login label,
 #login button {
     font-size: xx-large;
@@ -380,4 +359,25 @@ th {
 #error label {
     font-size: larger;
     margin-right: 5px;
+}
+
+#navigation thead th {
+    font-size: smaller;
+    font-weight: lighter;
+}
+
+.navigationButton {
+    color: rgb(250, 250, 250);
+    background-color: rgb(66, 100, 160);
+    text-align: center;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    word-wrap: break-word;
+    white-space: break-spaces;
+    width: 100%;
+    margin-bottom: 15px;
+    border: none;
 }

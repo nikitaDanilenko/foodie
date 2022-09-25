@@ -1,6 +1,7 @@
 module Pages.Util.ViewUtil exposing (Page(..), viewWithErrorHandling)
 
-import Html exposing (Html, div, label, table, tbody, td, text, tr)
+import Html exposing (Html, button, div, label, table, td, text, th, thead, tr)
+import Html.Attributes exposing (disabled)
 import Maybe.Extra
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.Links as Links
@@ -155,16 +156,28 @@ navigationToPageButton :
     }
     -> Html msg
 navigationToPageButton ps =
-    Links.linkButton
-        { url =
-            navigationLink
-                { mainPageURL = ps.mainPageURL
-                , page = addressSuffix ps.page
-                }
-        , attributes = [ Style.classes.button.navigation ]
-        , children = [ text <| nameOf <| ps.page ]
-        , isDisabled = Maybe.Extra.unwrap False (\current -> current == ps.page) ps.currentPage
-        }
+    let
+        isDisabled =
+            Maybe.Extra.unwrap False (\current -> current == ps.page) ps.currentPage
+    in
+    if isDisabled then
+        button
+            [ Style.classes.button.navigation
+            , Style.classes.disabled
+            , disabled True
+            ]
+            [ text <| nameOf <| ps.page ]
+
+    else
+        Links.linkButton
+            { url =
+                navigationLink
+                    { mainPageURL = ps.mainPageURL
+                    , page = addressSuffix ps.page
+                    }
+            , attributes = [ Style.classes.button.navigation ]
+            , children = [ text <| nameOf <| ps.page ]
+            }
 
 
 navigationBar :
@@ -173,16 +186,16 @@ navigationBar :
     }
     -> Html msg
 navigationBar ps =
-    div []
-        [ table [ Style.ids.navigation ]
-            [ tbody []
+    div [ Style.ids.navigation ]
+        [ table []
+            [ thead []
                 [ tr []
                     (navigationPages
                         |> List.map
                             (\page ->
-                                td []
+                                th []
                                     [ navigationToPageButton
-                                        { page = page
+                                        { page = Debug.log "page" page
                                         , mainPageURL = ps.mainPageURL
                                         , currentPage = ps.currentPage
                                         }
