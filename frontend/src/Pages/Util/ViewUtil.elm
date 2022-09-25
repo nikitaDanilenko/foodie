@@ -1,13 +1,13 @@
 module Pages.Util.ViewUtil exposing (..)
 
 import Html exposing (Html, div, label, td, text, tr)
-import Html.Attributes exposing (class)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.Links as Links
+import Pages.Util.Style as Style
 import Url.Builder
 import Util.Initialization exposing (Initialization(..))
 
-
+-- todo: Add styling
 viewWithErrorHandling :
     { isFinished : status -> Bool
     , initialization : model -> Initialization status
@@ -40,7 +40,7 @@ viewWithErrorHandling params model html =
                                         , "login"
                                         ]
                                         []
-                                , attributes = [ class "button" ]
+                                , attributes = [ Style.classes.button.select ]
                                 , children = [ text "Login" ]
                                 , isDisabled = False
                                 }

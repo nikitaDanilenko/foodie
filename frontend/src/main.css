@@ -343,3 +343,31 @@ th {
     margin-top: 20px;
     margin-bottom: 20px;
 }
+
+#login {
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+}
+
+#login input ,
+#login label,
+#login button {
+    font-size: xx-large;
+}
+
+#login input {
+    box-sizing: border-box;
+    margin-bottom: 5px;
+    width: 80%;
+}
+
+#login label {
+    padding-right: 5px;
+    width: 40%
+}
+
+#login button {
+    margin-top: 5px;
+    width: 30%;
+}

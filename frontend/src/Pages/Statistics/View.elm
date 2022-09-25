@@ -7,7 +7,7 @@ import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
 import FormatNumber
 import FormatNumber.Locales
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (class, colspan, id, scope, type_, value)
+import Html.Attributes exposing (colspan, id, scope, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Maybe.Extra
 import Monocle.Lens exposing (Lens)
@@ -30,7 +30,7 @@ view model =
     <|
         div [ id "statistics" ]
             [ div []
-                [ table [ class "intervalSelection" ]
+                [ table [ Style.classes.intervalSelection ]
                     [ colgroup []
                         [ col [] []
                         , col [] []
@@ -59,7 +59,7 @@ view model =
                     ]
                 ]
             , div [ Style.classes.elements ] [ text "Nutrients" ]
-            , div [ class "information", class "nutrients" ]
+            , div [ Style.classes.info, Style.classes.nutrients ]
                 [ table []
                     [ thead []
                         [ tr [ Style.classes.tableHeader ]
@@ -75,7 +75,7 @@ view model =
                     ]
                 ]
             , div [ Style.classes.elements ] [ text "Meals" ]
-            , div [ class "information", class "meals" ]
+            , div [ Style.classes.info, Style.classes.meals ]
                 [ table []
                     [ thead []
                         [ tr []
@@ -108,15 +108,14 @@ nutrientInformationLine nutrientInformation =
         factorStyle =
             Maybe.Extra.unwrap []
                 (\percent ->
-                    [ class <|
-                        if percent > 100 then
-                            "high"
+                    [ if percent > 100 then
+                        Style.classes.rating.high
 
-                        else if percent == 100 then
-                            "exact"
+                      else if percent == 100 then
+                        Style.classes.rating.exact
 
-                        else
-                            "low"
+                      else
+                        Style.classes.rating.low
                     ]
                 )
                 factor

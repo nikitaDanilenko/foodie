@@ -1,7 +1,7 @@
 module Pages.Util.HtmlUtil exposing (..)
 
 import Html exposing (Html, button, div, input, label, text)
-import Html.Attributes exposing (class, disabled, value)
+import Html.Attributes exposing (disabled, value)
 import Html.Events exposing (onClick, onInput)
 import Pages.Util.Links as Links
 import Pages.Util.Style as Style
@@ -13,12 +13,12 @@ searchAreaWith :
     }
     -> Html msg
 searchAreaWith ps =
-    div [ class "searchArea" ]
+    div [ Style.classes.search.area ]
         [ label [] [ text Links.lookingGlass ]
         , input
             [ onInput ps.msg
             , value <| ps.searchString
-            , class "searchField"
+            , Style.classes.search.field
             ]
             []
         , button
