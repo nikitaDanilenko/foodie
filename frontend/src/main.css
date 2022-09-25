@@ -204,13 +204,16 @@ th {
     width: 10%;
 }
 
-/*todo: Adjust sizes - the unit can be very small*/
 #referenceNutrientEditor th:first-child {
-    width: 40%;
+    width: 50%;
 }
 
 #referenceNutrientEditor th:nth-child(2) {
     width: 20%
+}
+
+#referenceNutrientEditor th:nth-child(3) {
+    width: 5%
 }
 
 #addMealView th:first-child,
@@ -319,6 +322,7 @@ th {
 #addMealView input,
 #ingredientEditor input:not(.searchField),
 #mealEntryEditor input:not(.searchField),
+#referenceNutrientEditor input:not(.searchField),
 #statistics input {
     box-sizing: border-box;
     width: 100%;

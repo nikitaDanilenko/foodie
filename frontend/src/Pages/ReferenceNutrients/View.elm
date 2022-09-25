@@ -130,7 +130,7 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
         saveMsg =
             Page.SaveReferenceNutrientEdit referenceNutrientUpdateClientInput
     in
-    tr [ Style.ids.editLine ]
+    tr [ Style.classes.editLine ]
         [ td [] [ label [] [ text (referenceNutrient.nutrientCode |> Page.nutrientNameOrEmpty nutrientMap) ] ]
         , td [ Style.classes.numberCell ]
             [ input

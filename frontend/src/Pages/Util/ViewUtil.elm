@@ -8,10 +8,6 @@ import Url.Builder
 import Util.Initialization exposing (Initialization(..))
 
 
-
--- todo: Add styling
-
-
 viewWithErrorHandling :
     { isFinished : status -> Bool
     , initialization : model -> Initialization status
