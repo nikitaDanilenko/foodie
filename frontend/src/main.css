@@ -75,7 +75,8 @@ body, button, input {
 #addMealView table,
 #ingredientEditor table:not(.info),
 #mealEntryEditor table:not(.info),
-#referenceNutrientEditor table {
+#referenceNutrientEditor table,
+#statistics table {
     border-spacing: 0;
     width: 100%;
     table-layout: fixed;
@@ -109,7 +110,8 @@ body, button, input {
 #addMealView thead th,
 #ingredientEditor thead th,
 #mealEntryEditor thead th,
-#referenceNutrientEditor thead th {
+#referenceNutrientEditor thead th,
+#statistics thead th {
     font-size: larger;
     font-weight: lighter;
     font-style: italic;
@@ -119,7 +121,8 @@ body, button, input {
 #addMealView thead th:not(.numberLabel),
 #ingredientEditor thead th:not(.numberLabel),
 #mealEntryEditor thead th:not(.numberLabel),
-#referenceNutrientEditor thead th:not(.numberLabel) {
+#referenceNutrientEditor thead th:not(.numberLabel),
+#statistics thead th:not(.numberLabel) {
     text-align: left;
 }
 
@@ -165,7 +168,8 @@ select {
 #addMealView .editable:not(.date, .time),
 #ingredientEditor .editable,
 #mealEntryEditor .editable,
-#referenceNutrientEditor .editable {
+#referenceNutrientEditor .editable,
+#statistics .editable:not(.date) {
     white-space: break-spaces;
     word-wrap: break-word;
 }
@@ -220,6 +224,40 @@ th {
 
 #ingredientEditor th:nth-child(3) {
     width: 35%;
+}
+
+#statistics .intervalSelection th:first-child,
+#statistics .intervalSelection th:nth-child(2) {
+    width: 10%;
+}
+
+#statistics .intervalSelection th:nth-child(3) {
+    width: 20%;
+}
+
+#statistics .nutrients th:first-child {
+    width: 30%
+}
+
+#statistics .nutrients th:nth-child(3),
+#statistics .nutrients th:nth-child(4) {
+    width: 15%;
+}
+
+#statistics .nutrients th:nth-child(5) {
+    width: 5%;
+}
+
+#statistics .high {
+    color: #fa8128; /* tangerine */
+}
+
+#statistics .exact {
+    color: black;
+}
+
+#statistics .low {
+    color: #0492c2; /* cerulean */
 }
 
 .numberLabel,
@@ -279,7 +317,8 @@ th {
 #addRecipeView input,
 #addMealView input,
 #ingredientEditor input:not(.searchField),
-#mealEntryEditor input:not(.searchField) {
+#mealEntryEditor input:not(.searchField),
+#statistics input {
     box-sizing: border-box;
     width: 100%;
     font-size: larger;
