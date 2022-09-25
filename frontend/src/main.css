@@ -74,7 +74,8 @@ body, button, input {
 #addRecipeView table,
 #addMealView table,
 #ingredientEditor table:not(.info),
-#mealEntryEditor table:not(.info) {
+#mealEntryEditor table:not(.info),
+#referenceNutrientEditor table {
     border-spacing: 0;
     width: 100%;
     table-layout: fixed;
@@ -107,7 +108,8 @@ body, button, input {
 #addRecipeView thead th,
 #addMealView thead th,
 #ingredientEditor thead th,
-#mealEntryEditor thead th {
+#mealEntryEditor thead th,
+#referenceNutrientEditor thead th {
     font-size: larger;
     font-weight: lighter;
     font-style: italic;
@@ -116,7 +118,8 @@ body, button, input {
 #addRecipeView thead th:not(.numberLabel),
 #addMealView thead th:not(.numberLabel),
 #ingredientEditor thead th:not(.numberLabel),
-#mealEntryEditor thead th:not(.numberLabel) {
+#mealEntryEditor thead th:not(.numberLabel),
+#referenceNutrientEditor thead th:not(.numberLabel) {
     text-align: left;
 }
 
@@ -152,14 +155,17 @@ select {
 .editorButton:disabled,
 .deleteButton:disabled,
 .confirmButton:disabled,
-.cancelButton:disabled {
+.cancelButton:disabled,
+.selectButton:disabled {
     background-color: gray;
     cursor: not-allowed;
 }
 
 #addRecipeView .editable,
 #addMealView .editable:not(.date, .time),
-#ingredientEditor .editable {
+#ingredientEditor .editable,
+#mealEntryEditor .editable,
+#referenceNutrientEditor .editable {
     white-space: break-spaces;
     word-wrap: break-word;
 }
@@ -172,11 +178,12 @@ th {
     background: white;
 }
 
+/*todo: Group column sizes by page*/
 #addRecipeView th:first-child,
 #addMealView th:nth-child(3),
-#ingredientEditor .choices th:first-child,
 #mealEntryEditor th:first-child,
-#mealEntryEditor th:nth-child(2) {
+#mealEntryEditor th:nth-child(2),
+#referenceNutrientEditor th:first-child {
     width: 30%;
 }
 
@@ -184,13 +191,21 @@ th {
     width: 25%;
 }
 
-#ingredientEditor .choiceTable th:first-child {
-    width: 40%
+#ingredientEditor th:first-child {
+    width: 30%
 }
 
 #addRecipeView th:nth-child(3),
-#mealEntryEditor th:nth-child(3){
+#mealEntryEditor th:nth-child(3) {
     width: 10%;
+}
+
+#referenceNutrientEditor th:first-child {
+    width: 40%;
+}
+
+#referenceNutrientEditor th:nth-child(2) {
+    width: 20%
 }
 
 #addMealView th:first-child,
@@ -198,18 +213,12 @@ th {
     width: 15%;
 }
 
-#ingredientEditor .choices th:nth-child(2),
-#ingredientEditor .choiceTable th:nth-child(2) {
+#ingredientEditor th:nth-child(2) {
     width: 12%;
 }
 
-#ingredientEditor .choices th:nth-child(3),
-#ingredientEditor .choiceTable th:nth-child(3) {
+#ingredientEditor th:nth-child(3) {
     width: 35%;
-}
-
-#ingredientEditor .choiceTable th:nth-child(3) {
-    width: 20%;
 }
 
 .numberLabel,
@@ -269,7 +278,7 @@ th {
 #addRecipeView input,
 #addMealView input,
 #ingredientEditor input:not(.searchField),
-#mealEntryEditor input:not(.searchField){
+#mealEntryEditor input:not(.searchField) {
     box-sizing: border-box;
     width: 100%;
     font-size: larger;

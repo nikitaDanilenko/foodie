@@ -90,7 +90,7 @@ nutrientUnitOrEmpty nutrientMap =
 
 type Msg
     = UpdateReferenceNutrient ReferenceNutrientUpdateClientInput
-    | SaveReferenceNutrientEdit NutrientCode
+    | SaveReferenceNutrientEdit ReferenceNutrientUpdateClientInput
     | GotSaveReferenceNutrientResponse (Result Error ReferenceNutrient)
     | EnterEditReferenceNutrient NutrientCode
     | ExitEditReferenceNutrientAt NutrientCode

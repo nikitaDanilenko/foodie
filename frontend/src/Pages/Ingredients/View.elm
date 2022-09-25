@@ -24,7 +24,7 @@ import Pages.Ingredients.Page as Page
 import Pages.Ingredients.RecipeInfo exposing (RecipeInfo)
 import Pages.Ingredients.Status as Status
 import Pages.Util.DictUtil as DictUtil
-import Pages.Util.Links as Links
+import Pages.Util.HtmlUtil as HtmlUtil
 import Pages.Util.ValidatedInput as ValidatedInput
 import Pages.Util.ViewUtil as ViewUtil
 import Util.Editing as Editing
@@ -108,21 +108,10 @@ view model =
                 ]
             , div [ class "addView" ]
                 [ div [ class "addElement" ]
-                    [ div [ class "searchArea" ]
-                        [ label [] [ text Links.lookingGlass ]
-                        , input
-                            [ onInput Page.SetFoodsSearchString
-                            , value <| model.foodsSearchString
-                            , class "searchField"
-                            ]
-                            []
-                        , button
-                            [ class "cancelButton"
-                            , onClick (Page.SetFoodsSearchString "")
-                            , disabled <| String.isEmpty <| model.foodsSearchString
-                            ]
-                            [ text "Clear" ]
-                        ]
+                    [ HtmlUtil.searchAreaWith
+                        { msg = Page.SetFoodsSearchString
+                        , searchString = model.foodsSearchString
+                        }
                     , table [ class "choiceTable" ]
                         [ colgroup []
                             [ col [] []
@@ -158,8 +147,12 @@ editOrDeleteIngredientLine measureMap foodMap ingredient =
 
 editIngredientLine : Page.MeasureMap -> Page.FoodMap -> Ingredient -> IngredientUpdateClientInput -> Html Page.Msg
 editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
+    let
+        saveMsg =
+            Page.SaveIngredientEdit ingredientUpdateClientInput
+    in
     tr [ class "editLine" ]
-        [ td [] [ label [] [ text (ingredient.foodId |> Page.ingredientNameOrEmpty foodMap) ] ]
+        [ td [] [ label [] [ text <| Page.ingredientNameOrEmpty foodMap <| ingredient.foodId ] ]
         , td [ class "numberCell" ]
             [ input
                 [ value
@@ -176,7 +169,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                         ingredientUpdateClientInput
                         >> Page.UpdateIngredient
                     )
-                , onEnter (Page.SaveIngredientEdit ingredientUpdateClientInput)
+                , onEnter saveMsg
                 , class "numberLabel"
                 ]
                 []
@@ -201,7 +194,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                 )
             ]
         , td []
-            [ button [ class "confirmButton", onClick (Page.SaveIngredientEdit ingredientUpdateClientInput) ]
+            [ button [ class "confirmButton", onClick saveMsg ]
                 [ text "Save" ]
             ]
         , td []
@@ -268,12 +261,9 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                                     ( "Add", addMsg )
 
                                 Just ingredientOrUpdate ->
-                                    let
-                                        ingredient =
-                                            Editing.field identity ingredientOrUpdate
-                                    in
                                     ( "Update"
-                                    , ingredient
+                                    , ingredientOrUpdate
+                                        |> Editing.field identity
                                         |> IngredientUpdateClientInput.from
                                         |> IngredientUpdateClientInput.lenses.amountUnit.set ingredientToAdd.amountUnit
                                         |> Page.SaveIngredientEdit

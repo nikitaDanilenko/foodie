@@ -5,17 +5,19 @@ import Api.Types.ReferenceNutrient exposing (ReferenceNutrient)
 import Basics.Extra exposing (flip)
 import Dict
 import Either
-import Html exposing (Html, button, div, input, label, td, text, thead, tr)
-import Html.Attributes exposing (class, disabled, id, value)
+import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
+import Html.Attributes exposing (class, colspan, disabled, id, scope, value)
+import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Pages.ReferenceNutrients.Page as Page exposing (NutrientMap)
 import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput as ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput as ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
 import Pages.ReferenceNutrients.Status as Status
-import Pages.Util.Links as Links
+import Pages.Util.HtmlUtil as HtmlUtil
 import Pages.Util.ValidatedInput as ValidatedInput
 import Pages.Util.ViewUtil as ViewUtil
+import Util.Editing as Editing
 import Util.SearchUtil as SearchUtil
 
 
@@ -42,56 +44,94 @@ view model =
                     |> Dict.values
                     |> List.sortBy .name
                     |> List.map (viewNutrientLine model.nutrients model.referenceNutrients model.referenceNutrientsToAdd)
+
+            anySelection =
+                model.referenceNutrientsToAdd
+                    |> Dict.isEmpty
+                    |> not
+
+            ( referenceValue, unit ) =
+                if anySelection then
+                    ( "Reference value", "Unit" )
+
+                else
+                    ( "", "" )
         in
-        div [ id "referenceNutrient" ]
-            [ div [ id "referenceNutrientView" ]
-                (thead []
-                    [ tr []
-                        [ td [] [ label [] [ text "Name" ] ]
-                        , td [] [ label [] [ text "Reference value" ] ]
-                        , td [] [ label [] [ text "Unit" ] ]
+        div [ id "referenceNutrientEditor" ]
+            [ div []
+                [ table []
+                    [ colgroup []
+                        [ col [] []
+                        , col [] []
+                        , col [] []
+                        , col [ stringProperty "span" "2" ] []
                         ]
-                    ]
-                    :: viewEditReferenceNutrients
-                        (model.referenceNutrients
-                            |> Dict.toList
-                            |> List.sortBy (\( k, _ ) -> Page.nutrientNameOrEmpty model.nutrients k |> String.toLower)
-                            |> List.map Tuple.second
-                        )
-                )
-            , div [ id "addReferenceNutrientView" ]
-                (div [ id "addReferenceNutrient" ]
-                    [ div [ id "searchField" ]
-                        [ label [] [ text Links.lookingGlass ]
-                        , input [ onInput Page.SetNutrientsSearchString ] []
-                        ]
-                    ]
-                    :: thead []
-                        [ tr []
-                            [ td [] [ label [] [ text "Name" ] ]
+                    , thead []
+                        [ tr [ class "tableHeader" ]
+                            [ th [ scope "col" ] [ label [] [ text "Name" ] ]
+                            , th [ scope "col", class "numberLabel" ] [ label [] [ text "Reference value" ] ]
+                            , th [ scope "col", class "numberLabel" ] [ label [] [ text "Unit" ] ]
+                            , th [ colspan 2, scope "colgroup", class "controlsGroup" ] []
                             ]
                         ]
-                    :: viewNutrients model.nutrientsSearchString
-                )
+                    , tbody []
+                        (viewEditReferenceNutrients
+                            (model.referenceNutrients
+                                |> Dict.toList
+                                |> List.sortBy (\( k, _ ) -> Page.nutrientNameOrEmpty model.nutrients k |> String.toLower)
+                                |> List.map Tuple.second
+                            )
+                        )
+                    ]
+                ]
+            , div [ class "addView" ]
+                [ div [ class "addElement" ]
+                    [ HtmlUtil.searchAreaWith
+                        { msg = Page.SetNutrientsSearchString
+                        , searchString = model.nutrientsSearchString
+                        }
+                    , table [ class "choiceTable" ]
+                        [ colgroup []
+                            [ col [] []
+                            , col [] []
+                            , col [] []
+                            , col [ stringProperty "span" "2" ] []
+                            ]
+                        , thead []
+                            [ tr [ class "tableHeader" ]
+                                [ th [ scope "col" ] [ label [] [ text "Name" ] ]
+                                , th [ scope "col", class "numberLabel" ] [ label [] [ text referenceValue ] ]
+                                , th [ scope "col", class "numberLabel" ] [ label [] [ text unit ] ]
+                                , th [ colspan 2, scope "colgroup", class "controlsGroup" ] []
+                                ]
+                            ]
+                        , tbody [] (viewNutrients model.nutrientsSearchString)
+                        ]
+                    ]
+                ]
             ]
 
 
 editOrDeleteReferenceNutrientLine : Page.NutrientMap -> ReferenceNutrient -> Html Page.Msg
 editOrDeleteReferenceNutrientLine nutrientMap referenceNutrient =
-    tr [ id "editingReferenceNutrient" ]
-        [ td [] [ label [] [ text (referenceNutrient.nutrientCode |> Page.nutrientNameOrEmpty nutrientMap) ] ]
-        , td [] [ label [] [ text (referenceNutrient.amount |> String.fromFloat) ] ]
-        , td [] [ label [] [ text (referenceNutrient.nutrientCode |> Page.nutrientUnitOrEmpty nutrientMap) ] ]
-        , td [] [ button [ class "button", onClick (Page.EnterEditReferenceNutrient referenceNutrient.nutrientCode) ] [ text "Edit" ] ]
-        , td [] [ button [ class "button", onClick (Page.DeleteReferenceNutrient referenceNutrient.nutrientCode) ] [ text "Delete" ] ]
+    tr [ class "editing" ]
+        [ td [ class "editable" ] [ label [] [ text <| Page.nutrientNameOrEmpty nutrientMap <| referenceNutrient.nutrientCode ] ]
+        , td [ class "editable", class "numberLabel" ] [ label [] [ text <| String.fromFloat <| referenceNutrient.amount ] ]
+        , td [ class "editable", class "numberLabel" ] [ label [] [ text <| Page.nutrientUnitOrEmpty nutrientMap <| referenceNutrient.nutrientCode ] ]
+        , td [ class "controls" ] [ button [ class "editButton", onClick (Page.EnterEditReferenceNutrient referenceNutrient.nutrientCode) ] [ text "Edit" ] ]
+        , td [ class "controls" ] [ button [ class "deleteButton", onClick (Page.DeleteReferenceNutrient referenceNutrient.nutrientCode) ] [ text "Delete" ] ]
         ]
 
 
 editReferenceNutrientLine : Page.NutrientMap -> ReferenceNutrient -> ReferenceNutrientUpdateClientInput -> Html Page.Msg
 editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateClientInput =
-    tr [ id "referenceNutrientLine" ]
+    let
+        saveMsg =
+            Page.SaveReferenceNutrientEdit referenceNutrientUpdateClientInput
+    in
+    tr [ id "editLine" ]
         [ td [] [ label [] [ text (referenceNutrient.nutrientCode |> Page.nutrientNameOrEmpty nutrientMap) ] ]
-        , td []
+        , td [ class "numberCell" ]
             [ input
                 [ value
                     (referenceNutrientUpdateClientInput.amount.value
@@ -105,17 +145,22 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
                         referenceNutrientUpdateClientInput
                         >> Page.UpdateReferenceNutrient
                     )
-                , onEnter (Page.SaveReferenceNutrientEdit referenceNutrient.nutrientCode)
+                , onEnter saveMsg
+                , class "numberLabel"
                 ]
                 []
             ]
-        , td [] [ label [] [ text (referenceNutrient.nutrientCode |> Page.nutrientUnitOrEmpty nutrientMap) ] ]
+        , td [ class "numberCell" ]
+            [ label [ class "numberLabel" ]
+                [ text <| Page.nutrientUnitOrEmpty nutrientMap <| referenceNutrient.nutrientCode
+                ]
+            ]
         , td []
-            [ button [ class "button", onClick (Page.SaveReferenceNutrientEdit referenceNutrient.nutrientCode) ]
+            [ button [ class "confirmButton", onClick saveMsg ]
                 [ text "Save" ]
             ]
         , td []
-            [ button [ class "button", onClick (Page.ExitEditReferenceNutrientAt referenceNutrient.nutrientCode) ]
+            [ button [ class "cancelButton", onClick (Page.ExitEditReferenceNutrientAt referenceNutrient.nutrientCode) ]
                 [ text "Cancel" ]
             ]
         ]
@@ -130,12 +175,30 @@ viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient
         process =
             case Dict.get nutrient.code referenceNutrientsToAdd of
                 Nothing ->
-                    [ td [] [ button [ class "button", onClick (Page.SelectNutrient nutrient.code) ] [ text "Select" ] ] ]
+                    [ td [ class "editable", class "numberCell" ] []
+                    , td [ class "editable", class "numberCell" ] []
+                    , td [ class "controls" ] []
+                    , td [] [ button [ class "selectButton", onClick (Page.SelectNutrient nutrient.code) ] [ text "Select" ] ]
+                    ]
 
                 Just referenceNutrientToAdd ->
-                    [ td []
-                        [ label [] [ text "Amount" ]
-                        , input
+                    let
+                        ( confirmName, confirmMsg ) =
+                            case Dict.get referenceNutrientToAdd.nutrientCode referenceNutrients of
+                                Nothing ->
+                                    ( "Add", addMsg )
+
+                                Just referenceNutrient ->
+                                    ( "Update"
+                                    , referenceNutrient
+                                        |> Editing.field identity
+                                        |> ReferenceNutrientUpdateClientInput.from
+                                        |> ReferenceNutrientUpdateClientInput.lenses.amount.set referenceNutrientToAdd.amount
+                                        |> Page.SaveReferenceNutrientEdit
+                                    )
+                    in
+                    [ td [ class "numberCell" ]
+                        [ input
                             [ value referenceNutrientToAdd.amount.text
                             , onInput
                                 (flip
@@ -145,30 +208,24 @@ viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient
                                     referenceNutrientToAdd
                                     >> Page.UpdateAddNutrient
                                 )
-                            , onEnter addMsg
+                            , onEnter confirmMsg
+                            , class "numberLabel"
                             ]
                             []
                         ]
-                    , td [] [ label [] [ text (referenceNutrientToAdd.nutrientCode |> Page.nutrientUnitOrEmpty nutrientMap) ] ]
-                    , td []
+                    , td [ class "numberCell" ] [ label [] [ text (referenceNutrientToAdd.nutrientCode |> Page.nutrientUnitOrEmpty nutrientMap) ] ]
+                    , td [ class "controls" ]
                         [ button
-                            [ class "button"
+                            [ class "confirmButton"
                             , disabled (referenceNutrientToAdd.amount |> ValidatedInput.isValid |> not)
-                            , onClick addMsg
+                            , onClick confirmMsg
                             ]
-                            [ text
-                                (if Dict.member referenceNutrientToAdd.nutrientCode referenceNutrients then
-                                    "Update"
-
-                                 else
-                                    "Add"
-                                )
-                            ]
+                            [ text <| confirmName ]
                         ]
-                    , td [] [ button [ class "button", onClick (Page.DeselectNutrient nutrient.code) ] [ text "Cancel" ] ]
+                    , td [ class "controls" ] [ button [ class "cancelButton", onClick (Page.DeselectNutrient nutrient.code) ] [ text "Cancel" ] ]
                     ]
     in
-    tr [ id "addingNutrientLine" ]
-        (td [] [ label [] [ text nutrient.name ] ]
+    tr [ class "editing" ]
+        (td [ class "editable" ] [ label [] [ text nutrient.name ] ]
             :: process
         )

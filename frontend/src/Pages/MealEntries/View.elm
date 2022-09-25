@@ -17,7 +17,7 @@ import Pages.MealEntries.Page as Page exposing (RecipeMap)
 import Pages.MealEntries.Status as Status
 import Pages.Util.DateUtil as DateUtil
 import Pages.Util.DictUtil as DictUtil
-import Pages.Util.Links as Links
+import Pages.Util.HtmlUtil as HtmlUtil
 import Pages.Util.ValidatedInput as ValidatedInput
 import Pages.Util.ViewUtil as ViewUtil
 import Util.Editing as Editing
@@ -100,22 +100,11 @@ view model =
                     ]
                 ]
             , div [ class "addView" ]
-                [ div [ class "addMealEntry" ]
-                    [ div [ class "searchArea" ]
-                        [ label [] [ text Links.lookingGlass ]
-                        , input
-                            [ onInput Page.SetRecipesSearchString
-                            , value <| model.recipesSearchString
-                            , class "searchField"
-                            ]
-                            []
-                        , button
-                            [ class "cancelButton"
-                            , onClick (Page.SetRecipesSearchString "")
-                            , disabled <| String.isEmpty <| model.recipesSearchString
-                            ]
-                            [ text "Clear" ]
-                        ]
+                [ div [ class "addElement" ]
+                    [ HtmlUtil.searchAreaWith
+                        { msg = Page.SetRecipesSearchString
+                        , searchString = model.recipesSearchString
+                        }
                     , table [ class "choiceTable" ]
                         [ colgroup []
                             [ col [] []

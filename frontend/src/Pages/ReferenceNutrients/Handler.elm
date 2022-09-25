@@ -69,8 +69,8 @@ update msg model =
         UpdateReferenceNutrient referenceNutrientUpdateClientInput ->
             updateReferenceNutrient model referenceNutrientUpdateClientInput
 
-        SaveReferenceNutrientEdit nutrientCode ->
-            saveReferenceNutrientEdit model nutrientCode
+        SaveReferenceNutrientEdit referenceNutrientUpdateClientInput ->
+            saveReferenceNutrientEdit model referenceNutrientUpdateClientInput
 
         GotSaveReferenceNutrientResponse result ->
             gotSaveReferenceNutrientResponse model result
@@ -127,15 +127,12 @@ updateReferenceNutrient model referenceNutrientUpdateClientInput =
     )
 
 
-saveReferenceNutrientEdit : Page.Model -> NutrientCode -> ( Page.Model, Cmd Page.Msg )
-saveReferenceNutrientEdit model nutrientCode =
+saveReferenceNutrientEdit : Page.Model -> ReferenceNutrientUpdateClientInput -> ( Page.Model, Cmd Page.Msg )
+saveReferenceNutrientEdit model referenceNutrientUpdateClientInput =
     ( model
-    , model
-        |> Page.lenses.referenceNutrients.get
-        |> Dict.get nutrientCode
-        |> Maybe.andThen Either.rightToMaybe
-        |> Maybe.Extra.unwrap Cmd.none
-            (.update >> ReferenceNutrientUpdateClientInput.to >> Requests.saveReferenceNutrient model.flagsWithJWT)
+    , referenceNutrientUpdateClientInput
+        |> ReferenceNutrientUpdateClientInput.to
+        |> Requests.saveReferenceNutrient model.flagsWithJWT
     )
 
 
