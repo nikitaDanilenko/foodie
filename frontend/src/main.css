@@ -310,6 +310,7 @@ th {
 }
 
 .selectButton:hover:enabled,
+.selectButton:hover:not(.disabled),
 .confirmButton:hover:enabled {
     background-color: #36d936;
 }
@@ -370,4 +371,9 @@ th {
 #login button {
     margin-top: 5px;
     width: 30%;
+}
+
+#error label {
+    font-size: larger;
+    margin-right: 5px;
 }

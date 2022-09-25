@@ -7,7 +7,11 @@ import Pages.Util.Style as Style
 import Url.Builder
 import Util.Initialization exposing (Initialization(..))
 
+
+
 -- todo: Add styling
+
+
 viewWithErrorHandling :
     { isFinished : status -> Bool
     , initialization : model -> Initialization status
@@ -50,13 +54,14 @@ viewWithErrorHandling params model html =
                     else
                         []
             in
-            div []
-                (tr []
+            div [ Style.ids.error ]
+                [ tr []
                     [ td [] [ label [] [ text "An error occurred:" ] ]
                     , td [] [ label [] [ text <| explanation.cause ] ]
                     ]
-                    :: [ tr [] solutionBlock, tr [] redirectBlock ]
-                )
+                , tr [] solutionBlock
+                , tr [] redirectBlock
+                ]
 
         Loading status ->
             if params.isFinished status then

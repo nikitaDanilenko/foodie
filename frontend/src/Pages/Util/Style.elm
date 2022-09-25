@@ -91,6 +91,7 @@ ids :
     , addMealView : Attribute msg
     , addRecipeView : Attribute msg
     , editLine : Attribute msg
+    , error : Attribute msg
     , ingredientEditor : Attribute msg
     , login : Attribute msg
     , mealEntryEditor : Attribute msg
@@ -107,6 +108,7 @@ ids =
     , addMealView = id "addMealView"
     , addRecipeView = id "addRecipeView"
     , editLine = id "editLine"
+    , error = id "error"
     , ingredientEditor = id "ingredientEditor"
     , login = id "login"
     , mealEntryEditor = id "mealEntryEditor"
