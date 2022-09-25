@@ -14,6 +14,7 @@ view model =
         { isFinished = Status.isFinished
         , initialization = .initialization
         , flagsWithJWT = .flagsWithJWT
+        , currentPage = Just ViewUtil.Overview
         }
         model
     <|

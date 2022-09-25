@@ -14,6 +14,7 @@ classes :
         , delete : Attribute msg
         , edit : Attribute msg
         , editor : Attribute msg
+        , navigation : Attribute msg
         , select : Attribute msg
         }
     , choices : Attribute msg
@@ -54,6 +55,7 @@ classes =
         , delete = class "deleteButton"
         , edit = class "editButton"
         , editor = class "editorButton"
+        , navigation = class "navigation"
         , select = class "selectButton"
         }
     , choices = class "choices"
@@ -95,6 +97,7 @@ ids :
     , login : Attribute msg
     , mealEntryEditor : Attribute msg
     , mealsButton : Attribute msg
+    , navigation : Attribute msg
     , overviewMain : Attribute msg
     , recipesButton : Attribute msg
     , referenceNutrientEditor : Attribute msg
@@ -111,6 +114,7 @@ ids =
     , login = id "login"
     , mealEntryEditor = id "mealEntryEditor"
     , mealsButton = id "mealsButton"
+    , navigation = id "navigation"
     , overviewMain = id "overviewMain"
     , recipesButton = id "recipesButton"
     , referenceNutrientEditor = id "referenceNutrientEditor"

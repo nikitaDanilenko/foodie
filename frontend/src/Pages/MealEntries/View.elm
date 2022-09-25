@@ -31,6 +31,7 @@ view model =
         { isFinished = Status.isFinished
         , initialization = .initialization
         , flagsWithJWT = .flagsWithJWT
+        , currentPage = Nothing
         }
         model
     <|
