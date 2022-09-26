@@ -13,6 +13,7 @@ import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 import Pages.Ingredients.IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.Ingredients.IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
+import Pages.Ingredients.Pagination exposing (Pagination)
 import Pages.Ingredients.RecipeInfo exposing (RecipeInfo)
 import Pages.Ingredients.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
@@ -31,6 +32,7 @@ type alias Model =
     , foodsSearchString : String
     , foodsToAdd : AddFoodsMap
     , initialization : Initialization Status
+    , pagination : Pagination
     }
 
 
@@ -63,6 +65,7 @@ lenses :
     , foodsSearchString : Lens Model String
     , recipeInfo : Lens Model (Maybe RecipeInfo)
     , initialization : Lens Model (Initialization Status)
+    , pagination : Lens Model Pagination
     }
 lenses =
     { jwt = LensUtil.jwtSubLens
@@ -73,6 +76,7 @@ lenses =
     , foodsSearchString = Lens .foodsSearchString (\b a -> { a | foodsSearchString = b })
     , recipeInfo = Lens .recipeInfo (\b a -> { a | recipeInfo = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
+    , pagination = Lens .pagination (\b a -> { a | pagination = b })
     }
 
 
@@ -97,6 +101,7 @@ type Msg
     | UpdateFoods String
     | UpdateMeasures String
     | SetFoodsSearchString String
+    | SetPagination Pagination
 
 
 type alias Flags =

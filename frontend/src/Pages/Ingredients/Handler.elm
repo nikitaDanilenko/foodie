@@ -18,6 +18,7 @@ import Monocle.Optional as Optional
 import Pages.Ingredients.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.Ingredients.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
 import Pages.Ingredients.Page as Page
+import Pages.Ingredients.Pagination as Pagination exposing (Pagination)
 import Pages.Ingredients.RecipeInfo as RecipeInfo exposing (RecipeInfo)
 import Pages.Ingredients.Requests as Requests
 import Pages.Ingredients.Status as Status
@@ -68,6 +69,7 @@ init flags =
       , foodsToAdd = Dict.empty
       , recipeInfo = Nothing
       , initialization = Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , pagination = Pagination.initial
       }
     , cmd
     )
@@ -135,6 +137,9 @@ update msg model =
 
         Page.UpdateAddFood ingredientCreationClientInput ->
             updateAddFood model ingredientCreationClientInput
+
+        Page.SetPagination pagination ->
+            setPagination model pagination
 
 
 mapIngredientOrUpdateById : IngredientId -> (Page.IngredientOrUpdate -> Page.IngredientOrUpdate) -> Page.Model -> Page.Model
@@ -399,6 +404,13 @@ updateAddFood model ingredientCreationClientInput =
     ( model
         |> Lens.modify Page.lenses.foodsToAdd
             (Dict.update ingredientCreationClientInput.foodId (always ingredientCreationClientInput >> Just))
+    , Cmd.none
+    )
+
+
+setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
+setPagination model pagination =
+    ( model |> Page.lenses.pagination.set pagination
     , Cmd.none
     )
 

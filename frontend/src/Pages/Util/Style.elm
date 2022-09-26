@@ -15,6 +15,7 @@ classes :
         , edit : Attribute msg
         , editor : Attribute msg
         , navigation : Attribute msg
+        , pager: Attribute msg
         , select : Attribute msg
         }
     , choices : Attribute msg
@@ -28,12 +29,14 @@ classes :
     , editing : Attribute msg
     , editLine : Attribute msg
     , elements : Attribute msg
+    , ellipsis : Attribute msg
     , info : Attribute msg
     , intervalSelection : Attribute msg
     , meals : Attribute msg
     , numberCell : Attribute msg
     , numberLabel : Attribute msg
     , nutrients : Attribute msg
+    , pagination : Attribute msg
     , rating :
         { low : Attribute msg
         , exact : Attribute msg
@@ -57,6 +60,7 @@ classes =
         , edit = class "editButton"
         , editor = class "editorButton"
         , navigation = class "navigationButton"
+        , pager = class "pagerButton"
         , select = class "selectButton"
         }
     , choices = class "choices"
@@ -70,12 +74,14 @@ classes =
     , editing = class "editing"
     , editLine = class "editLine"
     , elements = class "elements"
+    , ellipsis = class "ellipsis"
     , info = class "info"
     , intervalSelection = class "intervalSection"
     , meals = class "meals"
     , numberCell = class "numberCell"
     , numberLabel = class "numberLabel"
     , nutrients = class "nutrients"
+    , pagination = class "pagination"
     , rating =
         { low = class "low"
         , exact = class "exact"
