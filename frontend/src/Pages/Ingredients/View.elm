@@ -26,6 +26,7 @@ import Pages.Ingredients.RecipeInfo exposing (RecipeInfo)
 import Pages.Ingredients.Status as Status
 import Pages.Util.DictUtil as DictUtil
 import Pages.Util.HtmlUtil as HtmlUtil
+import Pages.Util.PaginationSettings as PaginationSettings
 import Pages.Util.Style as Style
 import Pages.Util.ValidatedInput as ValidatedInput
 import Pages.Util.ViewUtil as ViewUtil
@@ -120,7 +121,7 @@ view model =
                 , div [ Style.classes.pagination ]
                     [ ViewUtil.pagerButtons
                         { msg =
-                            Pagination.updateCurrentPage
+                            PaginationSettings.updateCurrentPage
                                 { pagination = Page.lenses.pagination
                                 , items = Pagination.lenses.ingredients
                                 }
@@ -151,12 +152,16 @@ view model =
                                 , th [ colspan 2, scope "colgroup", Style.classes.controlsGroup ] []
                                 ]
                             ]
-                        , tbody [] (viewFoods |> Paginate.page |> List.map (viewFoodLine model.foods model.measures model.foodsToAdd model.ingredients))
+                        , tbody []
+                            (viewFoods
+                                |> Paginate.page
+                                |> List.map (viewFoodLine model.foods model.measures model.foodsToAdd model.ingredients)
+                            )
                         ]
                     , div [ Style.classes.pagination ]
                         [ ViewUtil.pagerButtons
                             { msg =
-                                Pagination.updateCurrentPage
+                                PaginationSettings.updateCurrentPage
                                     { pagination = Page.lenses.pagination
                                     , items = Pagination.lenses.foods
                                     }

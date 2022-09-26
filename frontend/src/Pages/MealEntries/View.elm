@@ -11,16 +11,20 @@ import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Maybe.Extra
+import Monocle.Compose as Compose
 import Pages.MealEntries.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntries.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
 import Pages.MealEntries.Page as Page exposing (RecipeMap)
+import Pages.MealEntries.Pagination as Pagination
 import Pages.MealEntries.Status as Status
 import Pages.Util.DateUtil as DateUtil
 import Pages.Util.DictUtil as DictUtil
 import Pages.Util.HtmlUtil as HtmlUtil
+import Pages.Util.PaginationSettings as PaginationSettings
 import Pages.Util.Style as Style
 import Pages.Util.ValidatedInput as ValidatedInput
 import Pages.Util.ViewUtil as ViewUtil
+import Paginate
 import Util.Editing as Editing
 import Util.SearchUtil as SearchUtil
 
@@ -36,19 +40,29 @@ view model =
         model
     <|
         let
-            viewEditMealEntries =
-                List.map
-                    (Either.unpack
-                        (editOrDeleteMealEntryLine model.recipes)
-                        (\e -> e.update |> editMealEntryLine model.recipes e.original)
-                    )
+            viewEditMealEntry =
+                Either.unpack
+                    (editOrDeleteMealEntryLine model.recipes)
+                    (\e -> e.update |> editMealEntryLine model.recipes e.original)
 
-            viewRecipes searchString =
+            viewEditMealEntries =
+                model.mealEntries
+                    |> Dict.values
+                    |> List.sortBy (Editing.field .recipeId >> Page.recipeNameOrEmpty model.recipes >> String.toLower)
+                    |> ViewUtil.paginate
+                        { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.mealEntries
+                        }
+                        model
+
+            viewRecipes =
                 model.recipes
-                    |> Dict.filter (\_ v -> SearchUtil.search searchString v.name)
+                    |> Dict.filter (\_ v -> SearchUtil.search model.recipesSearchString v.name)
                     |> Dict.values
                     |> List.sortBy .name
-                    |> List.map (viewRecipeLine model.mealEntriesToAdd model.mealEntries)
+                    |> ViewUtil.paginate
+                        { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.recipes
+                        }
+                        model
 
             anySelection =
                 model.mealEntriesToAdd
@@ -94,11 +108,21 @@ view model =
                         ]
                     , tbody []
                         (viewEditMealEntries
-                            (model.mealEntries
-                                |> Dict.values
-                                |> List.sortBy (Editing.field .recipeId >> Page.recipeNameOrEmpty model.recipes >> String.toLower)
-                            )
+                            |> Paginate.page
+                            |> List.map viewEditMealEntry
                         )
+                    ]
+                , div [ Style.classes.pagination ]
+                    [ ViewUtil.pagerButtons
+                        { msg =
+                            PaginationSettings.updateCurrentPage
+                                { pagination = Page.lenses.pagination
+                                , items = Pagination.lenses.mealEntries
+                                }
+                                model
+                                >> Page.SetPagination
+                        , elements = viewEditMealEntries
+                        }
                     ]
                 ]
             , div [ Style.classes.addView ]
@@ -122,7 +146,23 @@ view model =
                                 , th [ colspan 2, scope "colgroup", Style.classes.controlsGroup ] []
                                 ]
                             ]
-                        , tbody [] (viewRecipes model.recipesSearchString)
+                        , tbody []
+                            (viewRecipes
+                                |> Paginate.page
+                                |> List.map (viewRecipeLine model.mealEntriesToAdd model.mealEntries)
+                            )
+                        ]
+                    , div [ Style.classes.pagination ]
+                        [ ViewUtil.pagerButtons
+                            { msg =
+                                PaginationSettings.updateCurrentPage
+                                    { pagination = Page.lenses.pagination
+                                    , items = Pagination.lenses.recipes
+                                    }
+                                    model
+                                    >> Page.SetPagination
+                            , elements = viewRecipes
+                            }
                         ]
                     ]
                 ]

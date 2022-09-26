@@ -1,6 +1,5 @@
 module Pages.Ingredients.Pagination exposing (..)
 
-import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Util.PaginationSettings as PaginationSettings exposing (PaginationSettings)
 
@@ -28,18 +27,4 @@ lenses =
     }
 
 
-updateCurrentPage :
-    { a
-        | pagination : Lens model pagination
-        , items : Lens pagination PaginationSettings
-    }
-    -> model
-    -> Int
-    -> pagination
-updateCurrentPage ps model =
-    \foods ->
-        ps.pagination.get model
-            |> (ps.items
-                    |> Compose.lensWithLens PaginationSettings.lenses.currentPage
-               ).set
-                foods
+

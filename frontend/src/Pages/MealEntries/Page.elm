@@ -14,6 +14,7 @@ import Monocle.Lens exposing (Lens)
 import Pages.MealEntries.MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntries.MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
 import Pages.MealEntries.MealInfo exposing (MealInfo)
+import Pages.MealEntries.Pagination exposing (Pagination)
 import Pages.MealEntries.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
@@ -30,6 +31,7 @@ type alias Model =
     , recipesSearchString : String
     , mealEntriesToAdd : AddMealEntriesMap
     , initialization : Initialization Status
+    , pagination : Pagination
     }
 
 
@@ -64,6 +66,7 @@ lenses :
     , recipes : Lens Model RecipeMap
     , recipesSearchString : Lens Model String
     , initialization : Lens Model (Initialization Status)
+    , pagination : Lens Model Pagination
     }
 lenses =
     { jwt = LensUtil.jwtSubLens
@@ -73,6 +76,7 @@ lenses =
     , recipes = Lens .recipes (\b a -> { a | recipes = b })
     , recipesSearchString = Lens .recipesSearchString (\b a -> { a | recipesSearchString = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
+    , pagination = Lens .pagination (\b a -> { a | pagination = b })
     }
 
 
@@ -104,3 +108,4 @@ type Msg
     | UpdateAddRecipe MealEntryCreationClientInput
     | UpdateJWT JWT
     | SetRecipesSearchString String
+    | SetPagination Pagination

@@ -16,6 +16,7 @@ import Pages.MealEntries.MealEntryCreationClientInput as MealEntryCreationClient
 import Pages.MealEntries.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
 import Pages.MealEntries.MealInfo as MealInfo
 import Pages.MealEntries.Page as Page exposing (Msg(..))
+import Pages.MealEntries.Pagination as Pagination exposing (Pagination)
 import Pages.MealEntries.Requests as Requests
 import Pages.MealEntries.Status as Status
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
@@ -53,6 +54,7 @@ init flags =
       , recipesSearchString = ""
       , mealEntriesToAdd = Dict.empty
       , initialization = Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , pagination = Pagination.initial
       }
     , cmd
     )
@@ -121,8 +123,11 @@ update msg model =
         SetRecipesSearchString string ->
             setRecipesSearchString model string
 
+        SetPagination pagination ->
+            setPagination model pagination
 
-updateMealEntry : Page.Model -> MealEntryUpdateClientInput -> ( Page.Model, Cmd msg )
+
+updateMealEntry : Page.Model -> MealEntryUpdateClientInput -> ( Page.Model, Cmd Page.Msg )
 updateMealEntry model mealEntryUpdateClientInput =
     ( model
         |> mapMealEntryOrUpdateById mealEntryUpdateClientInput.mealEntryId
@@ -186,7 +191,7 @@ deleteMealEntry model mealEntryId =
     )
 
 
-gotDeleteMealEntryResponse : Page.Model -> MealEntryId -> Result Error () -> ( Page.Model, Cmd msg )
+gotDeleteMealEntryResponse : Page.Model -> MealEntryId -> Result Error () -> ( Page.Model, Cmd Page.Msg )
 gotDeleteMealEntryResponse model mealEntryId result =
     ( result
         |> Either.fromResult
@@ -212,7 +217,7 @@ gotFetchMealEntriesResponse model result =
     )
 
 
-gotFetchRecipesResponse : Page.Model -> Result Error (List Recipe) -> ( Page.Model, Cmd msg )
+gotFetchRecipesResponse : Page.Model -> Result Error (List Recipe) -> ( Page.Model, Cmd Page.Msg )
 gotFetchRecipesResponse model result =
     ( result
         |> Either.fromResult
@@ -240,7 +245,7 @@ gotFetchMealResponse model result =
     )
 
 
-selectRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd msg )
+selectRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd Page.Msg )
 selectRecipe model recipeId =
     ( model
         |> Lens.modify Page.lenses.mealEntriesToAdd
@@ -272,7 +277,7 @@ addRecipe model recipeId =
     )
 
 
-gotAddMealEntryResponse : Page.Model -> Result Error MealEntry -> ( Page.Model, Cmd msg )
+gotAddMealEntryResponse : Page.Model -> Result Error MealEntry -> ( Page.Model, Cmd Page.Msg )
 gotAddMealEntryResponse model result =
     ( result
         |> Either.fromResult
@@ -287,7 +292,7 @@ gotAddMealEntryResponse model result =
     )
 
 
-updateAddRecipe : Page.Model -> MealEntryCreationClientInput -> ( Page.Model, Cmd msg )
+updateAddRecipe : Page.Model -> MealEntryCreationClientInput -> ( Page.Model, Cmd Page.Msg )
 updateAddRecipe model mealEntryCreationClientInput =
     ( model
         |> Lens.modify Page.lenses.mealEntriesToAdd
@@ -309,9 +314,16 @@ updateJWT model jwt =
     )
 
 
-setRecipesSearchString : Page.Model -> String -> ( Page.Model, Cmd msg )
+setRecipesSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 setRecipesSearchString model string =
     ( model |> Page.lenses.recipesSearchString.set string
+    , Cmd.none
+    )
+
+
+setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
+setPagination model pagination =
+    ( model |> Page.lenses.pagination.set pagination
     , Cmd.none
     )
 
