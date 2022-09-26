@@ -55,9 +55,7 @@ view model =
                     |> Dict.values
                     |> List.sortBy (Editing.field .foodId >> Page.ingredientNameOrEmpty model.foods >> String.toLower)
                     |> ViewUtil.paginate
-                        { size = 25
-                        , pagination = Page.lenses.pagination
-                        , elements = Pagination.lenses.ingredients
+                        { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.ingredients
                         }
                         model
 
@@ -67,9 +65,7 @@ view model =
                     |> Dict.values
                     |> List.sortBy .name
                     |> ViewUtil.paginate
-                        { size = 25
-                        , pagination = Page.lenses.pagination
-                        , elements = Pagination.lenses.foods
+                        { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.foods
                         }
                         model
 
@@ -124,10 +120,12 @@ view model =
                 , div [ Style.classes.pagination ]
                     [ ViewUtil.pagerButtons
                         { msg =
-                            \ingredients ->
-                                Page.lenses.pagination.get model
-                                    |> Pagination.lenses.ingredients.set ingredients
-                                    |> Page.SetPagination
+                            Pagination.updateCurrentPage
+                                { pagination = Page.lenses.pagination
+                                , items = Pagination.lenses.ingredients
+                                }
+                                model
+                                >> Page.SetPagination
                         , elements = viewEditIngredients
                         }
                     ]
@@ -158,10 +156,12 @@ view model =
                     , div [ Style.classes.pagination ]
                         [ ViewUtil.pagerButtons
                             { msg =
-                                \foods ->
-                                    Page.lenses.pagination.get model
-                                        |> Pagination.lenses.foods.set foods
-                                        |> Page.SetPagination
+                                Pagination.updateCurrentPage
+                                    { pagination = Page.lenses.pagination
+                                    , items = Pagination.lenses.foods
+                                    }
+                                    model
+                                    >> Page.SetPagination
                             , elements = viewFoods
                             }
                         ]

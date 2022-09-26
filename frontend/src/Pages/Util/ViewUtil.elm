@@ -8,6 +8,7 @@ import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.Links as Links
+import Pages.Util.PaginationSettings as PaginationSettings exposing (PaginationSettings)
 import Pages.Util.Style as Style
 import Paginate exposing (PaginatedList)
 import Url.Builder
@@ -211,6 +212,8 @@ navigationBar ps =
         ]
 
 
+
+
 pagerButtons :
     { msg : Int -> msg
     , elements : PaginatedList a
@@ -256,13 +259,11 @@ pagerButtons ps =
 
 
 paginate :
-    { size : Int
-    , pagination : Lens model pagination
-    , elements : Lens pagination Int
+    { pagination : Lens model PaginationSettings
     }
     -> model
     -> List a
     -> PaginatedList a
 paginate ps model =
-    Paginate.fromList ps.size
-        >> Paginate.goTo (model |> (ps.pagination |> Compose.lensWithLens ps.elements).get)
+    Paginate.fromList ((ps.pagination |> Compose.lensWithLens PaginationSettings.lenses.itemsPerPage).get model)
+        >> Paginate.goTo (model |> (ps.pagination |> Compose.lensWithLens PaginationSettings.lenses.currentPage).get)
