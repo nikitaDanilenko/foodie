@@ -195,7 +195,7 @@ navigationBar ps =
                             (\page ->
                                 th []
                                     [ navigationToPageButton
-                                        { page = Debug.log "page" page
+                                        { page = page
                                         , mainPageURL = ps.mainPageURL
                                         , currentPage = ps.currentPage
                                         }
