@@ -7,6 +7,7 @@ import Dict exposing (Dict)
 import Either exposing (Either)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
+import Pages.Recipes.Pagination exposing (Pagination)
 import Pages.Recipes.RecipeCreationClientInput exposing (RecipeCreationClientInput)
 import Pages.Recipes.RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Recipes.Status exposing (Status)
@@ -21,6 +22,7 @@ type alias Model =
     , recipes : RecipeOrUpdateMap
     , recipeToAdd : Maybe RecipeCreationClientInput
     , initialization : Initialization Status
+    , pagination : Pagination
     }
 
 
@@ -37,12 +39,14 @@ lenses :
     , recipes : Lens Model RecipeOrUpdateMap
     , recipeToAdd : Lens Model (Maybe RecipeCreationClientInput)
     , initialization : Lens Model (Initialization Status)
+    , pagination : Lens Model Pagination
     }
 lenses =
     { jwt = LensUtil.jwtSubLens
     , recipes = Lens .recipes (\b a -> { a | recipes = b })
     , recipeToAdd = Lens .recipeToAdd (\b a -> { a | recipeToAdd = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
+    , pagination = Lens .pagination (\b a -> { a | pagination = b })
     }
 
 
@@ -65,3 +69,4 @@ type Msg
     | GotDeleteRecipeResponse RecipeId (Result Error ())
     | GotFetchRecipesResponse (Result Error (List Recipe))
     | UpdateJWT JWT
+    | SetPagination Pagination

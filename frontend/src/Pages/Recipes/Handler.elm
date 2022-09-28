@@ -11,6 +11,7 @@ import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional as Optional
 import Pages.Recipes.Page as Page exposing (RecipeOrUpdate)
+import Pages.Recipes.Pagination as Pagination exposing (Pagination)
 import Pages.Recipes.RecipeCreationClientInput as RecipeCreationClientInput exposing (RecipeCreationClientInput)
 import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Recipes.Requests as Requests
@@ -45,6 +46,7 @@ init flags =
       , recipes = Dict.empty
       , recipeToAdd = Nothing
       , initialization = Initialization.Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , pagination = Pagination.initial
       }
     , cmd
     )
@@ -89,6 +91,8 @@ update msg model =
         Page.UpdateJWT jwt ->
             updateJWT model jwt
 
+        Page.SetPagination pagination ->
+            setPagination model pagination
 
 updateRecipeCreation : Page.Model -> Maybe RecipeCreationClientInput -> ( Page.Model, Cmd Page.Msg )
 updateRecipeCreation model recipeToAdd =
@@ -222,6 +226,13 @@ updateJWT model jwt =
     in
     ( newModel
     , Requests.fetchRecipes newModel.flagsWithJWT
+    )
+
+
+setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
+setPagination model pagination =
+    ( model |> Page.lenses.pagination.set pagination
+    , Cmd.none
     )
 
 

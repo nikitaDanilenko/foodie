@@ -11,15 +11,19 @@ import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Maybe.Extra
+import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Recipes.Page as Page
+import Pages.Recipes.Pagination as Pagination
 import Pages.Recipes.RecipeCreationClientInput as RecipeCreationClientInput exposing (RecipeCreationClientInput)
 import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Recipes.Status as Status
 import Pages.Util.Links as Links
+import Pages.Util.PaginationSettings as PaginationSettings
 import Pages.Util.Style as Style
 import Pages.Util.ValidatedInput as ValidatedInput exposing (ValidatedInput)
 import Pages.Util.ViewUtil as ViewUtil
+import Paginate
 import Url.Builder
 import Util.Editing as Editing
 
@@ -35,12 +39,19 @@ view model =
         model
     <|
         let
+            viewEditRecipe =
+                Either.unpack
+                    (editOrDeleteRecipeLine model.flagsWithJWT.configuration)
+                    (\e -> e.update |> editRecipeLine)
+
             viewEditRecipes =
-                List.map
-                    (Either.unpack
-                        (editOrDeleteRecipeLine model.flagsWithJWT.configuration)
-                        (\e -> e.update |> editRecipeLine)
-                    )
+                model.recipes
+                    |> Dict.values
+                    |> List.sortBy (Editing.field .name >> String.toLower)
+                    |> ViewUtil.paginate
+                        { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.recipes
+                        }
+                        model
 
             ( button, creationLine ) =
                 createRecipe model.recipeToAdd |> Either.unpack (\l -> ( [ l ], [] )) (\r -> ( [], [ r ] ))
@@ -64,12 +75,20 @@ view model =
                             ]
                         , tbody []
                             (creationLine
-                                ++ viewEditRecipes
-                                    (model.recipes
-                                        |> Dict.values
-                                        |> List.sortBy (Editing.field .name >> String.toLower)
-                                    )
+                                ++ (viewEditRecipes |> Paginate.page |> List.map viewEditRecipe)
                             )
+                        ]
+                   , div [ Style.classes.pagination ]
+                        [ ViewUtil.pagerButtons
+                            { msg =
+                                PaginationSettings.updateCurrentPage
+                                    { pagination = Page.lenses.pagination
+                                    , items = Pagination.lenses.recipes
+                                    }
+                                    model
+                                    >> Page.SetPagination
+                            , elements = viewEditRecipes
+                            }
                         ]
                    ]
             )
