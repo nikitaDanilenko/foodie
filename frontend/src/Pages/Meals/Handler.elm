@@ -13,6 +13,7 @@ import Monocle.Lens as Lens
 import Monocle.Optional as Optional
 import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
 import Pages.Meals.Page as Page
+import Pages.Meals.Pagination as Pagination exposing (Pagination)
 import Pages.Meals.Requests as Requests
 import Pages.Meals.Status as Status
 import Ports exposing (doFetchToken)
@@ -45,6 +46,7 @@ init flags =
       , meals = Dict.empty
       , mealToAdd = Nothing
       , initialization = Initialization.Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , pagination = Pagination.initial
       }
     , cmd
     )
@@ -88,6 +90,9 @@ update msg model =
 
         Page.UpdateJWT jwt ->
             updateJWT model jwt
+
+        Page.SetPagination pagination ->
+            setPagination model pagination
 
 
 updateMealCreation : Page.Model -> Maybe MealCreationClientInput -> ( Page.Model, Cmd Page.Msg )
@@ -223,6 +228,13 @@ updateJWT model jwt =
     in
     ( newModel
     , Requests.fetchMeals newModel.flagsWithJWT
+    )
+
+
+setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
+setPagination model pagination =
+    ( model |> Page.lenses.pagination.set pagination
+    , Cmd.none
     )
 
 

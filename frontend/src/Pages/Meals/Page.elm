@@ -9,6 +9,7 @@ import Either exposing (Either)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
 import Pages.Meals.MealCreationClientInput exposing (MealCreationClientInput)
+import Pages.Meals.Pagination exposing (Pagination)
 import Pages.Meals.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
@@ -21,6 +22,7 @@ type alias Model =
     , meals : MealOrUpdateMap
     , mealToAdd : Maybe MealCreationClientInput
     , initialization : Initialization Status
+    , pagination : Pagination
     }
 
 
@@ -37,12 +39,14 @@ lenses :
     , meals : Lens Model MealOrUpdateMap
     , mealToAdd : Lens Model (Maybe MealCreationClientInput)
     , initialization : Lens Model (Initialization Status)
+    , pagination : Lens Model Pagination
     }
 lenses =
     { jwt = LensUtil.jwtSubLens
     , meals = Lens .meals (\b a -> { a | meals = b })
     , mealToAdd = Lens .mealToAdd (\b a -> { a | mealToAdd = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
+    , pagination = Lens .pagination (\b a -> { a | pagination = b })
     }
 
 
@@ -65,3 +69,4 @@ type Msg
     | GotDeleteMealResponse MealId (Result Error ())
     | GotFetchMealsResponse (Result Error (List Meal))
     | UpdateJWT String
+    | SetPagination Pagination

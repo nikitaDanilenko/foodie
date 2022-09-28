@@ -19,11 +19,14 @@ import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
 import Pages.Meals.Page as Page
+import Pages.Meals.Pagination as Pagination
 import Pages.Meals.Status as Status
 import Pages.Util.DateUtil as DateUtil
 import Pages.Util.Links as Links
+import Pages.Util.PaginationSettings as PaginationSettings
 import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil
+import Paginate
 import Parser
 import Url.Builder
 import Util.Editing as Editing
@@ -40,12 +43,18 @@ view model =
         model
     <|
         let
+            viewEditMeal =
+                Either.unpack
+                    (editOrDeleteMealLine model.flagsWithJWT.configuration)
+                    (\e -> e.update |> editMealLine)
+
             viewEditMeals =
-                List.map
-                    (Either.unpack
-                        (editOrDeleteMealLine model.flagsWithJWT.configuration)
-                        (\e -> e.update |> editMealLine)
-                    )
+                model.meals
+                    |> Dict.values
+                    |> List.sortBy (Editing.field .date >> DateUtil.toString)
+                    |> ViewUtil.paginate
+                        { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.meals }
+                        model
 
             ( button, creationLine ) =
                 createMeal model.mealToAdd |> Either.unpack (\l -> ( [ l ], [] )) (\r -> ( [], [ r ] ))
@@ -69,12 +78,23 @@ view model =
                             ]
                         , tbody []
                             (creationLine
-                                ++ viewEditMeals
-                                    (model.meals
-                                        |> Dict.values
-                                        |> List.sortBy (Editing.field .date >> DateUtil.toString)
-                                    )
+                                ++ (viewEditMeals
+                                        |> Paginate.page
+                                        |> List.map viewEditMeal
+                                   )
                             )
+                        ]
+                   , div [ Style.classes.pagination ]
+                        [ ViewUtil.pagerButtons
+                            { msg =
+                                PaginationSettings.updateCurrentPage
+                                    { pagination = Page.lenses.pagination
+                                    , items = Pagination.lenses.meals
+                                    }
+                                    model
+                                    >> Page.SetPagination
+                            , elements = viewEditMeals
+                            }
                         ]
                    ]
             )
