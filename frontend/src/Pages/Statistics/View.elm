@@ -10,17 +10,31 @@ import Html exposing (Html, button, col, colgroup, div, input, label, table, tbo
 import Html.Attributes exposing (colspan, scope, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Maybe.Extra
+import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Statistics.Page as Page
+import Pages.Statistics.Pagination as Pagination
 import Pages.Statistics.Status as Status
 import Pages.Util.DateUtil as DateUtil
+import Pages.Util.PaginationSettings as PaginationSettings
 import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil
+import Paginate
 import Parser
 
 
 view : Page.Model -> Html Page.Msg
 view model =
+    let
+        viewMeals =
+            model.stats.meals
+                |> List.sortBy (.date >> DateUtil.toString)
+                |> List.reverse
+                |> ViewUtil.paginate
+                    { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.meals
+                    }
+                    model
+    in
     ViewUtil.viewWithErrorHandling
         { isFinished = Status.isFinished
         , initialization = .initialization
@@ -87,11 +101,22 @@ view model =
                             ]
                         ]
                     , tbody []
-                        (model.stats.meals
-                            |> List.sortBy (.date >> DateUtil.toString)
-                            |> List.reverse
+                        (viewMeals
+                            |> Paginate.page
                             |> List.map mealLine
                         )
+                    ]
+                , div [ Style.classes.pagination ]
+                    [ ViewUtil.pagerButtons
+                        { msg =
+                            PaginationSettings.updateCurrentPage
+                                { pagination = Page.lenses.pagination
+                                , items = Pagination.lenses.meals
+                                }
+                                model
+                                >> Page.SetPagination
+                        , elements = viewMeals
+                        }
                     ]
                 ]
             ]

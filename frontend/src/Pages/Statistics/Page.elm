@@ -9,6 +9,7 @@ import Configuration exposing (Configuration)
 import Http exposing (Error)
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
+import Pages.Statistics.Pagination exposing (Pagination)
 import Pages.Statistics.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Initialization exposing (Initialization)
@@ -20,6 +21,7 @@ type alias Model =
     , requestInterval : RequestInterval
     , stats : Stats
     , initialization : Initialization Status
+    , pagination: Pagination
     }
 
 
@@ -30,6 +32,7 @@ lenses :
     , to : Lens Model (Maybe Date)
     , stats : Lens Model Stats
     , initialization : Lens Model (Initialization Status)
+    , pagination : Lens Model Pagination
     }
 lenses =
     let
@@ -42,6 +45,7 @@ lenses =
     , to = requestInterval |> Compose.lensWithLens RequestIntervalLens.to
     , stats = Lens .stats (\b a -> { a | stats = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
+    , pagination = Lens .pagination (\b a -> { a | pagination = b })
     }
 
 
@@ -57,3 +61,4 @@ type Msg
     | FetchStats
     | GotFetchStatsResponse (Result Error Stats)
     | UpdateJWT JWT
+    | SetPagination Pagination

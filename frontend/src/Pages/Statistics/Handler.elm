@@ -11,6 +11,7 @@ import Http exposing (Error)
 import Maybe.Extra
 import Monocle.Lens as Lens
 import Pages.Statistics.Page as Page
+import Pages.Statistics.Pagination as Pagination exposing (Pagination)
 import Pages.Statistics.Requests as Requests
 import Pages.Statistics.Status as Status
 import Ports
@@ -39,6 +40,7 @@ init flags =
       , requestInterval = RequestIntervalLens.default
       , stats = defaultStats
       , initialization = Initialization.Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , pagination = Pagination.initial
       }
     , cmd
     )
@@ -68,6 +70,9 @@ update msg model =
 
         Page.UpdateJWT jwt ->
             updateJWT model jwt
+
+        Page.SetPagination pagination ->
+            setPagination model pagination
 
 
 setFromDate : Page.Model -> Maybe Date -> ( Page.Model, Cmd Page.Msg )
@@ -114,6 +119,13 @@ gotFetchStatsResponse model result =
                     |> Page.lenses.stats.set
                         (stats |> Lens.modify StatsLens.nutrients (List.sortBy .name))
             )
+    , Cmd.none
+    )
+
+
+setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
+setPagination model pagination =
+    ( model |> Page.lenses.pagination.set pagination
     , Cmd.none
     )
 
