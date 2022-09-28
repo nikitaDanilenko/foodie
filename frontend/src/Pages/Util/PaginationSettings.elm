@@ -1,5 +1,6 @@
 module Pages.Util.PaginationSettings exposing (..)
 
+import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 
 
@@ -24,3 +25,19 @@ lenses =
     { currentPage = Lens .currentPage (\b a -> { a | currentPage = b })
     , itemsPerPage = Lens .itemsPerPage (\b a -> { a | itemsPerPage = b })
     }
+
+
+updateCurrentPage :
+    { a
+        | pagination : Lens model pagination
+        , items : Lens pagination PaginationSettings
+    }
+    -> model
+    -> Int
+    -> pagination
+updateCurrentPage ps model currentPage =
+    ps.pagination.get model
+        |> (ps.items
+                |> Compose.lensWithLens lenses.currentPage
+           ).set
+            currentPage
