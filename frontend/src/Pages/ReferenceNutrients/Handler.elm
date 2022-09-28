@@ -14,6 +14,7 @@ import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional as Optional
 import Pages.ReferenceNutrients.Page as Page exposing (Msg(..))
+import Pages.ReferenceNutrients.Pagination as Pagination exposing (Pagination)
 import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput as ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput as ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
 import Pages.ReferenceNutrients.Requests as Requests
@@ -50,6 +51,7 @@ init flags =
       , nutrientsSearchString = ""
       , referenceNutrientsToAdd = Dict.empty
       , initialization = Initialization.Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , pagination = Pagination.initial
       }
     , cmd
     )
@@ -66,59 +68,62 @@ initialFetch flags =
 update : Page.Msg -> Page.Model -> ( Page.Model, Cmd Page.Msg )
 update msg model =
     case msg of
-        UpdateReferenceNutrient referenceNutrientUpdateClientInput ->
+        Page.UpdateReferenceNutrient referenceNutrientUpdateClientInput ->
             updateReferenceNutrient model referenceNutrientUpdateClientInput
 
-        SaveReferenceNutrientEdit referenceNutrientUpdateClientInput ->
+        Page.SaveReferenceNutrientEdit referenceNutrientUpdateClientInput ->
             saveReferenceNutrientEdit model referenceNutrientUpdateClientInput
 
-        GotSaveReferenceNutrientResponse result ->
+        Page.GotSaveReferenceNutrientResponse result ->
             gotSaveReferenceNutrientResponse model result
 
-        EnterEditReferenceNutrient nutrientCode ->
+        Page.EnterEditReferenceNutrient nutrientCode ->
             enterEditReferenceNutrient model nutrientCode
 
-        ExitEditReferenceNutrientAt nutrientCode ->
+        Page.ExitEditReferenceNutrientAt nutrientCode ->
             exitEditReferenceNutrientAt model nutrientCode
 
-        DeleteReferenceNutrient nutrientCode ->
+        Page.DeleteReferenceNutrient nutrientCode ->
             deleteReferenceNutrient model nutrientCode
 
-        GotDeleteReferenceNutrientResponse nutrientCode result ->
+        Page.GotDeleteReferenceNutrientResponse nutrientCode result ->
             gotDeleteReferenceNutrientResponse model nutrientCode result
 
-        GotFetchReferenceNutrientsResponse result ->
+        Page.GotFetchReferenceNutrientsResponse result ->
             gotFetchReferenceNutrientsResponse model result
 
-        GotFetchNutrientsResponse result ->
+        Page.GotFetchNutrientsResponse result ->
             gotFetchNutrientsResponse model result
 
-        SelectNutrient nutrient ->
+        Page.SelectNutrient nutrient ->
             selectNutrient model nutrient
 
-        DeselectNutrient nutrientCode ->
+        Page.DeselectNutrient nutrientCode ->
             deselectNutrient model nutrientCode
 
-        AddNutrient nutrientCode ->
+        Page.AddNutrient nutrientCode ->
             addNutrient model nutrientCode
 
-        GotAddReferenceNutrientResponse result ->
+        Page.GotAddReferenceNutrientResponse result ->
             gotAddReferenceNutrientResponse model result
 
-        UpdateAddNutrient referenceNutrientCreationClientInput ->
+        Page.UpdateAddNutrient referenceNutrientCreationClientInput ->
             updateAddNutrient model referenceNutrientCreationClientInput
 
-        UpdateJWT jwt ->
+        Page.UpdateJWT jwt ->
             updateJWT model jwt
 
-        SetNutrientsSearchString string ->
+        Page.SetNutrientsSearchString string ->
             setNutrientsSearchString model string
 
-        UpdateNutrients string ->
+        Page.UpdateNutrients string ->
             updateNutrients model string
 
+        Page.SetPagination pagination ->
+            setPagination model pagination
 
-updateReferenceNutrient : Page.Model -> ReferenceNutrientUpdateClientInput -> ( Page.Model, Cmd msg )
+
+updateReferenceNutrient : Page.Model -> ReferenceNutrientUpdateClientInput -> ( Page.Model, Cmd Page.Msg )
 updateReferenceNutrient model referenceNutrientUpdateClientInput =
     ( model
         |> mapReferenceNutrientOrUpdateById referenceNutrientUpdateClientInput.nutrientCode
@@ -181,7 +186,7 @@ deleteReferenceNutrient model nutrientCode =
     )
 
 
-gotDeleteReferenceNutrientResponse : Page.Model -> NutrientCode -> Result Error () -> ( Page.Model, Cmd msg )
+gotDeleteReferenceNutrientResponse : Page.Model -> NutrientCode -> Result Error () -> ( Page.Model, Cmd Page.Msg )
 gotDeleteReferenceNutrientResponse model nutrientCode result =
     ( result
         |> Either.fromResult
@@ -207,7 +212,7 @@ gotFetchReferenceNutrientsResponse model result =
     )
 
 
-gotFetchNutrientsResponse : Page.Model -> Result Error (List Nutrient) -> ( Page.Model, Cmd msg )
+gotFetchNutrientsResponse : Page.Model -> Result Error (List Nutrient) -> ( Page.Model, Cmd Page.Msg )
 gotFetchNutrientsResponse model result =
     result
         |> Either.fromResult
@@ -224,7 +229,7 @@ gotFetchNutrientsResponse model result =
             )
 
 
-selectNutrient : Page.Model -> NutrientCode -> ( Page.Model, Cmd msg )
+selectNutrient : Page.Model -> NutrientCode -> ( Page.Model, Cmd Page.Msg )
 selectNutrient model nutrientCode =
     ( model
         |> Lens.modify Page.lenses.referenceNutrientsToAdd
@@ -253,7 +258,7 @@ addNutrient model nutrientCode =
     )
 
 
-gotAddReferenceNutrientResponse : Page.Model -> Result Error ReferenceNutrient -> ( Page.Model, Cmd msg )
+gotAddReferenceNutrientResponse : Page.Model -> Result Error ReferenceNutrient -> ( Page.Model, Cmd Page.Msg )
 gotAddReferenceNutrientResponse model result =
     ( result
         |> Either.fromResult
@@ -268,7 +273,7 @@ gotAddReferenceNutrientResponse model result =
     )
 
 
-updateAddNutrient : Page.Model -> ReferenceNutrientCreationClientInput -> ( Page.Model, Cmd msg )
+updateAddNutrient : Page.Model -> ReferenceNutrientCreationClientInput -> ( Page.Model, Cmd Page.Msg )
 updateAddNutrient model referenceNutrientCreationClientInput =
     ( model
         |> Lens.modify Page.lenses.referenceNutrientsToAdd
@@ -312,9 +317,16 @@ updateNutrients model =
             )
 
 
-setNutrientsSearchString : Page.Model -> String -> ( Page.Model, Cmd msg )
+setNutrientsSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 setNutrientsSearchString model string =
     ( model |> Page.lenses.nutrientsSearchString.set string
+    , Cmd.none
+    )
+
+
+setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
+setPagination model pagination =
+    ( model |> Page.lenses.pagination.set pagination
     , Cmd.none
     )
 

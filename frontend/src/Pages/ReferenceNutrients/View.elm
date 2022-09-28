@@ -10,14 +10,18 @@ import Html.Attributes exposing (colspan, disabled, scope, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
+import Monocle.Compose as Compose
 import Pages.ReferenceNutrients.Page as Page exposing (NutrientMap)
+import Pages.ReferenceNutrients.Pagination as Pagination
 import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput as ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput as ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
 import Pages.ReferenceNutrients.Status as Status
 import Pages.Util.HtmlUtil as HtmlUtil
+import Pages.Util.PaginationSettings as PaginationSettings
 import Pages.Util.Style as Style
 import Pages.Util.ValidatedInput as ValidatedInput
 import Pages.Util.ViewUtil as ViewUtil
+import Paginate
 import Util.Editing as Editing
 import Util.SearchUtil as SearchUtil
 
@@ -33,19 +37,30 @@ view model =
         model
     <|
         let
-            viewEditReferenceNutrients =
-                List.map
-                    (Either.unpack
-                        (editOrDeleteReferenceNutrientLine model.nutrients)
-                        (\e -> e.update |> editReferenceNutrientLine model.nutrients e.original)
-                    )
+            viewEditReferenceNutrient =
+                Either.unpack
+                    (editOrDeleteReferenceNutrientLine model.nutrients)
+                    (\e -> e.update |> editReferenceNutrientLine model.nutrients e.original)
 
-            viewNutrients searchString =
+            viewEditReferenceNutrients =
+                model.referenceNutrients
+                    |> Dict.toList
+                    |> List.sortBy (\( k, _ ) -> Page.nutrientNameOrEmpty model.nutrients k |> String.toLower)
+                    |> List.map Tuple.second
+                    |> ViewUtil.paginate
+                        { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.referenceNutrients
+                        }
+                        model
+
+            viewNutrients =
                 model.nutrients
-                    |> Dict.filter (\_ v -> SearchUtil.search searchString v.name)
+                    |> Dict.filter (\_ v -> SearchUtil.search model.nutrientsSearchString v.name)
                     |> Dict.values
                     |> List.sortBy .name
-                    |> List.map (viewNutrientLine model.nutrients model.referenceNutrients model.referenceNutrientsToAdd)
+                    |> ViewUtil.paginate
+                        { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.nutrients
+                        }
+                        model
 
             anySelection =
                 model.referenceNutrientsToAdd
@@ -78,13 +93,22 @@ view model =
                         ]
                     , tbody []
                         (viewEditReferenceNutrients
-                            (model.referenceNutrients
-                                |> Dict.toList
-                                |> List.sortBy (\( k, _ ) -> Page.nutrientNameOrEmpty model.nutrients k |> String.toLower)
-                                |> List.map Tuple.second
-                            )
+                            |> Paginate.page
+                            |> List.map viewEditReferenceNutrient
                         )
                     ]
+                ]
+            , div [ Style.classes.pagination ]
+                [ ViewUtil.pagerButtons
+                    { msg =
+                        PaginationSettings.updateCurrentPage
+                            { pagination = Page.lenses.pagination
+                            , items = Pagination.lenses.referenceNutrients
+                            }
+                            model
+                            >> Page.SetPagination
+                    , elements = viewEditReferenceNutrients
+                    }
                 ]
             , div [ Style.classes.addView ]
                 [ div [ Style.classes.addElement ]
@@ -107,7 +131,23 @@ view model =
                                 , th [ colspan 2, scope "colgroup", Style.classes.controlsGroup ] []
                                 ]
                             ]
-                        , tbody [] (viewNutrients model.nutrientsSearchString)
+                        , tbody []
+                            (viewNutrients
+                                |> Paginate.page
+                                |> List.map (viewNutrientLine model.nutrients model.referenceNutrients model.referenceNutrientsToAdd)
+                            )
+                        ]
+                    , div [ Style.classes.pagination ]
+                        [ ViewUtil.pagerButtons
+                            { msg =
+                                PaginationSettings.updateCurrentPage
+                                    { pagination = Page.lenses.pagination
+                                    , items = Pagination.lenses.nutrients
+                                    }
+                                    model
+                                    >> Page.SetPagination
+                            , elements = viewNutrients
+                            }
                         ]
                     ]
                 ]
