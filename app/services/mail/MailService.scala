@@ -5,7 +5,6 @@ import pureconfig.generic.ProductHint
 import pureconfig.generic.auto._
 import pureconfig.{ CamelCase, ConfigFieldMapping, ConfigSource }
 
-import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
