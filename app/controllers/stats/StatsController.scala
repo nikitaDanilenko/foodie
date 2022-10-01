@@ -1,6 +1,6 @@
 package controllers.stats
 
-import action.JwtAction
+import action.UserAction
 import cats.data.EitherT
 import errors.{ ErrorContext, ServerError }
 import io.circe.syntax._
@@ -18,16 +18,16 @@ import scala.concurrent.ExecutionContext
 import scala.util.chaining.scalaUtilChainingOps
 
 class StatsController @Inject() (
-    controllerComponents: ControllerComponents,
-    jwtAction: JwtAction,
-    statsService: StatsService,
-    nutrientService: NutrientService
+                                  controllerComponents: ControllerComponents,
+                                  userAction: UserAction,
+                                  statsService: StatsService,
+                                  nutrientService: NutrientService
 )(implicit ec: ExecutionContext)
     extends AbstractController(controllerComponents)
     with Circe {
 
   def get(from: Option[String], to: Option[String]): Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       statsService
         .nutrientsOverTime(
           userId = request.user.id,
@@ -44,7 +44,7 @@ class StatsController @Inject() (
     }
 
   def referenceNutrients: Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       statsService
         .referenceNutrientMap(request.user.id)
         .map { nutrientMap =>
@@ -69,7 +69,7 @@ class StatsController @Inject() (
     }
 
   def allNutrients: Action[AnyContent] =
-    jwtAction.async {
+    userAction.async {
       nutrientService.all.map(
         _.map(_.transformInto[Nutrient])
           .pipe(_.asJson)
@@ -78,7 +78,7 @@ class StatsController @Inject() (
     }
 
   def createReferenceNutrient: Action[ReferenceNutrientCreation] =
-    jwtAction.async(circe.tolerantJson[ReferenceNutrientCreation]) { request =>
+    userAction.async(circe.tolerantJson[ReferenceNutrientCreation]) { request =>
       EitherT(
         statsService
           .createReferenceNutrient(
@@ -97,7 +97,7 @@ class StatsController @Inject() (
     }
 
   def updateReferenceNutrient: Action[ReferenceNutrientUpdate] =
-    jwtAction.async(circe.tolerantJson[ReferenceNutrientUpdate]) { request =>
+    userAction.async(circe.tolerantJson[ReferenceNutrientUpdate]) { request =>
       EitherT(
         statsService
           .updateReferenceNutrient(request.user.id, request.body.transformInto[services.stats.ReferenceNutrientUpdate])
@@ -113,7 +113,7 @@ class StatsController @Inject() (
     }
 
   def deleteReferenceNutrient(nutrientCode: Int): Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       statsService
         .deleteReferenceNutrient(request.user.id, nutrientCode.transformInto[NutrientCode])
         .map(

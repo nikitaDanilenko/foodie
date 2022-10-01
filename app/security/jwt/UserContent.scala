@@ -5,6 +5,6 @@ import io.circe.generic.JsonCodec
 import java.util.UUID
 
 @JsonCodec
-case class JwtContent(
+case class UserContent(
     userId: UUID
 )

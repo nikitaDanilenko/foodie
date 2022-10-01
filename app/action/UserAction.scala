@@ -6,7 +6,7 @@ import io.circe.syntax._
 import io.scalaland.chimney.dsl._
 import play.api.libs.circe.Circe
 import play.api.mvc._
-import security.jwt.{ JwtConfiguration, JwtContent }
+import security.jwt.{ JwtConfiguration, UserContent }
 import services.UserId
 import services.user.{ User, UserService }
 import utils.TransformerUtils.Implicits._
@@ -15,7 +15,7 @@ import utils.jwt.JwtUtil
 import javax.inject.Inject
 import scala.concurrent.{ ExecutionContext, Future }
 
-class JwtAction @Inject() (
+class UserAction @Inject() (
     override val parse: PlayBodyParsers,
     userService: UserService
 )(implicit override val executionContext: ExecutionContext)
@@ -30,7 +30,7 @@ class JwtAction @Inject() (
         ErrorContext.Authentication.Token.Missing.asServerError
       )
       jwtContent <-
-        EitherT.fromEither[Future](JwtUtil.validateJwt[JwtContent](token, JwtConfiguration.default.signaturePublicKey))
+        EitherT.fromEither[Future](JwtUtil.validateJwt[UserContent](token, JwtConfiguration.default.signaturePublicKey))
       user <- EitherT.fromOptionF[Future, ServerError, User](
         userService
           .get(

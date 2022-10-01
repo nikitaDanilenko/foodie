@@ -5,7 +5,7 @@ import io.circe.syntax._
 import io.scalaland.chimney.dsl._
 import pdi.jwt.algorithms.JwtAsymmetricAlgorithm
 import pdi.jwt.{ JwtAlgorithm, JwtCirce, JwtClaim, JwtHeader }
-import security.jwt.{ JwtContent, JwtExpiration }
+import security.jwt.{ UserContent, JwtExpiration }
 import services.UserId
 import utils.TransformerUtils.Implicits._
 import java.util.UUID
@@ -29,11 +29,11 @@ object JwtUtil {
           .map(_ => ErrorContext.Authentication.Token.Content.asServerError)
       }
 
-  def createJwt(userId: UserId, privateKey: String, expiration: JwtExpiration): String =
+  def createUserJwt(userId: UserId, privateKey: String, expiration: JwtExpiration): String =
     JwtCirce.encode(
       header = JwtHeader(algorithm = signatureAlgorithm),
       claim = JwtClaim(
-        content = JwtContent(
+        content = UserContent(
           userId = userId.transformInto[UUID]
         ).asJson.noSpaces,
         expiration = expiration.expirationAt,

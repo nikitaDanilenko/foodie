@@ -1,6 +1,6 @@
 package controllers.meal
 
-import action.JwtAction
+import action.UserAction
 import cats.data.{ EitherT, OptionT }
 import errors.{ ErrorContext, ServerError }
 import io.circe.syntax._
@@ -19,13 +19,13 @@ import scala.util.chaining._
 class MealController @Inject() (
     controllerComponents: ControllerComponents,
     mealService: MealService,
-    jwtAction: JwtAction
+    userAction: UserAction
 )(implicit ec: ExecutionContext)
     extends AbstractController(controllerComponents)
     with Circe {
 
   def all: Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       mealService
         .allMeals(
           userId = request.user.id,
@@ -41,7 +41,7 @@ class MealController @Inject() (
     }
 
   def get(id: UUID): Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       OptionT(mealService.getMeal(request.user.id, id.transformInto[MealId])).fold(
         NotFound: Result
       )(
@@ -52,7 +52,7 @@ class MealController @Inject() (
     }
 
   def create: Action[MealCreation] =
-    jwtAction.async(circe.tolerantJson[MealCreation]) { request =>
+    userAction.async(circe.tolerantJson[MealCreation]) { request =>
       EitherT(
         mealService
           .createMeal(request.user.id, request.body.transformInto[services.meal.MealCreation])
@@ -67,7 +67,7 @@ class MealController @Inject() (
     }
 
   def update: Action[MealUpdate] =
-    jwtAction.async(circe.tolerantJson[MealUpdate]) { request =>
+    userAction.async(circe.tolerantJson[MealUpdate]) { request =>
       EitherT(
         mealService
           .updateMeal(request.user.id, request.body.transformInto[services.meal.MealUpdate])
@@ -82,7 +82,7 @@ class MealController @Inject() (
     }
 
   def delete(id: UUID): Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       mealService
         .deleteMeal(request.user.id, id.transformInto[MealId])
         .map(
@@ -91,21 +91,22 @@ class MealController @Inject() (
         )
     }
 
-  def getMealEntries(id: UUID): Action[AnyContent] = jwtAction.async { request =>
-    mealService
-      .getMealEntries(
-        request.user.id,
-        id.transformInto[MealId]
-      )
-      .map(
-        _.pipe(_.map(_.transformInto[MealEntry]).asJson)
-          .pipe(Ok(_))
-      )
-      .recover(mealErrorHandler)
-  }
+  def getMealEntries(id: UUID): Action[AnyContent] =
+    userAction.async { request =>
+      mealService
+        .getMealEntries(
+          request.user.id,
+          id.transformInto[MealId]
+        )
+        .map(
+          _.pipe(_.map(_.transformInto[MealEntry]).asJson)
+            .pipe(Ok(_))
+        )
+        .recover(mealErrorHandler)
+    }
 
   def addMealEntry: Action[MealEntryCreation] =
-    jwtAction.async(circe.tolerantJson[MealEntryCreation]) { request =>
+    userAction.async(circe.tolerantJson[MealEntryCreation]) { request =>
       EitherT(
         mealService.addMealEntry(
           userId = request.user.id,
@@ -122,7 +123,7 @@ class MealController @Inject() (
     }
 
   def updateMealEntry: Action[MealEntryUpdate] =
-    jwtAction.async(circe.tolerantJson[MealEntryUpdate]) { request =>
+    userAction.async(circe.tolerantJson[MealEntryUpdate]) { request =>
       EitherT(
         mealService.updateMealEntry(
           userId = request.user.id,
@@ -139,7 +140,7 @@ class MealController @Inject() (
     }
 
   def deleteMealEntry(id: UUID): Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       mealService
         .removeMealEntry(request.user.id, id.transformInto[MealEntryId])
         .map(

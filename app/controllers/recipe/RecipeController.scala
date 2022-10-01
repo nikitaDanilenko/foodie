@@ -1,6 +1,6 @@
 package controllers.recipe
 
-import action.JwtAction
+import action.UserAction
 import cats.data.{ EitherT, OptionT }
 import errors.{ ErrorContext, ServerError }
 import io.circe.syntax._
@@ -19,13 +19,13 @@ import scala.util.chaining._
 class RecipeController @Inject() (
     controllerComponents: ControllerComponents,
     recipeService: RecipeService,
-    jwtAction: JwtAction
+    userAction: UserAction
 )(implicit ec: ExecutionContext)
     extends AbstractController(controllerComponents)
     with Circe {
 
   def getMeasures: Action[AnyContent] =
-    jwtAction.async {
+    userAction.async {
       recipeService.allMeasures
         .map(
           _.map(_.transformInto[Measure])
@@ -36,7 +36,7 @@ class RecipeController @Inject() (
 
   // TODO: Consider allowing specialized search instead of delivering all foods at once.
   def getFoods: Action[AnyContent] =
-    jwtAction.async {
+    userAction.async {
       recipeService.allFoods.map(
         _.map(_.transformInto[Food])
           .pipe(_.asJson)
@@ -45,7 +45,7 @@ class RecipeController @Inject() (
     }
 
   def getRecipes: Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       recipeService
         .allRecipes(request.user.id)
         .map(
@@ -56,7 +56,7 @@ class RecipeController @Inject() (
     }
 
   def get(id: UUID): Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       OptionT(recipeService.getRecipe(request.user.id, id.transformInto[RecipeId])).fold(
         NotFound: Result
       )(
@@ -67,7 +67,7 @@ class RecipeController @Inject() (
     }
 
   def create: Action[RecipeCreation] =
-    jwtAction.async(circe.tolerantJson[RecipeCreation]) { request =>
+    userAction.async(circe.tolerantJson[RecipeCreation]) { request =>
       EitherT(
         recipeService
           .createRecipe(request.user.id, request.body.transformInto[services.recipe.RecipeCreation])
@@ -82,7 +82,7 @@ class RecipeController @Inject() (
     }
 
   def update: Action[RecipeUpdate] =
-    jwtAction.async(circe.tolerantJson[RecipeUpdate]) { request =>
+    userAction.async(circe.tolerantJson[RecipeUpdate]) { request =>
       EitherT(
         recipeService
           .updateRecipe(request.user.id, request.body.transformInto[services.recipe.RecipeUpdate])
@@ -97,7 +97,7 @@ class RecipeController @Inject() (
     }
 
   def delete(id: UUID): Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       recipeService
         .deleteRecipe(request.user.id, id.transformInto[RecipeId])
         .map(
@@ -107,7 +107,7 @@ class RecipeController @Inject() (
     }
 
   def getIngredients(id: UUID): Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       recipeService
         .getIngredients(
           request.user.id,
@@ -121,7 +121,7 @@ class RecipeController @Inject() (
     }
 
   def addIngredient: Action[IngredientCreation] =
-    jwtAction.async(circe.tolerantJson[IngredientCreation]) { request =>
+    userAction.async(circe.tolerantJson[IngredientCreation]) { request =>
       EitherT(
         recipeService.addIngredient(
           userId = request.user.id,
@@ -138,7 +138,7 @@ class RecipeController @Inject() (
     }
 
   def removeIngredient(id: UUID): Action[AnyContent] =
-    jwtAction.async { request =>
+    userAction.async { request =>
       recipeService
         .removeIngredient(request.user.id, id.transformInto[IngredientId])
         .map(
@@ -148,7 +148,7 @@ class RecipeController @Inject() (
     }
 
   def updateIngredient: Action[IngredientUpdate] =
-    jwtAction.async(circe.tolerantJson[IngredientUpdate]) { request =>
+    userAction.async(circe.tolerantJson[IngredientUpdate]) { request =>
       EitherT(
         recipeService.updateIngredient(
           userId = request.user.id,
