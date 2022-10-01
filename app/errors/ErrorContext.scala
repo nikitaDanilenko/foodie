@@ -29,6 +29,12 @@ object ErrorContext {
 
   object User {
     case object NotFound extends ServerErrorInstance("No user with the given id found")
+
+    case object Exists extends ServerErrorInstance("A user with the given nickname already exists.")
+
+    case object Confirmation extends ServerErrorInstance("Confirmation token missing or invalid.")
+
+    case object Mismatch extends ServerErrorInstance("Settings do not correspond to requested settings")
   }
 
   object Recipe {
@@ -122,6 +128,10 @@ object ErrorContext {
           s"A database operation failed with the message: $dbMessage"
         )
 
+  }
+
+  object Mail {
+    case object SendingFailed extends ServerErrorInstance("Sending of message failed")
   }
 
 }

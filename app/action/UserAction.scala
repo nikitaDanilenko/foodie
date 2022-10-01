@@ -26,7 +26,7 @@ class UserAction @Inject() (
   override protected def refine[A](request: Request[A]): Future[Either[Result, UserRequest[A]]] = {
     val transformer = for {
       token <- EitherT.fromOption[Future](
-        request.headers.get(RequestHeaders.userTokenHeader),
+        request.headers.get(RequestHeaders.userToken),
         ErrorContext.Authentication.Token.Missing.asServerError
       )
       jwtContent <-
