@@ -20,7 +20,7 @@ object UserConfiguration {
   implicit def hint[A]: ProductHint[A] = ProductHint[A](ConfigFieldMapping(CamelCase, CamelCase))
 
   val default: UserConfiguration = ConfigSource.default
-    .at("registrationConfiguration")
+    .at("userConfiguration")
     .loadOrThrow[UserConfiguration]
 
   def registrationEmail(
@@ -30,7 +30,7 @@ object UserConfiguration {
   ): EmailParameters =
     emailWith(
       userConfiguration = userConfiguration,
-      addressWithMessage = emailComponents(userConfiguration)(Operation.Registration),
+      operation = Operation.Registration,
       userIdentifier = userIdentifier,
       jwt = jwt
     )
@@ -41,8 +41,8 @@ object UserConfiguration {
       jwt: String
   ): EmailParameters =
     emailWith(
-      userConfiguration,
-      emailComponents(userConfiguration)(Operation.Recovery),
+      userConfiguration = userConfiguration,
+      operation = Operation.Recovery,
       userIdentifier = userIdentifier,
       jwt = jwt
     )
@@ -53,8 +53,8 @@ object UserConfiguration {
       jwt: String
   ): EmailParameters =
     emailWith(
-      userConfiguration,
-      emailComponents(userConfiguration)(Operation.Deletion),
+      userConfiguration = userConfiguration,
+      operation = Operation.Deletion,
       userIdentifier = userIdentifier,
       jwt = jwt
     )
@@ -75,16 +75,17 @@ object UserConfiguration {
   private def emailComponents(userConfiguration: UserConfiguration): Map[Operation, AddressWithMessage] =
     Map(
       Operation.Registration -> AddressWithMessage("finish-registration", userConfiguration.registrationMessage),
-      Operation.Recovery     -> AddressWithMessage("account-recovery", userConfiguration.recoveryMessage),
-      Operation.Registration -> AddressWithMessage("account-deletion", userConfiguration.deletionMessage)
+      Operation.Recovery     -> AddressWithMessage("recover-account", userConfiguration.recoveryMessage),
+      Operation.Registration -> AddressWithMessage("delete-account", userConfiguration.deletionMessage)
     )
 
   private def emailWith(
       userConfiguration: UserConfiguration,
-      addressWithMessage: AddressWithMessage,
+      operation: Operation,
       userIdentifier: UserIdentifier,
       jwt: String
   ): EmailParameters = {
+    val addressWithMessage = emailComponents(userConfiguration)(operation)
     val message =
       s"""${userConfiguration.greeting} ${userIdentifier.nickname},
            |

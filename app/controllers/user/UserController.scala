@@ -11,13 +11,14 @@ import io.scalaland.chimney.dsl._
 import play.api.libs.circe.Circe
 import play.api.mvc._
 import security.Hash
-import security.jwt.{ JwtConfiguration, JwtExpiration, UserContent }
+import security.jwt.{ JwtConfiguration, JwtExpiration, LoginContent }
 import services.UserId
 import services.mail.MailService
-import services.user.{ PasswordParameters, User, UserService }
+import services.user.{ PasswordParameters, UserService }
 import spire.math.Natural
 import utils.TransformerUtils.Implicits._
 import utils.jwt.JwtUtil
+import scala.util.chaining._
 
 import java.util.UUID
 import javax.inject.Inject
@@ -43,7 +44,7 @@ class UserController @Inject() (
         .subflatMap { user =>
           if (UserController.validateCredentials(credentials, user)) {
             val jwt = JwtUtil.createJwt(
-              content = UserContent(
+              content = LoginContent(
                 userId = user.id.transformInto[UUID]
               ),
               privateKey = jwtConfiguration.signaturePrivateKey,
@@ -70,6 +71,17 @@ class UserController @Inject() (
           )
           .flatMap(createUser)
       }
+    }
+
+  def update: Action[UserUpdate] =
+    userAction.async(circe.tolerantJson[UserUpdate]) { request =>
+      userService
+        .update(request.user.id, (request.body, request.user).transformInto[services.user.UserUpdate])
+        .map(
+          _.pipe(_.transformInto[User])
+            .pipe(_.asJson)
+            .pipe(Ok(_))
+        )
     }
 
   def updatePassword: Action[PasswordChangeRequest] =
@@ -154,7 +166,7 @@ class UserController @Inject() (
         recoveryJwt = createJwt(
           UserOperation(
             userId = user.id,
-            operation = UserOperation.Operation.Recovery
+            operation = UserOperation.Recovery: UserOperation.Recovery
           )
         )
         _ <- EitherT(
@@ -188,11 +200,12 @@ class UserController @Inject() (
             request.headers.get(RequestHeaders.confirmation),
             ErrorContext.User.Confirmation.asServerError
           )
-          userContent <- EitherT.fromEither[Future](
-            JwtUtil.validateJwt[UserContent](token, jwtConfiguration.signaturePublicKey)
+          userRecovery <- EitherT.fromEither[Future](
+            JwtUtil
+              .validateJwt[UserOperation[UserOperation.Recovery]](token, jwtConfiguration.signaturePublicKey)
           )
           response <-
-            EitherT.liftF(userService.updatePassword(userContent.userId.transformInto[UserId], request.body.password))
+            EitherT.liftF(userService.updatePassword(userRecovery.userId.transformInto[UserId], request.body.password))
         } yield
           if (response)
             Ok("Password updated")
@@ -213,7 +226,7 @@ class UserController @Inject() (
                 jwt = createJwt(
                   UserOperation(
                     userId = request.user.id,
-                    operation = UserOperation.Operation.Deletion
+                    operation = UserOperation.Deletion: UserOperation.Deletion
                   )
                 )
               )
@@ -232,9 +245,30 @@ class UserController @Inject() (
       )
     }
 
+  def confirmDeletion: Action[AnyContent] =
+    Action.async { request =>
+      toResult("An error occurred while deleting the user") {
+        for {
+          token <- EitherT.fromOption(
+            request.headers.get(RequestHeaders.confirmation),
+            ErrorContext.User.Confirmation.asServerError
+          )
+          userDeletion <- EitherT.fromEither[Future](
+            JwtUtil
+              .validateJwt[UserOperation[UserOperation.Deletion]](token, jwtConfiguration.signaturePublicKey)
+          )
+          response <- EitherT.liftF(userService.delete(userDeletion.userId.transformInto[UserId]))
+        } yield
+          if (response)
+            Ok("User deleted")
+          else
+            BadRequest(s"An error occurred while deleting the user.")
+      }
+    }
+
   private def createUser(userCreation: UserCreation): EitherT[Future, ServerError, Result] =
     for {
-      user     <- EitherT.liftF[Future, ServerError, User](UserCreation.create(userCreation))
+      user     <- EitherT.liftF[Future, ServerError, services.user.User](UserCreation.create(userCreation))
       response <- EitherT.liftF[Future, ServerError, Boolean](userService.add(user))
     } yield
       if (response)
@@ -271,7 +305,7 @@ object UserController {
 
   def validateCredentials(
       credentials: Credentials,
-      user: User
+      user: services.user.User
   ): Boolean =
     Hash.verify(
       password = credentials.password,

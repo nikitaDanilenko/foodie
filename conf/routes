@@ -35,9 +35,9 @@ POST   /login                                  controllers.user.UserController.l
 POST   /user/create                            controllers.user.UserController.create
 POST   /user/update                            controllers.user.UserController.update
 POST   /user/update/password                   controllers.user.UserController.updatePassword
-POST   /registration/request                   controllers.user.UserController.requestRegistration
-POST   /registration/confirm                   controllers.user.UserController.confirmRegistration
-POST   /recovery/request                       controllers.user.UserController.requestRecovery
-POST   /recovery/confirm                       controllers.user.UserController.confirmRecovery
-POST   /deletion/request                       controllers.user.UserController.requestDeletion
-POST   /deletion/confirm                       controllers.user.UserController.confirmDeletion
+POST   /user/registration/request              controllers.user.UserController.requestRegistration
+POST   /user/registration/confirm              controllers.user.UserController.confirmRegistration
+POST   /user/recovery/request                  controllers.user.UserController.requestRecovery
+POST   /user/recovery/confirm                  controllers.user.UserController.confirmRecovery
+POST   /user/deletion/request                  controllers.user.UserController.requestDeletion
+POST   /user/deletion/confirm                  controllers.user.UserController.confirmDeletion

@@ -1,24 +1,25 @@
 package controllers.user
 
-import enumeratum.{ CirceEnum, Enum, EnumEntry }
 import io.circe.generic.JsonCodec
 
 import java.util.UUID
 
 @JsonCodec
-case class UserOperation(
+case class UserOperation[O](
     userId: UUID,
-    operation: UserOperation.Operation
+    operation: O
 )
 
 object UserOperation {
-  sealed trait Operation extends EnumEntry
 
-  object Operation extends Enum[Operation] with CirceEnum[Operation] {
-    case object Recovery extends Operation
-    case object Deletion extends Operation
+  @JsonCodec
+  sealed trait Recovery
 
-    override lazy val values: IndexedSeq[Operation] = findValues
-  }
+  case object Recovery extends Recovery
+
+  @JsonCodec
+  sealed trait Deletion
+
+  case object Deletion extends Deletion
 
 }
