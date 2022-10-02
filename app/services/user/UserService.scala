@@ -6,7 +6,7 @@ import db.generated.Tables
 import io.scalaland.chimney.dsl._
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
 import security.Hash
-import services.UserId
+import services.{ SessionId, UserId }
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
@@ -34,6 +34,14 @@ trait UserService {
 
   def updatePassword(userId: UserId, password: String): Future[Boolean]
   def delete(userId: UserId): Future[Boolean]
+
+  def addSession(userId: UserId): Future[SessionId]
+
+  def deleteSession(userId: UserId, sessionId: SessionId): Future[Boolean]
+
+  def deleteAllSessions(userId: UserId): Future[Boolean]
+
+  def existsSession(userId: UserId, sessionId: SessionId): Future[Boolean]
 }
 
 object UserService {
@@ -48,6 +56,14 @@ object UserService {
     def updatePassword(userId: UserId, password: String)(implicit executionContext: ExecutionContext): DBIO[Boolean]
 
     def delete(userId: UserId)(implicit executionContext: ExecutionContext): DBIO[Boolean]
+
+    def addSession(userId: UserId, sessionId: SessionId)(implicit executionContext: ExecutionContext): DBIO[SessionId]
+
+    def deleteSession(userId: UserId, sessionId: SessionId)(implicit executionContext: ExecutionContext): DBIO[Boolean]
+
+    def deleteAllSessions(userId: UserId)(implicit executionContext: ExecutionContext): DBIO[Boolean]
+
+    def existsSession(userId: UserId, sessionId: SessionId)(implicit executionContext: ExecutionContext): DBIO[Boolean]
   }
 
   class Live @Inject() (
@@ -69,6 +85,18 @@ object UserService {
       db.run(companion.updatePassword(userId, password))
 
     override def delete(userId: UserId): Future[Boolean] = db.run(companion.delete(userId))
+
+    override def addSession(userId: UserId): Future[SessionId] =
+      db.run(companion.addSession(userId, UUID.randomUUID().transformInto[SessionId]))
+
+    override def deleteSession(userId: UserId, sessionId: SessionId): Future[Boolean] =
+      db.run(companion.deleteSession(userId, sessionId))
+
+    override def deleteAllSessions(userId: UserId): Future[Boolean] = db.run(companion.deleteAllSessions(userId))
+
+    override def existsSession(userId: UserId, sessionId: SessionId): Future[Boolean] =
+      db.run(companion.existsSession(userId, sessionId))
+
   }
 
   object Live extends Companion {
@@ -146,9 +174,41 @@ object UserService {
       userQuery(userId).delete
         .map(_ > 0)
 
+    override def addSession(userId: UserId, sessionId: SessionId)(implicit
+        executionContext: ExecutionContext
+    ): DBIO[SessionId] =
+      (Tables.Session.returning(Tables.Session) += Tables.SessionRow(
+        id = sessionId.transformInto[UUID],
+        userId = userId.transformInto[UUID]
+      )).map(_.id.transformInto[SessionId])
+
+    override def deleteSession(userId: UserId, sessionId: SessionId)(implicit
+        executionContext: ExecutionContext
+    ): DBIO[Boolean] =
+      sessionQuery(userId, sessionId).delete
+        .map(_ > 0)
+
+    override def deleteAllSessions(userId: UserId)(implicit executionContext: ExecutionContext): DBIO[Boolean] =
+      Tables.Session
+        .filter(_.userId === userId.transformInto[UUID])
+        .delete
+        .map(_ > 0)
+
+    override def existsSession(userId: UserId, sessionId: SessionId)(implicit
+        executionContext: ExecutionContext
+    ): DBIO[Boolean] =
+      sessionQuery(userId, sessionId).exists.result
+
     private def userQuery(userId: UserId): Query[Tables.User, Tables.UserRow, Seq] =
       Tables.User
         .filter(_.id === userId.transformInto[UUID])
+
+    private def sessionQuery(userId: UserId, sessionId: SessionId): Query[Tables.Session, Tables.SessionRow, Seq] =
+      Tables.Session
+        .filter(session =>
+          session.userId === userId.transformInto[UUID] &&
+            session.id === sessionId.transformInto[UUID]
+        )
 
   }
 
