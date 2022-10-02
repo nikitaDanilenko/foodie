@@ -39,4 +39,8 @@ package object services {
 
   type UserId = UUID @@ UserTag
 
+  sealed trait SessionTag
+
+  type SessionId = UUID @@ SessionTag
+
 }
