@@ -5,7 +5,7 @@ import bridges.core.Type.Ref
 import bridges.core._
 import bridges.core.syntax._
 import bridges.elm._
-import controllers.user.Credentials
+import controllers.user.{ Credentials, UserIdentifier }
 import controllers.meal._
 import controllers.recipe._
 import controllers.stats.{
@@ -110,6 +110,7 @@ object Bridge {
     mkAndWrite[ReferenceNutrientCreation]
     mkAndWrite[ReferenceNutrientUpdate]
     mkAndWrite[Nutrient]
+    mkAndWrite[UserIdentifier]
   }
 
 }
