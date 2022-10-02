@@ -14,7 +14,7 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Array(ConversionFactor.schema, FoodGroup.schema, FoodName.schema, FoodSource.schema, Meal.schema, MealEntry.schema, MeasureName.schema, NutrientAmount.schema, NutrientName.schema, NutrientSource.schema, Recipe.schema, RecipeIngredient.schema, ReferenceNutrient.schema, RefuseAmount.schema, RefuseName.schema, User.schema, YieldAmount.schema, YieldName.schema).reduceLeft(_ ++ _)
+  lazy val schema: profile.SchemaDescription = Array(ConversionFactor.schema, FoodGroup.schema, FoodName.schema, FoodSource.schema, Meal.schema, MealEntry.schema, MeasureName.schema, NutrientAmount.schema, NutrientName.schema, NutrientSource.schema, Recipe.schema, RecipeIngredient.schema, ReferenceNutrient.schema, RefuseAmount.schema, RefuseName.schema, Session.schema, User.schema, YieldAmount.schema, YieldName.schema).reduceLeft(_ ++ _)
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
 
@@ -474,6 +474,9 @@ trait Tables {
 
     /** Primary key of ReferenceNutrient (database name reference_nutrient_pk) */
     val pk = primaryKey("reference_nutrient_pk", (userId, nutrientCode))
+
+    /** Foreign key referencing NutrientName (database name reference_nutrient_nutrient_code_fk) */
+    lazy val nutrientNameFk = foreignKey("reference_nutrient_nutrient_code_fk", nutrientCode, NutrientName)(r => r.nutrientCode, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
   }
   /** Collection-like TableQuery object for table ReferenceNutrient */
   lazy val ReferenceNutrient = new TableQuery(tag => new ReferenceNutrient(tag))
@@ -538,6 +541,32 @@ trait Tables {
   }
   /** Collection-like TableQuery object for table RefuseName */
   lazy val RefuseName = new TableQuery(tag => new RefuseName(tag))
+
+  /** Entity class storing rows of table Session
+   *  @param id Database column id SqlType(uuid), PrimaryKey
+   *  @param userId Database column user_id SqlType(uuid) */
+  case class SessionRow(id: java.util.UUID, userId: java.util.UUID)
+  /** GetResult implicit for fetching SessionRow objects using plain SQL queries */
+  implicit def GetResultSessionRow(implicit e0: GR[java.util.UUID]): GR[SessionRow] = GR{
+    prs => import prs._
+    SessionRow.tupled((<<[java.util.UUID], <<[java.util.UUID]))
+  }
+  /** Table description of table session. Objects of this class serve as prototypes for rows in queries. */
+  class Session(_tableTag: Tag) extends profile.api.Table[SessionRow](_tableTag, "session") {
+    def * = (id, userId) <> (SessionRow.tupled, SessionRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = ((Rep.Some(id), Rep.Some(userId))).shaped.<>({r=>import r._; _1.map(_=> SessionRow.tupled((_1.get, _2.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column id SqlType(uuid), PrimaryKey */
+    val id: Rep[java.util.UUID] = column[java.util.UUID]("id", O.PrimaryKey)
+    /** Database column user_id SqlType(uuid) */
+    val userId: Rep[java.util.UUID] = column[java.util.UUID]("user_id")
+
+    /** Foreign key referencing User (database name session_user_id_fk) */
+    lazy val userFk = foreignKey("session_user_id_fk", userId, User)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
+  }
+  /** Collection-like TableQuery object for table Session */
+  lazy val Session = new TableQuery(tag => new Session(tag))
 
   /** Entity class storing rows of table User
    *  @param id Database column id SqlType(uuid), PrimaryKey
