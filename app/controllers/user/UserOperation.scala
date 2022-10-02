@@ -1,6 +1,9 @@
 package controllers.user
 
+import enumeratum.{ CirceEnum, Enum, EnumEntry }
+import io.circe.{ Decoder, Encoder }
 import io.circe.generic.JsonCodec
+import io.circe.generic.semiauto.deriveCodec
 
 import java.util.UUID
 
@@ -12,14 +15,25 @@ case class UserOperation[O](
 
 object UserOperation {
 
-  @JsonCodec
-  sealed trait Recovery
+  sealed trait Operation extends EnumEntry
 
-  case object Recovery extends Recovery
+  object Operation extends Enum[Operation] with CirceEnum[Operation] {
 
-  @JsonCodec
-  sealed trait Deletion
+    case object Recovery extends Operation {
+      implicit val decoder: Decoder[Recovery] = Decoder[Operation].map(_ => Recovery)
+      implicit val encoder: Encoder[Recovery] = Encoder[Operation].contramap(x => x: Operation)
+    }
 
-  case object Deletion extends Deletion
+    type Recovery = Recovery.type
+
+    case object Deletion extends Operation {
+      implicit val decoder: Decoder[Deletion] = Decoder[Operation].map(_ => Deletion)
+      implicit val encoder: Encoder[Deletion] = Encoder[Operation].contramap(x => x: Operation)
+    }
+
+    type Deletion = Deletion.type
+
+    override lazy val values: IndexedSeq[Operation] = findValues
+  }
 
 }
