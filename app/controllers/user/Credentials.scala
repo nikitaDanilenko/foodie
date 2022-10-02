@@ -1,4 +1,4 @@
-package controllers.login
+package controllers.user
 
 import io.circe.generic.JsonCodec
 

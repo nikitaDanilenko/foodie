@@ -35,6 +35,8 @@ object ErrorContext {
     case object Confirmation extends ServerErrorInstance("Confirmation token missing or invalid.")
 
     case object Mismatch extends ServerErrorInstance("Settings do not correspond to requested settings")
+
+    case object PasswordUpdate extends ServerErrorInstance("Password update failed")
   }
 
   object Recipe {

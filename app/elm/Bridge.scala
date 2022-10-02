@@ -5,7 +5,7 @@ import bridges.core.Type.Ref
 import bridges.core._
 import bridges.core.syntax._
 import bridges.elm._
-import controllers.login.Credentials
+import controllers.user.Credentials
 import controllers.meal._
 import controllers.recipe._
 import controllers.stats.{

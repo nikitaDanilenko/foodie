@@ -31,7 +31,13 @@ PATCH  /stats/reference/update                 controllers.stats.StatsController
 DELETE /stats/reference/delete/:nutrientCode   controllers.stats.StatsController.deleteReferenceNutrient(nutrientCode: Int)
 
 GET    /                                       controllers.home.HomeController.home
-POST   /login                                  controllers.login.LoginController.login
-POST   /create                                 controllers.login.LoginController.createUser
-POST   /registration/request                   controllers.login.LoginController.requestRegistration
-POST   /registration/confirm                   controllers.login.LoginController.confirmRegistration
+POST   /login                                  controllers.user.UserController.login
+POST   /user/create                            controllers.user.UserController.create
+POST   /user/update                            controllers.user.UserController.update
+POST   /user/update/password                   controllers.user.UserController.updatePassword
+POST   /registration/request                   controllers.user.UserController.requestRegistration
+POST   /registration/confirm                   controllers.user.UserController.confirmRegistration
+POST   /recovery/request                       controllers.user.UserController.requestRecovery
+POST   /recovery/confirm                       controllers.user.UserController.confirmRecovery
+POST   /deletion/request                       controllers.user.UserController.requestDeletion
+POST   /deletion/confirm                       controllers.user.UserController.confirmDeletion
