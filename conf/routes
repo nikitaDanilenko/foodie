@@ -35,6 +35,7 @@ POST   /login                                  controllers.user.UserController.l
 POST   /logout                                 controllers.user.UserController.logout
 POST   /user/create                            controllers.user.UserController.create
 POST   /user/update                            controllers.user.UserController.update
+GET    /user/fetch                             controllers.user.UserController.fetch
 POST   /user/update/password                   controllers.user.UserController.updatePassword
 POST   /user/registration/request              controllers.user.UserController.requestRegistration
 POST   /user/registration/confirm              controllers.user.UserController.confirmRegistration

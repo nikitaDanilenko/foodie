@@ -103,6 +103,14 @@ class UserController @Inject() (
         )
     }
 
+  def fetch: Action[AnyContent] =
+    userAction {
+      _.pipe(_.user)
+        .pipe(_.transformInto[User])
+        .pipe(_.asJson)
+        .pipe(Ok(_))
+    }
+
   def updatePassword: Action[PasswordChangeRequest] =
     userAction.async(circe.tolerantJson[PasswordChangeRequest]) { request =>
       userService
