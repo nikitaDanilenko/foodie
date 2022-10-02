@@ -15,6 +15,7 @@ object ErrorContext {
 
   object Login {
     case object Failure extends ServerErrorInstance("Invalid combination of user name and password.")
+    case object Session extends ServerErrorInstance("The user has been logged out.")
   }
 
   object Authentication {
