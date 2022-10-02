@@ -7,8 +7,8 @@ import io.scalaland.chimney.dsl._
 import play.api.libs.circe.Circe
 import play.api.mvc._
 import security.jwt.{ JwtConfiguration, LoginContent }
-import services.UserId
 import services.user.{ User, UserService }
+import services.{ SessionId, UserId }
 import utils.TransformerUtils.Implicits._
 import utils.jwt.JwtUtil
 
@@ -29,18 +29,31 @@ class UserAction @Inject() (
         request.headers.get(RequestHeaders.userToken),
         ErrorContext.Authentication.Token.Missing.asServerError
       )
-      jwtContent <-
-        EitherT.fromEither[Future](JwtUtil.validateJwt[LoginContent](token, JwtConfiguration.default.signaturePublicKey))
-      user <- EitherT.fromOptionF[Future, ServerError, User](
+      loginContent <- EitherT.fromEither[Future](
+        JwtUtil.validateJwt[LoginContent](token, JwtConfiguration.default.signaturePublicKey)
+      )
+      userId    = loginContent.userId.transformInto[UserId]
+      sessionId = loginContent.sessionId.transformInto[SessionId]
+      _ <- EitherT(
         userService
-          .get(
-            jwtContent.userId.transformInto[UserId]
-          ),
+          .existsSession(
+            userId = userId,
+            sessionId = sessionId
+          )
+          .map { exists =>
+            if (exists)
+              Right(())
+            else Left(ErrorContext.Login.Session.asServerError)
+          }
+      )
+      user <- EitherT.fromOptionF[Future, ServerError, User](
+        userService.get(userId),
         ErrorContext.User.NotFound.asServerError
       )
     } yield UserRequest(
       request = request,
-      user = user
+      user = user,
+      sessionId = sessionId
     )
 
     transformer
