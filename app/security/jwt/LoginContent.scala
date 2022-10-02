@@ -6,5 +6,6 @@ import java.util.UUID
 
 @JsonCodec
 case class LoginContent(
-    userId: UUID
+    userId: UUID,
+    sessionId: UUID
 )
