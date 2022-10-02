@@ -32,6 +32,7 @@ DELETE /stats/reference/delete/:nutrientCode   controllers.stats.StatsController
 
 GET    /                                       controllers.home.HomeController.home
 POST   /login                                  controllers.user.UserController.login
+POST   /logout                                 controllers.user.UserController.logout
 POST   /user/create                            controllers.user.UserController.create
 POST   /user/update                            controllers.user.UserController.update
 POST   /user/update/password                   controllers.user.UserController.updatePassword

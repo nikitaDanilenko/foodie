@@ -4,6 +4,7 @@ import action.{ RequestHeaders, UserAction }
 import cats.data.{ EitherT, OptionT }
 import cats.effect.unsafe.implicits.global
 import cats.instances.future._
+import controllers.user.LogoutRequest.Mode
 import errors.{ ErrorContext, ServerError }
 import io.circe.Encoder
 import io.circe.syntax._
@@ -18,8 +19,8 @@ import services.user.{ PasswordParameters, UserService }
 import spire.math.Natural
 import utils.TransformerUtils.Implicits._
 import utils.jwt.JwtUtil
-import scala.util.chaining._
 
+import scala.util.chaining._
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ ExecutionContext, Future }
@@ -40,12 +41,15 @@ class UserController @Inject() (
   def login: Action[Credentials] =
     Action.async(circe.tolerantJson[Credentials]) { request =>
       val credentials = request.body
-      OptionT(userService.getByNickname(credentials.nickname))
-        .subflatMap { user =>
+      val transformer = for {
+        user      <- OptionT(userService.getByNickname(credentials.nickname))
+        sessionId <- OptionT.liftF(userService.addSession(user.id))
+        jwt <- OptionT.fromOption {
           if (UserController.validateCredentials(credentials, user)) {
             val jwt = JwtUtil.createJwt(
               content = LoginContent(
-                userId = user.id.transformInto[UUID]
+                userId = user.id.transformInto[UUID],
+                sessionId = sessionId.transformInto[UUID]
               ),
               privateKey = jwtConfiguration.signaturePrivateKey,
               expiration = JwtExpiration.Expiring(
@@ -56,9 +60,24 @@ class UserController @Inject() (
             Some(jwt)
           } else None
         }
+      } yield jwt
+
+      transformer
         .fold(
           BadRequest("Invalid credentials")
         )(jwt => Ok(jwt.asJson))
+    }
+
+  def logout: Action[LogoutRequest] =
+    userAction.async(circe.tolerantJson[LogoutRequest]) { request =>
+      (request.body.mode match {
+        case Mode.This => userService.deleteSession(request.user.id, request.sessionId)
+        case Mode.All  => userService.deleteAllSessions(request.user.id)
+      }).map(_.pipe(_.asJson).pipe(Ok(_)))
+        .recover {
+          case error =>
+            BadRequest(s"Error during logout: ${error.getMessage}")
+        }
     }
 
   // TODO: Remove after testing
@@ -166,7 +185,7 @@ class UserController @Inject() (
         recoveryJwt = createJwt(
           UserOperation(
             userId = user.id,
-            operation = UserOperation.Recovery: UserOperation.Recovery
+            operation = UserOperation.Operation.Recovery
           )
         )
         _ <- EitherT(
@@ -202,7 +221,7 @@ class UserController @Inject() (
           )
           userRecovery <- EitherT.fromEither[Future](
             JwtUtil
-              .validateJwt[UserOperation[UserOperation.Recovery]](token, jwtConfiguration.signaturePublicKey)
+              .validateJwt[UserOperation[UserOperation.Operation.Recovery]](token, jwtConfiguration.signaturePublicKey)
           )
           response <-
             EitherT.liftF(userService.updatePassword(userRecovery.userId.transformInto[UserId], request.body.password))
@@ -226,7 +245,7 @@ class UserController @Inject() (
                 jwt = createJwt(
                   UserOperation(
                     userId = request.user.id,
-                    operation = UserOperation.Deletion: UserOperation.Deletion
+                    operation = UserOperation.Operation.Deletion
                   )
                 )
               )
@@ -255,7 +274,7 @@ class UserController @Inject() (
           )
           userDeletion <- EitherT.fromEither[Future](
             JwtUtil
-              .validateJwt[UserOperation[UserOperation.Deletion]](token, jwtConfiguration.signaturePublicKey)
+              .validateJwt[UserOperation[UserOperation.Operation.Deletion]](token, jwtConfiguration.signaturePublicKey)
           )
           response <- EitherT.liftF(userService.delete(userDeletion.userId.transformInto[UserId]))
         } yield
