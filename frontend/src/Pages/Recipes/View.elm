@@ -33,8 +33,9 @@ view model =
     ViewUtil.viewWithErrorHandling
         { isFinished = Status.isFinished
         , initialization = Page.lenses.initialization.get
-        , flagsWithJWT = .flagsWithJWT
+        , configuration = .flagsWithJWT >> .configuration
         , currentPage = Just ViewUtil.Recipes
+        , showNavigation = True
         }
         model
     <|

@@ -9,51 +9,61 @@ import Monocle.Lens exposing (Lens)
 import Pages.Registration.Request.Page as Page
 import Pages.Util.Style as Style
 import Pages.Util.ValidatedInput as ValidatedInput
+import Pages.Util.ViewUtil as ViewUtil
 import Util.LensUtil as LensUtil
 
 
 view : Page.Model -> Html Page.Msg
 view model =
-    div [ Style.classes.request ]
-        [ div [] [ label [ Style.classes.info ] [ text "Registration" ] ]
-        , table []
-            [ tbody []
-                [ tr []
-                    [ td [] [ label [] [ text "Nickname" ] ]
-                    , td []
-                        [ input
-                            [ onInput
-                                (flip (ValidatedInput.lift LensUtil.identityLens).set model.nickname
-                                    >> Page.SetNickname
-                                )
-                            , onEnter Page.Request
-                            , Style.classes.editable
+    ViewUtil.viewWithErrorHandling
+        { isFinished = always True
+        , initialization = Page.lenses.initialization.get
+        , configuration = .configuration
+        , currentPage = Nothing
+        , showNavigation = False
+        }
+        model
+    <|
+        div [ Style.classes.request ]
+            [ div [] [ label [ Style.classes.info ] [ text "Registration" ] ]
+            , table []
+                [ tbody []
+                    [ tr []
+                        [ td [] [ label [] [ text "Nickname" ] ]
+                        , td []
+                            [ input
+                                [ onInput
+                                    (flip (ValidatedInput.lift LensUtil.identityLens).set model.nickname
+                                        >> Page.SetNickname
+                                    )
+                                , onEnter Page.Request
+                                , Style.classes.editable
+                                ]
+                                []
                             ]
-                            []
                         ]
-                    ]
-                , tr []
-                    [ td [] [ label [] [ text "Email" ] ]
-                    , td []
-                        [ input
-                            [ onInput
-                                (flip (ValidatedInput.lift LensUtil.identityLens).set model.email
-                                    >> Page.SetEmail
-                                )
-                            , onEnter Page.Request
-                            , Style.classes.editable
+                    , tr []
+                        [ td [] [ label [] [ text "Email" ] ]
+                        , td []
+                            [ input
+                                [ onInput
+                                    (flip (ValidatedInput.lift LensUtil.identityLens).set model.email
+                                        >> Page.SetEmail
+                                    )
+                                , onEnter Page.Request
+                                , Style.classes.editable
+                                ]
+                                []
                             ]
-                            []
                         ]
                     ]
                 ]
-            ]
-        , div []
-            [ button
-                [ onClick Page.Request
-                , Style.classes.button.confirm
-                , disabled <| not <| ValidatedInput.isValid model.nickname && ValidatedInput.isValid model.email
+            , div []
+                [ button
+                    [ onClick Page.Request
+                    , Style.classes.button.confirm
+                    , disabled <| not <| ValidatedInput.isValid model.nickname && ValidatedInput.isValid model.email
+                    ]
+                    [ text "Register" ]
                 ]
-                [ text "Register" ]
             ]
-        ]

@@ -1,12 +1,12 @@
 module Pages.Util.ViewUtil exposing (Page(..), pagerButtons, paginate, viewWithErrorHandling)
 
+import Configuration exposing (Configuration)
 import Html exposing (Html, button, div, label, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (disabled)
 import Html.Events exposing (onClick)
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.Links as Links
 import Pages.Util.PaginationSettings as PaginationSettings exposing (PaginationSettings)
 import Pages.Util.Style as Style
@@ -18,8 +18,9 @@ import Util.Initialization exposing (Initialization(..))
 viewWithErrorHandling :
     { isFinished : status -> Bool
     , initialization : model -> Initialization status
-    , flagsWithJWT : model -> FlagsWithJWT
+    , configuration : model -> Configuration
     , currentPage : Maybe Page
+    , showNavigation : Bool
     }
     -> model
     -> Html msg
@@ -27,7 +28,7 @@ viewWithErrorHandling :
 viewWithErrorHandling params model html =
     let
         mainPageURL =
-            model |> params.flagsWithJWT |> .configuration |> .mainPageURL
+            model |> params.configuration |> .mainPageURL
     in
     case params.initialization model of
         Failure explanation ->
@@ -67,20 +68,21 @@ viewWithErrorHandling params model html =
         Loading status ->
             if params.isFinished status then
                 let
-                    navigationLine =
-                        case params.currentPage of
-                            Just Overview ->
-                                []
+                    navigation =
+                        if params.showNavigation then
+                            [ navigationBar
+                                { mainPageURL = mainPageURL
+                                , currentPage = params.currentPage
+                                }
+                            ]
 
-                            _ ->
-                                [ navigationBar
-                                    { mainPageURL = mainPageURL
-                                    , currentPage = params.currentPage
-                                    }
-                                ]
+                        else
+                            []
                 in
                 div []
-                    (navigationLine ++ [ html ])
+                    (navigation
+                        ++ [ html ]
+                    )
 
             else
                 div [] [ Links.loadingSymbol ]
@@ -210,8 +212,6 @@ navigationBar ps =
                 ]
             ]
         ]
-
-
 
 
 pagerButtons :

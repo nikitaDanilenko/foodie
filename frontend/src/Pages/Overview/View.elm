@@ -13,8 +13,9 @@ view model =
     ViewUtil.viewWithErrorHandling
         { isFinished = Status.isFinished
         , initialization = .initialization
-        , flagsWithJWT = .flagsWithJWT
+        , configuration = .flagsWithJWT >> .configuration
         , currentPage = Just ViewUtil.Overview
+        , showNavigation = False
         }
         model
     <|
