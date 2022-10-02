@@ -151,7 +151,12 @@ class UserController @Inject() (
             .getByNicknameOrEmail(request.body.identifier),
           ErrorContext.User.NotFound.asServerError
         )
-        recoveryJwt = createJwt(UserContent(userId = user.id))
+        recoveryJwt = createJwt(
+          UserOperation(
+            userId = user.id,
+            operation = UserOperation.Operation.Recovery
+          )
+        )
         _ <- EitherT(
           mailService
             .sendEmail(
@@ -205,8 +210,12 @@ class UserController @Inject() (
               emailParameters = UserConfiguration.recoveryEmail(
                 userConfiguration,
                 userIdentifier = UserIdentifier.of(request.user),
-                // TODO: UserContent is too wonky - this way one can skip the confirmation!
-                jwt = createJwt(UserContent(userId = request.user.id))
+                jwt = createJwt(
+                  UserOperation(
+                    userId = request.user.id,
+                    operation = UserOperation.Operation.Deletion
+                  )
+                )
               )
             )
             .map(Right(_))
