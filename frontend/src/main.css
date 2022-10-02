@@ -329,7 +329,7 @@ th {
     margin-bottom: 20px;
 }
 
-#login {
+#login, .request {
     display: inline-block;
     text-align: center;
     width: 100%;
@@ -337,24 +337,43 @@ th {
 
 #login input,
 #login label,
-#login button {
+#login button,
+.request input,
+.request label,
+.request button {
     font-size: xx-large;
 }
 
-#login input {
+#login input,
+.request input {
     box-sizing: border-box;
     margin-bottom: 5px;
     width: 80%;
 }
 
-#login label {
+#login label,
+.request label {
     padding-right: 5px;
     width: 40%
 }
 
-#login button {
+#login button,
+.request button {
     margin-top: 5px;
     width: 30%;
+}
+
+.request .info {
+    font-size: xx-large;
+    font-weight: bold;
+    font-style: italic;
+    margin-bottom: 10px;
+}
+
+.request table {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
 }
 
 #error label {

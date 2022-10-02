@@ -1,7 +1,7 @@
 module Pages.Registration.Request.View exposing (..)
 
 import Basics.Extra exposing (flip)
-import Html exposing (Html, button, div, input, label, text)
+import Html exposing (Html, button, div, input, label, table, tbody, td, text, tr)
 import Html.Attributes exposing (disabled)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
@@ -14,31 +14,39 @@ import Util.LensUtil as LensUtil
 
 view : Page.Model -> Html Page.Msg
 view model =
-    div [ Style.ids.request ]
+    div [ Style.classes.request ]
         [ div [] [ label [ Style.classes.info ] [ text "Registration" ] ]
-        , div []
-            [ label [] [ text "Nickname" ]
-            , input
-                [ onInput
-                    (flip (ValidatedInput.lift LensUtil.identityLens).set model.nickname
-                        >> Page.SetNickname
-                    )
-                , onEnter Page.Request
-                , Style.classes.editable
+        , table []
+            [ tbody []
+                [ tr []
+                    [ td [] [ label [] [ text "Nickname" ] ]
+                    , td []
+                        [ input
+                            [ onInput
+                                (flip (ValidatedInput.lift LensUtil.identityLens).set model.nickname
+                                    >> Page.SetNickname
+                                )
+                            , onEnter Page.Request
+                            , Style.classes.editable
+                            ]
+                            []
+                        ]
+                    ]
+                , tr []
+                    [ td [] [ label [] [ text "Email" ] ]
+                    , td []
+                        [ input
+                            [ onInput
+                                (flip (ValidatedInput.lift LensUtil.identityLens).set model.email
+                                    >> Page.SetEmail
+                                )
+                            , onEnter Page.Request
+                            , Style.classes.editable
+                            ]
+                            []
+                        ]
+                    ]
                 ]
-                []
-            ]
-        , div []
-            [ label [] [ text "Email" ]
-            , input
-                [ onInput
-                    (flip (ValidatedInput.lift LensUtil.identityLens).set model.email
-                        >> Page.SetEmail
-                    )
-                , onEnter Page.Request
-                , Style.classes.editable
-                ]
-                []
             ]
         , div []
             [ button

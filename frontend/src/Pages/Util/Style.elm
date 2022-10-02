@@ -42,6 +42,7 @@ classes :
         , exact : Attribute msg
         , high : Attribute msg
         }
+    , request : Attribute msg
     , search :
         { area : Attribute msg
         , field : Attribute msg
@@ -87,6 +88,7 @@ classes =
         , exact = class "exact"
         , high = class "high"
         }
+        , request = class "request"
     , search =
         { area = class "searchArea"
         , field = class "searchField"
@@ -110,7 +112,6 @@ ids :
     , recipesButton : Attribute msg
     , referenceNutrientEditor : Attribute msg
     , referenceNutrientsButton : Attribute msg
-    , request : Attribute msg
     , statistics : Attribute msg
     , statisticsButton : Attribute msg
     }
@@ -128,7 +129,7 @@ ids =
     , recipesButton = id "recipesButton"
     , referenceNutrientEditor = id "referenceNutrientEditor"
     , referenceNutrientsButton = id "referenceNutrientsButton"
-    , request = id "request"
+
     , statistics = id "statistics"
     , statisticsButton = id "statisticsButton"
     }
