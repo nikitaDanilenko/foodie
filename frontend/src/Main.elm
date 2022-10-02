@@ -27,6 +27,9 @@ import Pages.Recipes.View
 import Pages.ReferenceNutrients.Handler
 import Pages.ReferenceNutrients.Page
 import Pages.ReferenceNutrients.View
+import Pages.Registration.Request.Handler
+import Pages.Registration.Request.Page
+import Pages.Registration.Request.View
 import Pages.Statistics.Handler
 import Pages.Statistics.Page
 import Pages.Statistics.View
@@ -80,6 +83,7 @@ type Page
     | MealEntries Pages.MealEntries.Page.Model
     | Statistics Pages.Statistics.Page.Model
     | ReferenceNutrients Pages.ReferenceNutrients.Page.Model
+    | RequestRegistration Pages.Registration.Request.Page.Model
     | NotFound
 
 
@@ -98,6 +102,7 @@ type Msg
     | MealEntriesMsg Pages.MealEntries.Page.Msg
     | StatisticsMsg Pages.Statistics.Page.Msg
     | ReferenceNutrientsMsg Pages.ReferenceNutrients.Page.Msg
+    | RequestRegistrationMsg Pages.Registration.Request.Page.Msg
 
 
 titleFor : Model -> String
@@ -145,6 +150,9 @@ view model =
 
         ReferenceNutrients referenceNutrients ->
             Html.map ReferenceNutrientsMsg (Pages.ReferenceNutrients.View.view referenceNutrients)
+
+        RequestRegistration requestRegistration ->
+            Html.map RequestRegistrationMsg (Pages.Registration.Request.View.view requestRegistration)
 
         NotFound ->
             div [] [ text "Page not found" ]
@@ -194,6 +202,9 @@ update msg model =
                 ReferenceNutrients referenceNutrients ->
                     stepThrough steps.referenceNutrients model (Pages.ReferenceNutrients.Handler.update (Pages.ReferenceNutrients.Page.UpdateJWT token) referenceNutrients)
 
+                RequestRegistration _ ->
+                    ( jwtLens.set (Just token) model, Cmd.none )
+
                 NotFound ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
@@ -226,6 +237,9 @@ update msg model =
 
         ( ReferenceNutrientsMsg referenceNutrientsMsg, ReferenceNutrients referenceNutrients ) ->
             stepThrough steps.referenceNutrients model (Pages.ReferenceNutrients.Handler.update referenceNutrientsMsg referenceNutrients)
+
+        ( RequestRegistrationMsg requestRegistrationMsg, RequestRegistration requestRegistration ) ->
+            stepThrough steps.requestRegistration model (Pages.Registration.Request.Handler.update requestRegistrationMsg requestRegistration)
 
         _ ->
             ( model, Cmd.none )
@@ -260,6 +274,8 @@ stepTo url model =
                 ReferenceNutrientsRoute flags ->
                     Pages.ReferenceNutrients.Handler.init flags |> stepThrough steps.referenceNutrients model
 
+                RequestRegistrationRoute flags ->
+                    Pages.Registration.Request.Handler.init flags |> stepThrough steps.requestRegistration model
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -279,6 +295,7 @@ steps :
     , meals : StepParameters Pages.Meals.Page.Model Pages.Meals.Page.Msg
     , statistics : StepParameters Pages.Statistics.Page.Model Pages.Statistics.Page.Msg
     , referenceNutrients : StepParameters Pages.ReferenceNutrients.Page.Model Pages.ReferenceNutrients.Page.Msg
+    , requestRegistration : StepParameters Pages.Registration.Request.Page.Model Pages.Registration.Request.Page.Msg
     }
 steps =
     { login = StepParameters Login LoginMsg
@@ -289,6 +306,7 @@ steps =
     , meals = StepParameters Meals MealsMsg
     , statistics = StepParameters Statistics StatisticsMsg
     , referenceNutrients = StepParameters ReferenceNutrients ReferenceNutrientsMsg
+    , requestRegistration = StepParameters RequestRegistration RequestRegistrationMsg
     }
 
 
@@ -306,6 +324,7 @@ type Route
     | MealEntriesRoute Pages.MealEntries.Page.Flags
     | StatisticsRoute Pages.Statistics.Page.Flags
     | ReferenceNutrientsRoute Pages.ReferenceNutrients.Page.Flags
+    | RequestRegistrationRoute Pages.Registration.Request.Page.Flags
 
 
 routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
@@ -349,6 +368,9 @@ routeParser jwt configuration =
         referenceNutrientParser =
             s "reference-nutrients" |> Parser.map flags
 
+        requestRegistrationParser =
+            s "request-registration" |> Parser.map { configuration = configuration }
+
         flags =
             { configuration = configuration, jwt = jwt }
     in
@@ -361,6 +383,7 @@ routeParser jwt configuration =
         , route mealEntriesParser MealEntriesRoute
         , route statisticsParser StatisticsRoute
         , route referenceNutrientParser ReferenceNutrientsRoute
+        , route requestRegistrationParser RequestRegistrationRoute
         ]
 
 
