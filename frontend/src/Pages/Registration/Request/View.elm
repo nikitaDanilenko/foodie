@@ -2,6 +2,7 @@ module Pages.Registration.Request.View exposing (..)
 
 import Basics.Extra exposing (flip)
 import Html exposing (Html, button, div, input, label, text)
+import Html.Attributes exposing (disabled)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Monocle.Lens exposing (Lens)
@@ -14,7 +15,8 @@ import Util.LensUtil as LensUtil
 view : Page.Model -> Html Page.Msg
 view model =
     div [ Style.ids.request ]
-        [ div []
+        [ div [] [ label [ Style.classes.info ] [ text "Registration" ] ]
+        , div []
             [ label [] [ text "Nickname" ]
             , input
                 [ onInput
@@ -39,5 +41,11 @@ view model =
                 []
             ]
         , div []
-            [ button [ onClick Page.Request, Style.classes.button.confirm ] [ text "Register" ] ]
+            [ button
+                [ onClick Page.Request
+                , Style.classes.button.confirm
+                , disabled <| not <| ValidatedInput.isValid model.nickname && ValidatedInput.isValid model.email
+                ]
+                [ text "Register" ]
+            ]
         ]
