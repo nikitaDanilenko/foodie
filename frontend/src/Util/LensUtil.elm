@@ -43,3 +43,7 @@ initializationField initializationLens subLens =
     initializationLens
         |> Compose.lensWithOptional Initialization.lenses.loading
         |> Compose.optionalWithLens subLens
+
+identityLens : Lens a a
+identityLens =
+    Lens identity always
