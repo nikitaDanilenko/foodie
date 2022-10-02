@@ -110,6 +110,7 @@ ids :
     , recipesButton : Attribute msg
     , referenceNutrientEditor : Attribute msg
     , referenceNutrientsButton : Attribute msg
+    , request : Attribute msg
     , statistics : Attribute msg
     , statisticsButton : Attribute msg
     }
@@ -127,6 +128,7 @@ ids =
     , recipesButton = id "recipesButton"
     , referenceNutrientEditor = id "referenceNutrientEditor"
     , referenceNutrientsButton = id "referenceNutrientsButton"
+    , request = id "request"
     , statistics = id "statistics"
     , statisticsButton = id "statisticsButton"
     }
