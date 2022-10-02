@@ -12,7 +12,7 @@ view : Page.Model -> Html Page.Msg
 view _ =
     div [ Style.ids.login ]
         [ div []
-            [ label [ ] [ text "Nickname" ]
+            [ label [] [ text "Nickname" ]
             , input
                 [ autocomplete True
                 , onInput Page.SetNickname
