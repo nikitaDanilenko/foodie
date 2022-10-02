@@ -247,7 +247,7 @@ class UserController @Inject() (
         _ <- EitherT(
           mailService
             .sendEmail(
-              emailParameters = UserConfiguration.recoveryEmail(
+              emailParameters = UserConfiguration.deletionEmail(
                 userConfiguration,
                 userIdentifier = UserIdentifier.of(request.user),
                 jwt = createJwt(
