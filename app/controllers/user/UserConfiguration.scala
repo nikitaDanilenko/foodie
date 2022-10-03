@@ -91,7 +91,7 @@ object UserConfiguration {
            |
            |${addressWithMessage.message}
            |
-           |${userConfiguration.frontend}/#/${addressWithMessage.suffix}/${userIdentifier.nickname}/${userIdentifier.email}/$jwt
+           |${userConfiguration.frontend}/#/${addressWithMessage.suffix}/nickname/${userIdentifier.nickname}/email/${userIdentifier.email}/token/$jwt
            |
            |${userConfiguration.closing}""".stripMargin
 
