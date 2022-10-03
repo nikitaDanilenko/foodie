@@ -1,16 +1,13 @@
-module Pages.Registration.Request.View exposing (..)
+module Pages.Registration.Confirm.View exposing (view)
 
-import Basics.Extra exposing (flip)
 import Html exposing (Html, button, div, input, label, table, tbody, td, text, tr)
 import Html.Attributes exposing (disabled)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
-import Monocle.Lens exposing (Lens)
-import Pages.Registration.Request.Page as Page
+import Maybe.Extra
+import Pages.Registration.Confirm.Page as Page
 import Pages.Util.Style as Style
-import Pages.Util.ValidatedInput as ValidatedInput
 import Pages.Util.ViewUtil as ViewUtil
-import Util.LensUtil as LensUtil
 
 
 view : Page.Model -> Html Page.Msg
@@ -26,7 +23,7 @@ view model =
     <|
         let
             isValid =
-                ValidatedInput.isValid model.nickname && ValidatedInput.isValid model.email
+                model.password1 == model.password2
 
             enterAction =
                 if isValid then
@@ -35,18 +32,16 @@ view model =
                 else
                     []
         in
-        div [ Style.classes.request ]
-            [ div [] [ label [ Style.classes.info ] [ text "Registration" ] ]
+        div [ Style.classes.confirmation ]
+            [ div [] [ label [ Style.classes.info ] [ text "Confirm registration" ] ]
             , table []
                 [ tbody []
                     [ tr []
-                        [ td [] [ label [] [ text "Nickname" ] ]
+                        [ td [] [ label [] [ text "Display name (optional)" ] ]
                         , td []
                             [ input
                                 ([ onInput
-                                    (flip (ValidatedInput.lift LensUtil.identityLens).set model.nickname
-                                        >> Page.SetNickname
-                                    )
+                                    (Just >> Maybe.Extra.filter (String.isEmpty >> not) >> Page.SetDisplayName)
                                  , Style.classes.editable
                                  ]
                                     ++ enterAction
@@ -55,13 +50,22 @@ view model =
                             ]
                         ]
                     , tr []
-                        [ td [] [ label [] [ text "Email" ] ]
+                        [ td [] [ label [] [ text "Password" ] ]
                         , td []
                             [ input
-                                ([ onInput
-                                    (flip (ValidatedInput.lift LensUtil.identityLens).set model.email
-                                        >> Page.SetEmail
-                                    )
+                                ([ onInput Page.SetPassword1
+                                 , Style.classes.editable
+                                 ]
+                                    ++ enterAction
+                                )
+                                []
+                            ]
+                        ]
+                    , tr []
+                        [ td [] [ label [] [ text "Password repetition" ] ]
+                        , td []
+                            [ input
+                                ([ onInput Page.SetPassword2
                                  , Style.classes.editable
                                  ]
                                     ++ enterAction
@@ -75,8 +79,8 @@ view model =
                 [ button
                     [ onClick Page.Request
                     , Style.classes.button.confirm
-                    , disabled <| not <| ValidatedInput.isValid model.nickname && ValidatedInput.isValid model.email
+                    , disabled <| not <| isValid
                     ]
-                    [ text "Register" ]
+                    [ text "Confirm" ]
                 ]
             ]
