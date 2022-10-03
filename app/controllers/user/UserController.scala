@@ -49,7 +49,8 @@ class UserController @Inject() (
             val jwt = JwtUtil.createJwt(
               content = LoginContent(
                 userId = user.id.transformInto[UUID],
-                sessionId = sessionId.transformInto[UUID]
+                sessionId = sessionId.transformInto[UUID],
+                nickname = user.nickname
               ),
               privateKey = jwtConfiguration.signaturePrivateKey,
               expiration = JwtExpiration.Expiring(
