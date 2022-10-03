@@ -158,9 +158,9 @@ class UserController @Inject() (
       )
     }
 
-  def confirmRegistration: Action[UserCreation] =
-    Action.async(circe.tolerantJson[UserCreation]) { request =>
-      val userCreation = request.body
+  def confirmRegistration: Action[CreationComplement] =
+    Action.async(circe.tolerantJson[CreationComplement]) { request =>
+      val creationComplement = request.body
       toResult("An error occurred while creating the user") {
         for {
           token <- EitherT.fromOption(
@@ -170,12 +170,11 @@ class UserController @Inject() (
           registrationRequest <- EitherT.fromEither[Future](
             JwtUtil.validateJwt[UserIdentifier](token, jwtConfiguration.signaturePublicKey)
           )
-          _ <- EitherT.fromEither(
-            if (
-              userCreation.email == registrationRequest.email && userCreation.nickname == registrationRequest.nickname
-            )
-              Right(())
-            else Left(ErrorContext.User.Mismatch.asServerError)
+          userCreation = UserCreation(
+            nickname = registrationRequest.nickname,
+            password = creationComplement.password,
+            displayName = creationComplement.displayName,
+            email = registrationRequest.email
           )
           result <- createUser(userCreation)
         } yield result
