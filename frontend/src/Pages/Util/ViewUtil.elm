@@ -1,9 +1,12 @@
 module Pages.Util.ViewUtil exposing (Page(..), pagerButtons, paginate, viewWithErrorHandling)
 
+import Api.Auxiliary exposing (JWT)
+import Api.Types.LoginContent exposing (decoderLoginContent)
 import Configuration exposing (Configuration)
 import Html exposing (Html, button, div, label, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (disabled)
 import Html.Events exposing (onClick)
+import Jwt
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
@@ -19,6 +22,7 @@ viewWithErrorHandling :
     { isFinished : status -> Bool
     , initialization : model -> Initialization status
     , configuration : model -> Configuration
+    , jwt : model -> Maybe JWT
     , currentPage : Maybe Page
     , showNavigation : Bool
     }
@@ -68,11 +72,24 @@ viewWithErrorHandling params model html =
         Loading status ->
             if params.isFinished status then
                 let
+                    unknown =
+                        "<unknown>"
+
+                    nickname =
+                        model
+                            |> params.jwt
+                            |> Maybe.andThen
+                                (Jwt.decodeToken decoderLoginContent
+                                    >> Result.toMaybe
+                                )
+                            |> Maybe.Extra.unwrap unknown .nickname
+
                     navigation =
                         if params.showNavigation then
                             [ navigationBar
                                 { mainPageURL = mainPageURL
                                 , currentPage = params.currentPage
+                                , nickname = nickname
                                 }
                             ]
 
@@ -93,13 +110,14 @@ type Page
     | Meals
     | Statistics
     | ReferenceNutrients
+    | UserSettings String
     | Login
     | Overview
 
 
-navigationPages : List Page
-navigationPages =
-    [ Recipes, Meals, Statistics, ReferenceNutrients ]
+navigationPages : String -> List Page
+navigationPages nickname =
+    [ Recipes, Meals, Statistics, ReferenceNutrients, UserSettings nickname ]
 
 
 addressSuffix : Page -> String
@@ -116,6 +134,9 @@ addressSuffix page =
 
         ReferenceNutrients ->
             "reference-nutrients"
+
+        UserSettings _ ->
+            "user-settings"
 
         Login ->
             "login"
@@ -138,6 +159,9 @@ nameOf page =
 
         ReferenceNutrients ->
             "Reference nutrients"
+
+        UserSettings nickname ->
+            nickname
 
         Login ->
             "Login"
@@ -190,6 +214,7 @@ navigationToPageButton ps =
 navigationBar :
     { mainPageURL : String
     , currentPage : Maybe Page
+    , nickname : String
     }
     -> Html msg
 navigationBar ps =
@@ -197,7 +222,7 @@ navigationBar ps =
         [ table []
             [ thead []
                 [ tr []
-                    (navigationPages
+                    (navigationPages ps.nickname
                         |> List.map
                             (\page ->
                                 th []

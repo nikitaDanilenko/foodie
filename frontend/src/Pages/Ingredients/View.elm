@@ -41,6 +41,7 @@ view model =
         { isFinished = Status.isFinished
         , initialization = .initialization
         , configuration = .flagsWithJWT >> .configuration
+        , jwt = .flagsWithJWT >> .jwt >> Just
         , currentPage = Nothing
         , showNavigation = True
         }

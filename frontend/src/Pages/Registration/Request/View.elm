@@ -19,6 +19,7 @@ view model =
         { isFinished = always True
         , initialization = Page.lenses.initialization.get
         , configuration = .configuration
+        , jwt = always Nothing
         , currentPage = Nothing
         , showNavigation = False
         }

@@ -34,6 +34,7 @@ view model =
         { isFinished = Status.isFinished
         , initialization = Page.lenses.initialization.get
         , configuration = .flagsWithJWT >> .configuration
+        , jwt = .flagsWithJWT >> .jwt >> Just
         , currentPage = Just ViewUtil.Recipes
         , showNavigation = True
         }
