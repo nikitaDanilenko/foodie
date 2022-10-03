@@ -17,6 +17,7 @@ import controllers.stats.{
   ReferenceNutrientUpdate,
   Stats
 }
+import security.jwt.LoginContent
 import shapeless.Lazy
 import utils.date.{ Date, SimpleDate, Time }
 
@@ -112,6 +113,7 @@ object Bridge {
     mkAndWrite[Nutrient]
     mkAndWrite[UserIdentifier]
     mkAndWrite[CreationComplement]
+    mkAndWrite[LoginContent]
   }
 
 }
