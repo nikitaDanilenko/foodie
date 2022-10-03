@@ -32,7 +32,7 @@ view model =
                 else
                     []
         in
-        div [ Style.classes.confirmation ]
+        div [ Style.classes.confirm ]
             [ div [] [ label [ Style.classes.info ] [ text "Confirm registration" ] ]
             , table []
                 [ tbody []

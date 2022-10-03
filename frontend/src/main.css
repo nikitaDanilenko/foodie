@@ -329,7 +329,7 @@ th {
     margin-bottom: 20px;
 }
 
-#login, .request {
+#login, .request, .confirm {
     display: inline-block;
     text-align: center;
     width: 100%;
@@ -340,37 +340,45 @@ th {
 #login button,
 .request input,
 .request label,
-.request button {
+.request button,
+.confirm input,
+.confirm label,
+.confirm button {
     font-size: xx-large;
 }
 
 #login input,
-.request input {
+.request input,
+.confirm input {
     box-sizing: border-box;
     margin-bottom: 5px;
     width: 80%;
 }
 
 #login label,
-.request label {
+.request label,
+.confirm label {
     padding-right: 5px;
     width: 40%
 }
 
 #login button,
-.request button {
+.request button,
+.confirm button {
     margin-top: 5px;
     width: 30%;
 }
 
-.request .info {
+.request .info,
+.confirm .info {
     font-size: xx-large;
     font-weight: bold;
     font-style: italic;
     margin-bottom: 10px;
 }
 
-.request table {
+.request table,
+.confirm table {
     margin-left: auto;
     margin-right: auto;
     text-align: left;

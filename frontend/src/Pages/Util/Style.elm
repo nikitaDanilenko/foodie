@@ -20,7 +20,7 @@ classes :
         }
     , choices : Attribute msg
     , choiceTable : Attribute msg
-    , confirmation : Attribute msg
+    , confirm : Attribute msg
     , controlsGroup : Attribute msg
     , controls : Attribute msg
     , date : Attribute msg
@@ -67,7 +67,7 @@ classes =
         }
     , choices = class "choices"
     , choiceTable = class "choiceTable"
-    , confirmation = class "confirmation"
+    , confirm = class "confirm"
     , controlsGroup = class "controlsGroup"
     , controls = class "controls"
     , date = class "date"
