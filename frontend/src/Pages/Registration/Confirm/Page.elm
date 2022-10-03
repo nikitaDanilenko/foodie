@@ -5,14 +5,13 @@ import Api.Types.UserIdentifier exposing (UserIdentifier)
 import Configuration exposing (Configuration)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
+import Pages.Util.ComplementInput exposing (ComplementInput)
 import Util.Initialization exposing (Initialization)
 
 
 type alias Model =
     { userIdentifier : UserIdentifier
-    , displayName : Maybe String
-    , password1 : String
-    , password2 : String
+    , complementInput : ComplementInput
     , configuration : Configuration
     , initialization : Initialization ()
     , registrationJWT : JWT
@@ -20,15 +19,11 @@ type alias Model =
 
 
 lenses :
-    { displayName : Lens Model (Maybe String)
-    , password1 : Lens Model String
-    , password2 : Lens Model String
+    { complementInput : Lens Model ComplementInput
     , initialization : Lens Model (Initialization ())
     }
 lenses =
-    { displayName = Lens .displayName (\b a -> { a | displayName = b })
-    , password1 = Lens .password1 (\b a -> { a | password1 = b })
-    , password2 = Lens .password2 (\b a -> { a | password2 = b })
+    { complementInput = Lens .complementInput (\b a -> { a | complementInput = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     }
 
@@ -36,7 +31,7 @@ lenses =
 type alias Flags =
     { configuration : Configuration
     , userIdentifier : UserIdentifier
-    , registrationJWT: JWT
+    , registrationJWT : JWT
     }
 
 
