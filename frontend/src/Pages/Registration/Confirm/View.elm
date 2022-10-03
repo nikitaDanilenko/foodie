@@ -1,11 +1,13 @@
 module Pages.Registration.Confirm.View exposing (view)
 
+import Basics.Extra exposing (flip)
 import Html exposing (Html, button, div, input, label, table, tbody, td, text, tr)
 import Html.Attributes exposing (disabled, type_)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Maybe.Extra
 import Pages.Registration.Confirm.Page as Page
+import Pages.Util.ComplementInput as ComplementInput
 import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil
 
@@ -24,7 +26,7 @@ view model =
     <|
         let
             isValid =
-                model.password1 == model.password2
+                ComplementInput.isValidPassword model.complementInput
 
             enterAction =
                 if isValid then
@@ -50,7 +52,13 @@ view model =
                         , td []
                             [ input
                                 ([ onInput
-                                    (Just >> Maybe.Extra.filter (String.isEmpty >> not) >> Page.SetDisplayName)
+                                    (Just
+                                        >> Maybe.Extra.filter (String.isEmpty >> not)
+                                        >> (flip ComplementInput.lenses.displayName.set
+                                                model.complementInput
+                                                >> Page.SetComplementInput
+                                           )
+                                    )
                                  , Style.classes.editable
                                  ]
                                     ++ enterAction
@@ -62,7 +70,11 @@ view model =
                         [ td [] [ label [] [ text "Password" ] ]
                         , td []
                             [ input
-                                ([ onInput Page.SetPassword1
+                                ([ onInput
+                                    (flip ComplementInput.lenses.password1.set
+                                        model.complementInput
+                                        >> Page.SetComplementInput
+                                    )
                                  , type_ "password"
                                  , Style.classes.editable
                                  ]
@@ -75,7 +87,11 @@ view model =
                         [ td [] [ label [] [ text "Password repetition" ] ]
                         , td []
                             [ input
-                                ([ onInput Page.SetPassword2
+                                ([ onInput
+                                    (flip ComplementInput.lenses.password2.set
+                                        model.complementInput
+                                        >> Page.SetComplementInput
+                                    )
                                  , type_ "password"
                                  , Style.classes.editable
                                  ]

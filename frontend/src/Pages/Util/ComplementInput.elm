@@ -28,3 +28,8 @@ lenses =
     , password1 = Lens .password1 (\b a -> { a | password1 = b })
     , password2 = Lens .password2 (\b a -> { a | password2 = b })
     }
+
+
+isValidPassword : ComplementInput -> Bool
+isValidPassword complementInput =
+    complementInput.password1 == complementInput.password2

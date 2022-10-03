@@ -36,9 +36,7 @@ type alias Flags =
 
 
 type Msg
-    = SetDisplayName (Maybe String)
-    | SetPassword1 String
-    | SetPassword2 String
+    = SetComplementInput ComplementInput
     | Request
     | GotResponse (Result Error ())
     | NavigateToMain
