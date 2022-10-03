@@ -1,13 +1,25 @@
-module Pages.Util.ParserUtil exposing (..)
+module Pages.Util.ParserUtil exposing (userIdentifierParser, uuidParser)
 
 import Api.Types.UUID exposing (UUID)
+import Api.Types.UserIdentifier exposing (UserIdentifier)
 import List.Extra
-import Url.Parser as Parser exposing (Parser)
+import Url.Parser as Parser exposing ((</>), Parser, s)
 
 
 uuidParser : Parser (UUID -> b) b
 uuidParser =
     Parser.custom "UUID" matchUuid
+
+
+userIdentifierParser : Parser (UserIdentifier -> b) b
+userIdentifierParser =
+    (s "nickname"
+        </> Parser.string
+        </> s "email"
+        </> Parser.string
+    )
+        |> Parser.map
+            UserIdentifier
 
 
 

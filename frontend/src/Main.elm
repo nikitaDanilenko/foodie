@@ -363,12 +363,7 @@ routeParser jwt configuration =
         ingredientParser =
             (s "ingredient-editor" </> ParserUtil.uuidParser)
                 |> Parser.map
-                    (\recipeId ->
-                        { recipeId = recipeId
-                        , configuration = configuration
-                        , jwt = jwt
-                        }
-                    )
+                    (Pages.Ingredients.Page.Flags configuration jwt)
 
         mealsParser =
             s "meals" |> Parser.map flags
@@ -376,12 +371,7 @@ routeParser jwt configuration =
         mealEntriesParser =
             (s "meal-entry-editor" </> ParserUtil.uuidParser)
                 |> Parser.map
-                    (\mealId ->
-                        { mealId = mealId
-                        , configuration = configuration
-                        , jwt = jwt
-                        }
-                    )
+                    (Pages.MealEntries.Page.Flags configuration jwt)
 
         statisticsParser =
             s "statistics" |> Parser.map flags
@@ -393,14 +383,9 @@ routeParser jwt configuration =
             s "request-registration" |> Parser.map { configuration = configuration }
 
         confirmRegistrationParser =
-            (s "confirm-registration" </> s "nickname" </> Parser.string </> s "email" </> Parser.string </> s "token" </> Parser.string)
+            (s "confirm-registration" </> ParserUtil.userIdentifierParser </> s "token" </> Parser.string)
                 |> Parser.map
-                    (\nickname email token ->
-                        { configuration = configuration
-                        , userIdentifier = { nickname = nickname, email = email }
-                        , registrationJWT = token
-                        }
-                    )
+                    (Pages.Registration.Confirm.Page.Flags configuration)
 
         flags =
             { configuration = configuration, jwt = jwt }
