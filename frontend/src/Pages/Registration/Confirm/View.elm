@@ -1,7 +1,7 @@
 module Pages.Registration.Confirm.View exposing (view)
 
 import Html exposing (Html, button, div, input, label, table, tbody, td, text, tr)
-import Html.Attributes exposing (disabled)
+import Html.Attributes exposing (disabled, type_)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Maybe.Extra
@@ -37,6 +37,14 @@ view model =
             , table []
                 [ tbody []
                     [ tr []
+                        [ td [] [ label [] [ text "Nickname" ] ]
+                        , td [] [ label [] [ text <| model.userIdentifier.nickname ] ]
+                        ]
+                    , tr []
+                        [ td [] [ label [] [ text "Email" ] ]
+                        , td [] [ label [] [ text <| model.userIdentifier.email ] ]
+                        ]
+                    , tr []
                         [ td [] [ label [] [ text "Display name (optional)" ] ]
                         , td []
                             [ input
@@ -54,6 +62,7 @@ view model =
                         , td []
                             [ input
                                 ([ onInput Page.SetPassword1
+                                 , type_ "password"
                                  , Style.classes.editable
                                  ]
                                     ++ enterAction
@@ -66,6 +75,7 @@ view model =
                         , td []
                             [ input
                                 ([ onInput Page.SetPassword2
+                                 , type_ "password"
                                  , Style.classes.editable
                                  ]
                                     ++ enterAction
