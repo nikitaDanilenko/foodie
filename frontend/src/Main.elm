@@ -27,6 +27,9 @@ import Pages.Recipes.View
 import Pages.ReferenceNutrients.Handler
 import Pages.ReferenceNutrients.Page
 import Pages.ReferenceNutrients.View
+import Pages.Registration.Confirm.Handler
+import Pages.Registration.Confirm.Page
+import Pages.Registration.Confirm.View
 import Pages.Registration.Request.Handler
 import Pages.Registration.Request.Page
 import Pages.Registration.Request.View
@@ -84,6 +87,7 @@ type Page
     | Statistics Pages.Statistics.Page.Model
     | ReferenceNutrients Pages.ReferenceNutrients.Page.Model
     | RequestRegistration Pages.Registration.Request.Page.Model
+    | ConfirmRegistration Pages.Registration.Confirm.Page.Model
     | NotFound
 
 
@@ -103,6 +107,7 @@ type Msg
     | StatisticsMsg Pages.Statistics.Page.Msg
     | ReferenceNutrientsMsg Pages.ReferenceNutrients.Page.Msg
     | RequestRegistrationMsg Pages.Registration.Request.Page.Msg
+    | ConfirmRegistrationMsg Pages.Registration.Confirm.Page.Msg
 
 
 titleFor : Model -> String
@@ -154,6 +159,9 @@ view model =
         RequestRegistration requestRegistration ->
             Html.map RequestRegistrationMsg (Pages.Registration.Request.View.view requestRegistration)
 
+        ConfirmRegistration confirmRegistration ->
+            Html.map ConfirmRegistrationMsg (Pages.Registration.Confirm.View.view confirmRegistration)
+
         NotFound ->
             div [] [ text "Page not found" ]
 
@@ -178,9 +186,6 @@ update msg model =
         -- todo: Check all cases, and possibly refactor to have less duplication.
         ( FetchToken token, page ) ->
             case page of
-                Login _ ->
-                    ( jwtLens.set (Just token) model, Cmd.none )
-
                 Overview overview ->
                     stepThrough steps.overview model (Pages.Overview.Handler.update (Pages.Overview.Page.UpdateJWT token) overview)
 
@@ -203,6 +208,12 @@ update msg model =
                     stepThrough steps.referenceNutrients model (Pages.ReferenceNutrients.Handler.update (Pages.ReferenceNutrients.Page.UpdateJWT token) referenceNutrients)
 
                 RequestRegistration _ ->
+                    ( jwtLens.set (Just token) model, Cmd.none )
+
+                ConfirmRegistration _ ->
+                    ( jwtLens.set (Just token) model, Cmd.none )
+
+                Login _ ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
                 NotFound ->
@@ -241,6 +252,9 @@ update msg model =
         ( RequestRegistrationMsg requestRegistrationMsg, RequestRegistration requestRegistration ) ->
             stepThrough steps.requestRegistration model (Pages.Registration.Request.Handler.update requestRegistrationMsg requestRegistration)
 
+        ( ConfirmRegistrationMsg requestRegistrationMsg, ConfirmRegistration requestRegistration ) ->
+            stepThrough steps.confirmRegistration model (Pages.Registration.Confirm.Handler.update requestRegistrationMsg requestRegistration)
+
         _ ->
             ( model, Cmd.none )
 
@@ -276,6 +290,10 @@ stepTo url model =
 
                 RequestRegistrationRoute flags ->
                     Pages.Registration.Request.Handler.init flags |> stepThrough steps.requestRegistration model
+
+                ConfirmRegistrationRoute flags ->
+                    Pages.Registration.Confirm.Handler.init flags |> stepThrough steps.confirmRegistration model
+
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -296,6 +314,7 @@ steps :
     , statistics : StepParameters Pages.Statistics.Page.Model Pages.Statistics.Page.Msg
     , referenceNutrients : StepParameters Pages.ReferenceNutrients.Page.Model Pages.ReferenceNutrients.Page.Msg
     , requestRegistration : StepParameters Pages.Registration.Request.Page.Model Pages.Registration.Request.Page.Msg
+    , confirmRegistration : StepParameters Pages.Registration.Confirm.Page.Model Pages.Registration.Confirm.Page.Msg
     }
 steps =
     { login = StepParameters Login LoginMsg
@@ -307,6 +326,7 @@ steps =
     , statistics = StepParameters Statistics StatisticsMsg
     , referenceNutrients = StepParameters ReferenceNutrients ReferenceNutrientsMsg
     , requestRegistration = StepParameters RequestRegistration RequestRegistrationMsg
+    , confirmRegistration = StepParameters ConfirmRegistration ConfirmRegistrationMsg
     }
 
 
@@ -325,6 +345,7 @@ type Route
     | StatisticsRoute Pages.Statistics.Page.Flags
     | ReferenceNutrientsRoute Pages.ReferenceNutrients.Page.Flags
     | RequestRegistrationRoute Pages.Registration.Request.Page.Flags
+    | ConfirmRegistrationRoute Pages.Registration.Confirm.Page.Flags
 
 
 routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
@@ -371,6 +392,16 @@ routeParser jwt configuration =
         requestRegistrationParser =
             s "request-registration" |> Parser.map { configuration = configuration }
 
+        confirmRegistrationParser =
+            (s "confirm-registration" </> s "nickname" </> Parser.string </> s "email" </> Parser.string </> s "token" </> Parser.string)
+                |> Parser.map
+                    (\nickname email token ->
+                        { configuration = configuration
+                        , userIdentifier = { nickname = nickname, email = email }
+                        , registrationJWT = token
+                        }
+                    )
+
         flags =
             { configuration = configuration, jwt = jwt }
     in
@@ -384,6 +415,7 @@ routeParser jwt configuration =
         , route statisticsParser StatisticsRoute
         , route referenceNutrientParser ReferenceNutrientsRoute
         , route requestRegistrationParser RequestRegistrationRoute
+        , route confirmRegistrationParser ConfirmRegistrationRoute
         ]
 
 
