@@ -4,6 +4,7 @@ import Basics.Extra exposing (flip)
 import Either
 import Http exposing (Error)
 import Pages.Registration.Confirm.Page as Page
+import Pages.Registration.Confirm.Requests as Requests
 import Util.HttpUtil as HttpUtil
 import Util.Initialization exposing (Initialization(..))
 
@@ -67,12 +68,12 @@ setPassword2 model password2 =
 
 request : Page.Model -> ( Page.Model, Cmd Page.Msg )
 request model =
-    Requests.request model.configuration
-        { nickname = model.userIdentifier.nickname
-        , email = model.userIdentifier.email
-        , password = model.password1
+    ( model
+    , Requests.request model.configuration
+        { password = model.password1
         , displayName = model.displayName
         }
+    )
 
 
 gotResponse : Page.Model -> Result Error () -> ( Page.Model, Cmd Page.Msg )
