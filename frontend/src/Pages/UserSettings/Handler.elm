@@ -189,6 +189,7 @@ logout model mode =
     )
 
 
+--todo: Redirect to main page
 gotLogoutResponse : Page.Model -> Result Error () -> ( Page.Model, Cmd Page.Msg )
 gotLogoutResponse model result =
     result
