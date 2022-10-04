@@ -1,5 +1,7 @@
 module Pages.UserSettings.Requests exposing (..)
 
+import Api.Types.LogoutRequest exposing (encoderLogoutRequest)
+import Api.Types.Mode exposing (Mode)
 import Api.Types.PasswordChangeRequest exposing (PasswordChangeRequest, encoderPasswordChangeRequest)
 import Api.Types.User exposing (decoderUser)
 import Api.Types.UserUpdate exposing (UserUpdate, encoderUserUpdate)
@@ -45,4 +47,14 @@ requestDeletion flags =
         { url = Url.Builder.relative [ flags.configuration.backendURL, "user", "deletion", "request" ] []
         , body = Json.Encode.object []
         , expect = HttpUtil.expectWhatever Page.GotRequestDeletionResponse
+        }
+
+
+logout : FlagsWithJWT -> Mode -> Cmd Page.Msg
+logout flags mode =
+    HttpUtil.postJsonWithJWT
+        flags.jwt
+        { url = Url.Builder.relative [ flags.configuration.backendURL, "logout" ] []
+        , body = encoderLogoutRequest { mode = mode }
+        , expect = HttpUtil.expectWhatever Page.GotLogoutResponse
         }
