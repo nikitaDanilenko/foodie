@@ -1,6 +1,7 @@
 module Pages.UserSettings.Handler exposing (init, update)
 
 import Api.Auxiliary exposing (JWT, UserId)
+import Api.Types.Mode exposing (Mode)
 import Api.Types.User exposing (User)
 import Basics.Extra exposing (flip)
 import Either
@@ -10,7 +11,7 @@ import Monocle.Lens as Lens
 import Pages.UserSettings.Page as Page
 import Pages.UserSettings.Requests as Requests
 import Pages.UserSettings.Status as Status
-import Pages.Util.ComplementInput as ComplementInput
+import Pages.Util.ComplementInput as ComplementInput exposing (ComplementInput)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.Links as Links
 import Ports
@@ -83,6 +84,15 @@ update msg model =
 
         Page.GotRequestDeletionResponse result ->
             gotRequestDeletionResponse model result
+
+        Page.SetComplementInput complementInput ->
+            setComplementInput model complementInput
+
+        Page.Logout logoutKind ->
+            logout model logoutKind
+
+        Page.GotLogoutResponse result ->
+            gotLogoutResponse model result
 
 
 updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
@@ -163,6 +173,28 @@ gotRequestDeletionResponse model result =
         |> Either.fromResult
         |> Either.unpack (\error -> ( model |> setError error, Cmd.none ))
             (\_ -> ( model, Links.navigateTo [ "confirmation" ] model.flagsWithJWT.configuration ))
+
+
+setComplementInput : Page.Model -> ComplementInput -> ( Page.Model, Cmd Page.Msg )
+setComplementInput model complementInput =
+    ( model |> Page.lenses.complementInput.set complementInput
+    , Cmd.none
+    )
+
+
+logout : Page.Model -> Mode -> ( Page.Model, Cmd Page.Msg )
+logout model mode =
+    ( model
+    , Requests.logout model.flagsWithJWT mode
+    )
+
+
+gotLogoutResponse : Page.Model -> Result Error () -> ( Page.Model, Cmd Page.Msg )
+gotLogoutResponse model result =
+    result
+        |> Either.fromResult
+        |> Either.unpack (\error -> ( model |> setError error, Cmd.none ))
+            (\_ -> ( model, Links.navigateTo [ "login" ] model.flagsWithJWT.configuration ))
 
 
 setError : Error -> Page.Model -> Page.Model

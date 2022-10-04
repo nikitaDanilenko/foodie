@@ -1,6 +1,7 @@
 module Pages.UserSettings.Page exposing (..)
 
 import Api.Auxiliary exposing (JWT, UserId)
+import Api.Types.Mode exposing (Mode)
 import Api.Types.User exposing (User)
 import Configuration exposing (Configuration)
 import Http exposing (Error)
@@ -50,3 +51,6 @@ type Msg
     | GotUpdateSettingsResponse (Result Error User)
     | RequestDeletion
     | GotRequestDeletionResponse (Result Error ())
+    | SetComplementInput ComplementInput
+    | Logout Mode
+    | GotLogoutResponse (Result Error ())
