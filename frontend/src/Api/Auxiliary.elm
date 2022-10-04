@@ -31,5 +31,9 @@ type alias NutrientCode =
     Int
 
 
+type alias UserId =
+    UUID
+
+
 type alias JWT =
     String

@@ -1,34 +1,43 @@
 module Pages.UserSettings.Page exposing (..)
 
-import Api.Auxiliary exposing (JWT)
+import Api.Auxiliary exposing (JWT, UserId)
 import Api.Types.User exposing (User)
 import Configuration exposing (Configuration)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
+import Pages.UserSettings.Status exposing (Status)
 import Pages.Util.ComplementInput exposing (ComplementInput)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Util.Initialization exposing (Initialization)
+import Util.LensUtil as LensUtil
 
 
 type alias Model =
     { flagsWithJWT : FlagsWithJWT
     , user : User
     , complementInput : ComplementInput
+    , initialization : Initialization Status
     }
 
 
 lenses :
-    { user : Lens Model User
+    { jwt : Lens Model JWT
+    , user : Lens Model User
     , complementInput : Lens Model ComplementInput
+    , initialization : Lens Model (Initialization Status)
     }
 lenses =
-    { user = Lens .user (\b a -> { a | user = b })
+    { jwt = LensUtil.jwtSubLens
+    , user = Lens .user (\b a -> { a | user = b })
     , complementInput = Lens .complementInput (\b a -> { a | complementInput = b })
+    , initialization = Lens .initialization (\b a -> { a | initialization = b })
     }
 
 
 type alias Flags =
     { configuration : Configuration
     , jwt : Maybe String
+    , userId : UserId
     }
 
 
@@ -36,5 +45,8 @@ type Msg
     = UpdateJWT JWT
     | GotFetchUserResponse (Result Error User)
     | UpdatePassword
-    | Update
+    | GotUpdatePasswordResponse (Result Error ())
+    | UpdateSettings
+    | GotUpdateSettingsResponse (Result Error User)
     | RequestDeletion
+    | GotRequestDeletionResponse (Result Error ())
