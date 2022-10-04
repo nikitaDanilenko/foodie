@@ -6,6 +6,9 @@ import Browser.Navigation as Nav
 import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
 import Monocle.Lens exposing (Lens)
+import Pages.Deletion.Confirmation.Handler
+import Pages.Deletion.Confirmation.Page
+import Pages.Deletion.Confirmation.View
 import Pages.Ingredients.Handler
 import Pages.Ingredients.Page
 import Pages.Ingredients.View
@@ -92,6 +95,7 @@ type Page
     | RequestRegistration Pages.Registration.Request.Page.Model
     | ConfirmRegistration Pages.Registration.Confirm.Page.Model
     | UserSettings Pages.UserSettings.Page.Model
+    | ConfirmDeletion Pages.Deletion.Confirmation.Page.Model
     | NotFound
 
 
@@ -113,6 +117,7 @@ type Msg
     | RequestRegistrationMsg Pages.Registration.Request.Page.Msg
     | ConfirmRegistrationMsg Pages.Registration.Confirm.Page.Msg
     | UserSettingsMsg Pages.UserSettings.Page.Msg
+    | ConfirmDeletionMsg Pages.Deletion.Confirmation.Page.Msg
 
 
 titleFor : Model -> String
@@ -170,6 +175,9 @@ view model =
         UserSettings userSettings ->
             Html.map UserSettingsMsg (Pages.UserSettings.View.view userSettings)
 
+        ConfirmDeletion confirmDeletion ->
+            Html.map ConfirmDeletionMsg (Pages.Deletion.Confirmation.View.view confirmDeletion)
+
         NotFound ->
             div [] [ text "Page not found" ]
 
@@ -224,6 +232,9 @@ update msg model =
                 ConfirmRegistration _ ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
+                ConfirmDeletion _ ->
+                    ( jwtLens.set (Just token) model, Cmd.none )
+
                 Login _ ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
@@ -269,6 +280,9 @@ update msg model =
         ( UserSettingsMsg userSettingsMsg, UserSettings userSettings ) ->
             stepThrough steps.userSettings model (Pages.UserSettings.Handler.update userSettingsMsg userSettings)
 
+        ( ConfirmDeletionMsg confirmDeletionMsg, ConfirmDeletion confirmDeletion ) ->
+            stepThrough steps.confirmDeletion model (Pages.Deletion.Confirmation.Handler.update confirmDeletionMsg confirmDeletion)
+
         _ ->
             ( model, Cmd.none )
 
@@ -311,6 +325,9 @@ stepTo url model =
                 UserSettingsRoute flags ->
                     Pages.UserSettings.Handler.init flags |> stepThrough steps.userSettings model
 
+                ConfirmDeletionRoute flags ->
+                    Pages.Deletion.Confirmation.Handler.init flags |> stepThrough steps.confirmDeletion model
+
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -333,6 +350,7 @@ steps :
     , requestRegistration : StepParameters Pages.Registration.Request.Page.Model Pages.Registration.Request.Page.Msg
     , confirmRegistration : StepParameters Pages.Registration.Confirm.Page.Model Pages.Registration.Confirm.Page.Msg
     , userSettings : StepParameters Pages.UserSettings.Page.Model Pages.UserSettings.Page.Msg
+    , confirmDeletion : StepParameters Pages.Deletion.Confirmation.Page.Model Pages.Deletion.Confirmation.Page.Msg
     }
 steps =
     { login = StepParameters Login LoginMsg
@@ -346,6 +364,7 @@ steps =
     , requestRegistration = StepParameters RequestRegistration RequestRegistrationMsg
     , confirmRegistration = StepParameters ConfirmRegistration ConfirmRegistrationMsg
     , userSettings = StepParameters UserSettings UserSettingsMsg
+    , confirmDeletion = StepParameters ConfirmDeletion ConfirmDeletionMsg
     }
 
 
@@ -366,6 +385,7 @@ type Route
     | RequestRegistrationRoute Pages.Registration.Request.Page.Flags
     | ConfirmRegistrationRoute Pages.Registration.Confirm.Page.Flags
     | UserSettingsRoute Pages.UserSettings.Page.Flags
+    | ConfirmDeletionRoute Pages.Deletion.Confirmation.Page.Flags
 
 
 routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
@@ -410,6 +430,11 @@ routeParser jwt configuration =
         userSettingsParser =
             s "user-settings" |> Parser.map flags
 
+        confirmDeletionParser =
+            (s "delete-account" </> ParserUtil.userIdentifierParser </> s "token" </> Parser.string)
+                |> Parser.map
+                    (Pages.Deletion.Confirmation.Page.Flags configuration)
+
         flags =
             { configuration = configuration, jwt = jwt }
     in
@@ -425,6 +450,7 @@ routeParser jwt configuration =
         , route requestRegistrationParser RequestRegistrationRoute
         , route confirmRegistrationParser ConfirmRegistrationRoute
         , route userSettingsParser UserSettingsRoute
+        , route confirmDeletionParser ConfirmDeletionRoute
         ]
 
 

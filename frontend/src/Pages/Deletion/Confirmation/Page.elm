@@ -25,9 +25,9 @@ lenses =
 
 
 type alias Flags =
-    { deletionJWT : JWT
+    { configuration : Configuration
     , userIdentifier : UserIdentifier
-    , configuration : Configuration
+    , deletionJWT : JWT
     }
 
 
