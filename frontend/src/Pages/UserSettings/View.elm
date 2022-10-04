@@ -1,4 +1,4 @@
-module Pages.UserSettings.View exposing (..)
+module Pages.UserSettings.View exposing (view)
 
 import Api.Types.Mode exposing (Mode(..))
 import Basics.Extra exposing (flip)
