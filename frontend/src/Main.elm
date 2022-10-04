@@ -36,6 +36,9 @@ import Pages.Registration.Request.View
 import Pages.Statistics.Handler
 import Pages.Statistics.Page
 import Pages.Statistics.View
+import Pages.UserSettings.Handler
+import Pages.UserSettings.Page
+import Pages.UserSettings.View
 import Pages.Util.ParserUtil as ParserUtil
 import Ports exposing (doFetchToken, fetchFoods, fetchMeasures, fetchNutrients, fetchToken)
 import Url exposing (Url)
@@ -88,6 +91,7 @@ type Page
     | ReferenceNutrients Pages.ReferenceNutrients.Page.Model
     | RequestRegistration Pages.Registration.Request.Page.Model
     | ConfirmRegistration Pages.Registration.Confirm.Page.Model
+    | UserSettings Pages.UserSettings.Page.Model
     | NotFound
 
 
@@ -108,6 +112,7 @@ type Msg
     | ReferenceNutrientsMsg Pages.ReferenceNutrients.Page.Msg
     | RequestRegistrationMsg Pages.Registration.Request.Page.Msg
     | ConfirmRegistrationMsg Pages.Registration.Confirm.Page.Msg
+    | UserSettingsMsg Pages.UserSettings.Page.Msg
 
 
 titleFor : Model -> String
@@ -162,6 +167,9 @@ view model =
         ConfirmRegistration confirmRegistration ->
             Html.map ConfirmRegistrationMsg (Pages.Registration.Confirm.View.view confirmRegistration)
 
+        UserSettings userSettings ->
+            Html.map UserSettingsMsg (Pages.UserSettings.View.view userSettings)
+
         NotFound ->
             div [] [ text "Page not found" ]
 
@@ -206,6 +214,9 @@ update msg model =
 
                 ReferenceNutrients referenceNutrients ->
                     stepThrough steps.referenceNutrients model (Pages.ReferenceNutrients.Handler.update (Pages.ReferenceNutrients.Page.UpdateJWT token) referenceNutrients)
+
+                UserSettings userSettings ->
+                    stepThrough steps.userSettings model (Pages.UserSettings.Handler.update (Pages.UserSettings.Page.UpdateJWT token) userSettings)
 
                 RequestRegistration _ ->
                     ( jwtLens.set (Just token) model, Cmd.none )
@@ -252,8 +263,11 @@ update msg model =
         ( RequestRegistrationMsg requestRegistrationMsg, RequestRegistration requestRegistration ) ->
             stepThrough steps.requestRegistration model (Pages.Registration.Request.Handler.update requestRegistrationMsg requestRegistration)
 
-        ( ConfirmRegistrationMsg requestRegistrationMsg, ConfirmRegistration requestRegistration ) ->
-            stepThrough steps.confirmRegistration model (Pages.Registration.Confirm.Handler.update requestRegistrationMsg requestRegistration)
+        ( ConfirmRegistrationMsg confirmRegistrationMsg, ConfirmRegistration confirmRegistration ) ->
+            stepThrough steps.confirmRegistration model (Pages.Registration.Confirm.Handler.update confirmRegistrationMsg confirmRegistration)
+
+        ( UserSettingsMsg userSettingsMsg, UserSettings userSettings ) ->
+            stepThrough steps.userSettings model (Pages.UserSettings.Handler.update userSettingsMsg userSettings)
 
         _ ->
             ( model, Cmd.none )
@@ -294,6 +308,9 @@ stepTo url model =
                 ConfirmRegistrationRoute flags ->
                     Pages.Registration.Confirm.Handler.init flags |> stepThrough steps.confirmRegistration model
 
+                UserSettingsRoute flags ->
+                    Pages.UserSettings.Handler.init flags |> stepThrough steps.userSettings model
+
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -315,6 +332,7 @@ steps :
     , referenceNutrients : StepParameters Pages.ReferenceNutrients.Page.Model Pages.ReferenceNutrients.Page.Msg
     , requestRegistration : StepParameters Pages.Registration.Request.Page.Model Pages.Registration.Request.Page.Msg
     , confirmRegistration : StepParameters Pages.Registration.Confirm.Page.Model Pages.Registration.Confirm.Page.Msg
+    , userSettings : StepParameters Pages.UserSettings.Page.Model Pages.UserSettings.Page.Msg
     }
 steps =
     { login = StepParameters Login LoginMsg
@@ -327,6 +345,7 @@ steps =
     , referenceNutrients = StepParameters ReferenceNutrients ReferenceNutrientsMsg
     , requestRegistration = StepParameters RequestRegistration RequestRegistrationMsg
     , confirmRegistration = StepParameters ConfirmRegistration ConfirmRegistrationMsg
+    , userSettings = StepParameters UserSettings UserSettingsMsg
     }
 
 
@@ -346,6 +365,7 @@ type Route
     | ReferenceNutrientsRoute Pages.ReferenceNutrients.Page.Flags
     | RequestRegistrationRoute Pages.Registration.Request.Page.Flags
     | ConfirmRegistrationRoute Pages.Registration.Confirm.Page.Flags
+    | UserSettingsRoute Pages.UserSettings.Page.Flags
 
 
 routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
@@ -387,6 +407,9 @@ routeParser jwt configuration =
                 |> Parser.map
                     (Pages.Registration.Confirm.Page.Flags configuration)
 
+        userSettingsParser =
+            s "user-settings" |> Parser.map flags
+
         flags =
             { configuration = configuration, jwt = jwt }
     in
@@ -401,6 +424,7 @@ routeParser jwt configuration =
         , route referenceNutrientParser ReferenceNutrientsRoute
         , route requestRegistrationParser RequestRegistrationRoute
         , route confirmRegistrationParser ConfirmRegistrationRoute
+        , route userSettingsParser UserSettingsRoute
         ]
 
 

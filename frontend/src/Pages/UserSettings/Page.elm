@@ -38,7 +38,6 @@ lenses =
 type alias Flags =
     { configuration : Configuration
     , jwt : Maybe String
-    , userId : UserId
     }
 
 
