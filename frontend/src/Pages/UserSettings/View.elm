@@ -128,6 +128,13 @@ view model =
                 ]
             , div []
                 [ button
+                    [ onClick Page.RequestDeletion
+                    , Style.classes.button.navigation
+                    ]
+                    [ text "Delete account" ]
+                ]
+            , div []
+                [ button
                     [ onClick (Page.Logout This)
                     , Style.classes.button.navigation
                     ]
