@@ -39,4 +39,3 @@ type Msg
     = SetComplementInput ComplementInput
     | Request
     | GotResponse (Result Error ())
-    | NavigateToMain

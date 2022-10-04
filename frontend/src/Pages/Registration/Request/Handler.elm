@@ -1,10 +1,12 @@
 module Pages.Registration.Request.Handler exposing (init, update)
 
 import Basics.Extra exposing (flip)
+import Browser.Navigation
 import Either
 import Http exposing (Error)
 import Pages.Registration.Request.Page as Page
 import Pages.Registration.Request.Requests as Requests
+import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput exposing (ValidatedInput)
 import Util.HttpUtil as HttpUtil
 import Util.Initialization exposing (Initialization(..))
@@ -80,7 +82,7 @@ gotResponse model result =
             )
             (always
                 ( model
-                , Requests.navigateToConfirmation model.configuration
+                , Links.frontendPage [ "confirmation" ] model.configuration |> Browser.Navigation.load
                 )
             )
 
@@ -88,5 +90,6 @@ gotResponse model result =
 back : Page.Model -> ( Page.Model, Cmd Page.Msg )
 back model =
     ( model
-    , Requests.navigateToMain model.configuration
+    , Links.frontendPage [ "login" ] model.configuration |> Browser.Navigation.load
+      --todo: Use main page
     )

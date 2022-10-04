@@ -4,7 +4,6 @@ import Api.Types.CreationComplement exposing (CreationComplement, encoderCreatio
 import Configuration exposing (Configuration)
 import Http
 import Pages.Registration.Confirm.Page as Page
-import Pages.Util.Links as Links
 import Url.Builder
 import Util.HttpUtil as HttpUtil
 
@@ -16,17 +15,3 @@ request configuration complement =
         , expect = HttpUtil.expectWhatever Page.GotResponse
         , body = Http.jsonBody (encoderCreationComplement complement)
         }
-
-
-navigateToSuccess : Configuration -> Cmd Page.Msg
-navigateToSuccess =
-    Links.navigateTo [ "registration-successful" ]
-
-
-
---todo: Redirect to main
-
-
-navigateToMain : Configuration -> Cmd Page.Msg
-navigateToMain =
-    Links.navigateTo [ "login" ]

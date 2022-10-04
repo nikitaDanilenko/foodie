@@ -4,6 +4,7 @@ import Api.Auxiliary exposing (JWT, UserId)
 import Api.Types.Mode exposing (Mode)
 import Api.Types.User exposing (User)
 import Basics.Extra exposing (flip)
+import Browser.Navigation
 import Either
 import Http exposing (Error)
 import Maybe.Extra
@@ -172,7 +173,7 @@ gotRequestDeletionResponse model result =
     result
         |> Either.fromResult
         |> Either.unpack (\error -> ( model |> setError error, Cmd.none ))
-            (\_ -> ( model, Links.navigateTo [ "confirmation" ] model.flagsWithJWT.configuration ))
+            (\_ -> ( model, Links.frontendPage [ "confirmation" ] model.flagsWithJWT.configuration |> Browser.Navigation.load ))
 
 
 setComplementInput : Page.Model -> ComplementInput -> ( Page.Model, Cmd Page.Msg )
@@ -189,13 +190,16 @@ logout model mode =
     )
 
 
+
 --todo: Redirect to main page
+
+
 gotLogoutResponse : Page.Model -> Result Error () -> ( Page.Model, Cmd Page.Msg )
 gotLogoutResponse model result =
     result
         |> Either.fromResult
         |> Either.unpack (\error -> ( model |> setError error, Cmd.none ))
-            (\_ -> ( model, Links.navigateTo [ "login" ] model.flagsWithJWT.configuration ))
+            (\_ -> ( model, Links.frontendPage [ "login" ] model.flagsWithJWT.configuration |> Browser.Navigation.load ))
 
 
 setError : Error -> Page.Model -> Page.Model

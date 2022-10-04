@@ -34,4 +34,3 @@ type alias Flags =
 type Msg
     = Confirm
     | GotConfirmResponse (Result Error ())
-    | NavigateToMain

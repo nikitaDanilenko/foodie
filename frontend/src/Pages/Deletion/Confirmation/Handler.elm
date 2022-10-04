@@ -1,5 +1,6 @@
 module Pages.Deletion.Confirmation.Handler exposing (init, update)
 
+import Browser.Navigation
 import Either
 import Http exposing (Error)
 import Pages.Deletion.Confirmation.Page as Page
@@ -29,8 +30,6 @@ update msg model =
         Page.GotConfirmResponse result ->
             gotConfirmResponse model result
 
-        Page.NavigateToMain ->
-            navigateToMain model
 
 
 confirm : Page.Model -> ( Page.Model, Cmd Page.Msg )
@@ -45,14 +44,8 @@ gotConfirmResponse model result =
     result
         |> Either.fromResult
         |> Either.unpack (\error -> ( model |> setError error, Cmd.none ))
-            (\_ -> ( model, Links.navigateTo [ "deleted" ] model.configuration ))
+            (\_ -> ( model, Links.frontendPage [ "account-deleted" ] model.configuration |> Browser.Navigation.load ))
 
-
-navigateToMain : Page.Model -> ( Page.Model, Cmd Page.Msg )
-navigateToMain model =
-    ( model
-    , Requests.navigateToMain model.configuration
-    )
 
 
 setError : Error -> Page.Model -> Page.Model

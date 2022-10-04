@@ -1,11 +1,13 @@
 module Pages.Registration.Confirm.Handler exposing (init, update)
 
 import Basics.Extra exposing (flip)
+import Browser.Navigation
 import Either
 import Http exposing (Error)
 import Pages.Registration.Confirm.Page as Page
 import Pages.Registration.Confirm.Requests as Requests
 import Pages.Util.ComplementInput as ComplementInput exposing (ComplementInput)
+import Pages.Util.Links as Links
 import Util.HttpUtil as HttpUtil
 import Util.Initialization exposing (Initialization(..))
 
@@ -33,9 +35,6 @@ update msg model =
 
         Page.GotResponse result ->
             gotResponse model result
-
-        Page.NavigateToMain ->
-            navigateToMain model
 
 
 setComplementInput : Page.Model -> ComplementInput -> ( Page.Model, Cmd Page.Msg )
@@ -70,13 +69,6 @@ gotResponse model result =
             )
             (always
                 ( model
-                , Requests.navigateToSuccess model.configuration
+                , Links.frontendPage [ "registration-successful" ] model.configuration |> Browser.Navigation.load
                 )
             )
-
-
-navigateToMain : Page.Model -> ( Page.Model, Cmd Page.Msg )
-navigateToMain model =
-    ( model
-    , Requests.navigateToMain model.configuration
-    )

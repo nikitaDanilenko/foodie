@@ -1,4 +1,4 @@
-module Pages.Confirmation.Page exposing (..)
+module Pages.Deletion.Completion.Page exposing (..)
 
 import Configuration exposing (Configuration)
 

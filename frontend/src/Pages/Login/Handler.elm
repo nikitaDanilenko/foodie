@@ -1,12 +1,14 @@
 module Pages.Login.Handler exposing (init, update)
 
 import Basics.Extra exposing (flip)
+import Browser.Navigation
 import Either
 import Http exposing (Error)
 import Monocle.Compose as Compose
 import Pages.Login.Page as Page
 import Pages.Login.Requests as Requests
 import Pages.Login.Status as Status
+import Pages.Util.Links as Links
 import Ports
 import Util.CredentialsUtil as CredentialsUtil
 import Util.HttpUtil as HttpUtil
@@ -94,7 +96,7 @@ gotResponse model remoteData =
                     model
                 , Cmd.batch
                     [ Ports.storeToken token
-                    , Requests.navigateToOverview model.configuration
+                    , Links.frontendPage ["overview"] model.configuration |> Browser.Navigation.load
                     ]
                 )
             )

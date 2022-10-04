@@ -38,9 +38,8 @@ loadingSymbol =
     Loading.render Loading.Spinner Loading.defaultConfig Loading.On
 
 
-navigateTo : List String -> Configuration -> Cmd msg
-navigateTo pathSteps configuration =
+frontendPage : List String -> Configuration -> String
+frontendPage pathSteps configuration =
     [ configuration.mainPageURL, "#" ]
         ++ pathSteps
         |> flip Url.Builder.relative []
-        |> Browser.Navigation.load
