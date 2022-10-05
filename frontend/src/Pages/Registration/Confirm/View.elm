@@ -126,7 +126,7 @@ viewEditing model =
 
 viewConfirmed : Page.Model -> Html Page.Msg
 viewConfirmed model =
-    div [ Style.classes.info ]
+    div [ Style.classes.confirm ]
         [ label [] [ text "User creation successful." ]
         , Links.linkButton
             --todo: Use main page
