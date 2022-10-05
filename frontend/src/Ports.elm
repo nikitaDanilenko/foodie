@@ -1,5 +1,6 @@
 port module Ports exposing
-    ( doFetchFoods
+    ( doDeleteToken
+    , doFetchFoods
     , doFetchMeasures
     , doFetchNutrients
     , doFetchToken
@@ -21,6 +22,9 @@ port doFetchToken : () -> Cmd msg
 
 
 port fetchToken : (String -> msg) -> Sub msg
+
+
+port doDeleteToken : () -> Cmd msg
 
 
 port storeFoods : String -> Cmd msg

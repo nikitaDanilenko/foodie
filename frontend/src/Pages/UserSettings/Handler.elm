@@ -205,7 +205,14 @@ gotLogoutResponse model result =
     result
         |> Either.fromResult
         |> Either.unpack (\error -> ( model |> setError error, Cmd.none ))
-            (\_ -> ( model, Links.frontendPage [ "login" ] model.flagsWithJWT.configuration |> Browser.Navigation.load ))
+            (\_ ->
+                ( model
+                , Cmd.batch
+                    [ Ports.doDeleteToken ()
+                    , Links.frontendPage [ "login" ] model.flagsWithJWT.configuration |> Browser.Navigation.load
+                    ]
+                )
+            )
 
 
 setError : Error -> Page.Model -> Page.Model
