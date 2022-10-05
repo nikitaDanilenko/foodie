@@ -15,7 +15,7 @@ import Util.HttpUtil as HttpUtil
 fetchUser : FlagsWithJWT -> Cmd Page.Msg
 fetchUser flags =
     HttpUtil.getJsonWithJWT flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "user" ] []
+        { url = Url.Builder.relative [ flags.configuration.backendURL, "user", "fetch" ] []
         , expect = HttpUtil.expectJson Page.GotFetchUserResponse decoderUser
         }
 

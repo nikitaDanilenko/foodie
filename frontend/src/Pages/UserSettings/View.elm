@@ -22,7 +22,7 @@ view model =
         , configuration = .flagsWithJWT >> .configuration
         , jwt = .flagsWithJWT >> .jwt >> Just
         , currentPage = Just (UserSettings model.user.nickname)
-        , showNavigation = False
+        , showNavigation = True
         }
         model
     <|
@@ -129,7 +129,7 @@ view model =
             , div []
                 [ button
                     [ onClick Page.RequestDeletion
-                    , Style.classes.button.navigation
+                    , Style.classes.button.delete
                     ]
                     [ text "Delete account" ]
                 ]

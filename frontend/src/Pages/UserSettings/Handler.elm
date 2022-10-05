@@ -114,7 +114,11 @@ gotFetchUserResponse model result =
     ( result
         |> Either.fromResult
         |> Either.unpack (flip setError model)
-            (flip Page.lenses.user.set model)
+            (\user ->
+                model
+                    |> Page.lenses.user.set user
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.user).set True
+            )
     , Cmd.none
     )
 
