@@ -24,8 +24,8 @@ decoderNutrientUnit =
 
 
 decoderNutrientUnitByString : String -> Decode.Decoder NutrientUnit
-decoderNutrientUnitByString tpe =
-    case tpe of
+decoderNutrientUnitByString string =
+    case string of
         "g" ->
             Decode.succeed Gram
 
@@ -48,7 +48,7 @@ decoderNutrientUnitByString tpe =
             Decode.succeed NiacinEquivalent
 
         _ ->
-            Decode.fail ("Unexpected type for NutrientUnit: " ++ tpe)
+            Decode.fail ("Unexpected type for NutrientUnit: " ++ string)
 
 
 encoderNutrientUnit : NutrientUnit -> Encode.Value

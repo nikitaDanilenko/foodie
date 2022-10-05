@@ -125,7 +125,6 @@ object Bridge {
     mkAndWrite[User]
     mkAndWrite[PasswordChangeRequest]
     mkAndWrite[UserUpdate]
-    mkAndWrite[LogoutRequest.Mode]
     mkAndWrite[LogoutRequest]
   }
 
