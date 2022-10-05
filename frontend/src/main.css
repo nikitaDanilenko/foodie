@@ -354,7 +354,8 @@ th {
 .request button,
 .confirm input,
 .confirm label,
-.confirm button {
+.confirm button,
+.confirm a {
     font-size: xx-large;
 }
 
@@ -374,7 +375,8 @@ th {
 
 #login button,
 .request button,
-.confirm button {
+.confirm button,
+.confirm a {
     margin-top: 5px;
     width: 30%;
 }

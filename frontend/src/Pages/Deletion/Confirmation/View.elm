@@ -10,7 +10,7 @@ import Pages.Util.Style as Style
 view : Page.Model -> Html Page.Msg
 view model =
     div [ Style.classes.confirm ]
-        [ label [] [ text "Confirm deletion" ]
+        [ label [ Style.classes.info ] [ text "Confirm deletion" ]
         , table []
             [ tbody []
                 [ tr []
@@ -21,22 +21,20 @@ view model =
                     [ td [] [ label [] [ text "Email" ] ]
                     , td [] [ label [] [ text <| model.userIdentifier.email ] ]
                     ]
-                , tr []
-                    [ td []
-                        [ button
-                            [ onClick Page.Confirm
-                            , Style.classes.button.delete
-                            ]
-                            [ text "Delete" ]
-                        ]
-                    , td []
-                        [ Links.linkButton
-                            { url = Links.frontendPage [ "login" ] model.configuration --todo: Use main page,
-                            , attributes = [ Style.classes.button.navigation ]
-                            , children = [ text "Back to main" ]
-                            }
-                        ]
-                    ]
                 ]
+            ]
+        , div []
+            [ button
+                [ onClick Page.Confirm
+                , Style.classes.button.delete
+                ]
+                [ text "Delete" ]
+            ]
+        , div []
+            [ Links.linkButton
+                { url = Links.frontendPage [ "login" ] model.configuration --todo: Use main page,
+                , attributes = [ Style.classes.button.navigation ]
+                , children = [ text "Back to main" ]
+                }
             ]
         ]
