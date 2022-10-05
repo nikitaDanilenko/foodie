@@ -143,14 +143,14 @@ view model =
             , div []
                 [ button
                     [ onClick (Page.Logout This)
-                    , Style.classes.button.navigation
+                    , Style.classes.button.logout
                     ]
                     [ text "Logout this device" ]
                 ]
             , div []
                 [ button
                     [ onClick (Page.Logout All)
-                    , Style.classes.button.navigation
+                    , Style.classes.button.logout
                     ]
                     [ text "Logout all devices" ]
                 ]

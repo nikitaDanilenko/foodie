@@ -14,6 +14,7 @@ classes :
         , delete : Attribute msg
         , edit : Attribute msg
         , editor : Attribute msg
+        , logout : Attribute msg
         , navigation : Attribute msg
         , pager: Attribute msg
         , select : Attribute msg
@@ -61,6 +62,7 @@ classes =
         , delete = class "deleteButton"
         , edit = class "editButton"
         , editor = class "editorButton"
+        , logout = class "logoutButton"
         , navigation = class "navigationButton"
         , pager = class "pagerButton"
         , select = class "selectButton"
