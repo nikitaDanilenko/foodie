@@ -24,7 +24,6 @@ import Pages.Util.Style as Style
 import Pages.Util.ValidatedInput as ValidatedInput exposing (ValidatedInput)
 import Pages.Util.ViewUtil as ViewUtil
 import Paginate
-import Url.Builder
 import Util.Editing as Editing
 
 
@@ -128,14 +127,7 @@ editOrDeleteRecipeLine configuration recipe =
             ]
         , td [ Style.classes.controls ]
             [ Links.linkButton
-                { url =
-                    Url.Builder.relative
-                        [ configuration.mainPageURL
-                        , "#"
-                        , "ingredient-editor"
-                        , recipe.id
-                        ]
-                        []
+                { url = Links.frontendPage [ "ingredient-editor", recipe.id ] configuration
                 , attributes = [ Style.classes.button.editor ]
                 , children = [ text "Ingredients" ]
                 }

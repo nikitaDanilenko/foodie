@@ -28,7 +28,6 @@ import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil
 import Paginate
 import Parser
-import Url.Builder
 import Util.Editing as Editing
 
 
@@ -129,14 +128,7 @@ editOrDeleteMealLine configuration meal =
         , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Page.DeleteMeal meal.id) ] [ text "Delete" ] ]
         , td [ Style.classes.controls ]
             [ Links.linkButton
-                { url =
-                    Url.Builder.relative
-                        [ configuration.mainPageURL
-                        , "#"
-                        , "meal-entry-editor"
-                        , meal.id
-                        ]
-                        []
+                { url = Links.frontendPage [ "meal-entry-editor", meal.id ] configuration
                 , attributes = [ Style.classes.button.editor ]
                 , children = [ text "Entries" ]
                 }
