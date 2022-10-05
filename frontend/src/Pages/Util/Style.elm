@@ -116,6 +116,7 @@ ids :
     , referenceNutrientsButton : Attribute msg
     , statistics : Attribute msg
     , statisticsButton : Attribute msg
+    , userSettingsButton : Attribute msg
     }
 ids =
     { add = id "add"
@@ -131,7 +132,7 @@ ids =
     , recipesButton = id "recipesButton"
     , referenceNutrientEditor = id "referenceNutrientEditor"
     , referenceNutrientsButton = id "referenceNutrientsButton"
-
     , statistics = id "statistics"
     , statisticsButton = id "statisticsButton"
+    , userSettingsButton = id "userSettingsButton"
     }

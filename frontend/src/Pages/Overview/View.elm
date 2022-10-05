@@ -1,9 +1,9 @@
 module Pages.Overview.View exposing (view)
 
-import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
+import Html exposing (Html, div, text)
 import Pages.Overview.Page as Page
 import Pages.Overview.Status as Status
+import Pages.Util.Links as Links
 import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil
 
@@ -21,12 +21,39 @@ view model =
         model
     <|
         div [ Style.ids.overviewMain ]
-            [ div [ Style.ids.recipesButton ]
-                [ button [ onClick Page.Recipes ] [ text "Recipes" ] ]
-            , div [ Style.ids.mealsButton ]
-                [ button [ onClick Page.Meals ] [ text "Meals" ] ]
-            , div [ Style.ids.statisticsButton ]
-                [ button [ onClick Page.Statistics ] [ text "Statistics" ] ]
-            , div [ Style.ids.referenceNutrientsButton ]
-                [ button [ onClick Page.ReferenceNutrients ] [ text "Reference nutrients" ] ]
+            [ div []
+                [ Links.linkButton
+                    { url = Links.frontendPage [ "recipes" ] model.flagsWithJWT.configuration
+                    , attributes = [ Style.ids.recipesButton ]
+                    , children = [ text "Recipes" ]
+                    }
+                ]
+            , div []
+                [ Links.linkButton
+                    { url = Links.frontendPage [ "meals" ] model.flagsWithJWT.configuration
+                    , attributes = [ Style.ids.mealsButton ]
+                    , children = [ text "Meals" ]
+                    }
+                ]
+            , div []
+                [ Links.linkButton
+                    { url = Links.frontendPage [ "statistics" ] model.flagsWithJWT.configuration
+                    , attributes = [ Style.ids.statisticsButton ]
+                    , children = [ text "Statistics" ]
+                    }
+                ]
+            , div []
+                [ Links.linkButton
+                    { url = Links.frontendPage [ "reference-nutrients" ] model.flagsWithJWT.configuration
+                    , attributes = [ Style.ids.referenceNutrientsButton ]
+                    , children = [ text "Reference nutrients" ]
+                    }
+                ]
+            , div []
+                [ Links.linkButton
+                    { url = Links.frontendPage [ "user-settings" ] model.flagsWithJWT.configuration
+                    , attributes = [ Style.ids.userSettingsButton ]
+                    , children = [ text "User settings" ]
+                    }
+                ]
             ]

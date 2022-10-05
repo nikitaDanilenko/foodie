@@ -26,11 +26,7 @@ lenses =
 
 
 type Msg
-    = Recipes
-    | Meals
-    | Statistics
-    | ReferenceNutrients
-    | UpdateJWT String
+    =  UpdateJWT String
 
 
 type alias Flags =

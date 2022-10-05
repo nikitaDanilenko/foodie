@@ -2,10 +2,11 @@ body, button, input {
     font-family: Arial, sans-serif;
 }
 
-#recipesButton button,
-#mealsButton button,
-#statisticsButton button,
-#referenceNutrientsButton button {
+#recipesButton,
+#mealsButton,
+#statisticsButton,
+#referenceNutrientsButton,
+#userSettingsButton{
     border: none;
     text-align: center;
     padding: 5%;
@@ -21,10 +22,11 @@ body, button, input {
     background-color: rgb(66, 100, 160);
 }
 
-#recipesButton button:hover,
-#mealsButton button:hover,
-#statisticsButton button:hover,
-#referenceNutrientsButton button:hover,
+#recipesButton:hover,
+#mealsButton:hover,
+#statisticsButton:hover,
+#referenceNutrientsButton:hover,
+#userSettingsButton:hover,
 .navigationButton:hover:not(.disabled),
 .pagerButton:hover:not(.disabled) {
     background-color: rgb(100, 149, 237);
