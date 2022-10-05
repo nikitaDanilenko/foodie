@@ -1,4 +1,4 @@
-module Pages.Deletion.Confirmation.Page exposing (..)
+module Pages.Deletion.Page exposing (..)
 
 import Api.Auxiliary exposing (JWT)
 import Api.Types.UserIdentifier exposing (UserIdentifier)
@@ -13,15 +13,23 @@ type alias Model =
     , userIdentifier : UserIdentifier
     , configuration : Configuration
     , initialization : Initialization ()
+    , mode : Mode
     }
 
 
 lenses :
     { initialization : Lens Model (Initialization ())
+    , mode : Lens Model Mode
     }
 lenses =
     { initialization = Lens .initialization (\b a -> { a | initialization = b })
+    , mode = Lens .mode (\b a -> { a | mode = b })
     }
+
+
+type Mode
+    = Checking
+    | Confirmed
 
 
 type alias Flags =

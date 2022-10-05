@@ -1,9 +1,9 @@
-module Pages.Deletion.Confirmation.Requests exposing (..)
+module Pages.Deletion.Requests exposing (..)
 
 import Api.Auxiliary exposing (JWT)
 import Configuration exposing (Configuration)
 import Json.Encode
-import Pages.Deletion.Confirmation.Page as Page
+import Pages.Deletion.Page as Page
 import Url.Builder
 import Util.HttpUtil as HttpUtil
 

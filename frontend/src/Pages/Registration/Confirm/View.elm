@@ -127,11 +127,13 @@ viewEditing model =
 viewConfirmed : Page.Model -> Html Page.Msg
 viewConfirmed model =
     div [ Style.classes.confirm ]
-        [ label [] [ text "User creation successful." ]
-        , Links.linkButton
-            --todo: Use main page
-            { url = Links.frontendPage [ "login" ] model.configuration
-            , attributes = [ Style.classes.button.navigation ]
-            , children = [ text "Main page" ]
-            }
+        [ div [] [ label [] [ text "User creation successful." ] ]
+        , div []
+            [ Links.linkButton
+                --todo: Use main page
+                { url = Links.frontendPage [ "login" ] model.configuration
+                , attributes = [ Style.classes.button.navigation ]
+                , children = [ text "Main page" ]
+                }
+            ]
         ]
