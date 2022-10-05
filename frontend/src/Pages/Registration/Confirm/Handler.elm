@@ -1,13 +1,11 @@
 module Pages.Registration.Confirm.Handler exposing (init, update)
 
 import Basics.Extra exposing (flip)
-import Browser.Navigation
 import Either
 import Http exposing (Error)
 import Pages.Registration.Confirm.Page as Page
 import Pages.Registration.Confirm.Requests as Requests
 import Pages.Util.ComplementInput as ComplementInput exposing (ComplementInput)
-import Pages.Util.Links as Links
 import Util.HttpUtil as HttpUtil
 import Util.Initialization exposing (Initialization(..))
 
@@ -19,6 +17,7 @@ init flags =
       , configuration = flags.configuration
       , initialization = Loading ()
       , registrationJWT = flags.registrationJWT
+      , mode = Page.Editing
       }
     , Cmd.none
     )
@@ -56,19 +55,13 @@ request model =
 
 gotResponse : Page.Model -> Result Error () -> ( Page.Model, Cmd Page.Msg )
 gotResponse model result =
-    result
+    ( result
         |> Either.fromResult
         |> Either.unpack
-            (\error ->
-                ( error
-                    |> HttpUtil.errorToExplanation
-                    |> Failure
-                    |> flip Page.lenses.initialization.set model
-                , Cmd.none
-                )
+            (HttpUtil.errorToExplanation
+                >> Failure
+                >> flip Page.lenses.initialization.set model
             )
-            (always
-                ( model
-                , Links.frontendPage [ "registration-successful" ] model.configuration |> Browser.Navigation.load
-                )
-            )
+            (\_ -> model |> Page.lenses.mode.set Page.Confirmed)
+    , Cmd.none
+    )

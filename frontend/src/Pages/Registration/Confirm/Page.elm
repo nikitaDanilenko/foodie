@@ -15,17 +15,25 @@ type alias Model =
     , configuration : Configuration
     , initialization : Initialization ()
     , registrationJWT : JWT
+    , mode : Mode
     }
 
 
 lenses :
     { complementInput : Lens Model ComplementInput
     , initialization : Lens Model (Initialization ())
+    , mode : Lens Model Mode
     }
 lenses =
     { complementInput = Lens .complementInput (\b a -> { a | complementInput = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
+    , mode = Lens .mode (\b a -> { a | mode = b })
     }
+
+
+type Mode
+    = Editing
+    | Confirmed
 
 
 type alias Flags =
