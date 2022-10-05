@@ -20,10 +20,13 @@ object Stats {
       .distinct
       .map(_.transformInto[LocalDate])
 
-    val numberOfDays = days.max.toEpochDay - days.min.toEpochDay
+    val modifier: BigDecimal => BigDecimal = if (days.nonEmpty) {
+      val numberOfDays = days.max.toEpochDay - days.min.toEpochDay
+      _ / numberOfDays
+    } else _ => 0
 
     stats.nutrientMap.view
-      .mapValues(_ / numberOfDays)
+      .mapValues(modifier)
       .toMap
   }
 
