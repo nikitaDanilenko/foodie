@@ -165,7 +165,7 @@ class UserController @Inject() (
       toResult("An error occurred while creating the user") {
         for {
           token <- EitherT.fromOption(
-            request.headers.get(RequestHeaders.confirmation),
+            request.headers.get(RequestHeaders.userToken),
             ErrorContext.User.Confirmation.asServerError
           )
           registrationRequest <- EitherT.fromEither[Future](
@@ -224,7 +224,7 @@ class UserController @Inject() (
       toResult("An error occurred while creating the user") {
         for {
           token <- EitherT.fromOption(
-            request.headers.get(RequestHeaders.confirmation),
+            request.headers.get(RequestHeaders.userToken),
             ErrorContext.User.Confirmation.asServerError
           )
           userRecovery <- EitherT.fromEither[Future](
@@ -277,7 +277,7 @@ class UserController @Inject() (
       toResult("An error occurred while deleting the user") {
         for {
           token <- EitherT.fromOption(
-            request.headers.get(RequestHeaders.confirmation),
+            request.headers.get(RequestHeaders.userToken),
             ErrorContext.User.Confirmation.asServerError
           )
           userDeletion <- EitherT.fromEither[Future](
