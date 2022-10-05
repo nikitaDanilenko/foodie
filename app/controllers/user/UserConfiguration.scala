@@ -76,7 +76,7 @@ object UserConfiguration {
     Map(
       Operation.Registration -> AddressWithMessage("finish-registration", userConfiguration.registrationMessage),
       Operation.Recovery     -> AddressWithMessage("recover-account", userConfiguration.recoveryMessage),
-      Operation.Registration -> AddressWithMessage("delete-account", userConfiguration.deletionMessage)
+      Operation.Deletion     -> AddressWithMessage("delete-account", userConfiguration.deletionMessage)
     )
 
   private def emailWith(
