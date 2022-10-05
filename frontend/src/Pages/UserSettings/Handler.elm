@@ -8,6 +8,7 @@ import Browser.Navigation
 import Either
 import Http exposing (Error)
 import Maybe.Extra
+import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Pages.UserSettings.Page as Page
 import Pages.UserSettings.Requests as Requests
@@ -118,6 +119,7 @@ gotFetchUserResponse model result =
                 model
                     |> Page.lenses.user.set user
                     |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.user).set True
+                    |> (Page.lenses.complementInput |> Compose.lensWithLens ComplementInput.lenses.displayName).set user.displayName
             )
     , Cmd.none
     )

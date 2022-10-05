@@ -3,7 +3,7 @@ module Pages.UserSettings.View exposing (view)
 import Api.Types.Mode exposing (Mode(..))
 import Basics.Extra exposing (flip)
 import Html exposing (Html, button, div, input, label, table, tbody, td, text, tr)
-import Html.Attributes exposing (disabled, type_)
+import Html.Attributes exposing (disabled, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Maybe.Extra
@@ -52,6 +52,10 @@ view model =
                             ]
                         , tr []
                             [ td [] [ label [] [ text "Display name" ] ]
+                            , td [] [ label [] [ text <| Maybe.withDefault "" <| model.user.displayName ] ]
+                            ]
+                        , tr []
+                            [ td [] [ label [] [ text "New display name" ] ]
                             , td []
                                 [ input
                                     [ onInput
@@ -62,6 +66,7 @@ view model =
                                                     >> Page.SetComplementInput
                                                )
                                         )
+                                    , value <| Maybe.withDefault "" <| model.complementInput.displayName
                                     , Style.classes.editable
                                     , onEnter Page.UpdateSettings
                                     ]
@@ -91,6 +96,7 @@ view model =
                                             >> Page.SetComplementInput
                                         )
                                      , type_ "password"
+                                     , value <| model.complementInput.password1
                                      , Style.classes.editable
                                      ]
                                         ++ enterAction
@@ -108,6 +114,7 @@ view model =
                                             >> Page.SetComplementInput
                                         )
                                      , type_ "password"
+                                     , value <| model.complementInput.password2
                                      , Style.classes.editable
                                      ]
                                         ++ enterAction
@@ -139,7 +146,9 @@ view model =
                     , Style.classes.button.navigation
                     ]
                     [ text "Logout this device" ]
-                , button
+                ]
+            , div []
+                [ button
                     [ onClick (Page.Logout All)
                     , Style.classes.button.navigation
                     ]
