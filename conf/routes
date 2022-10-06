@@ -39,6 +39,7 @@ GET    /user/fetch                             controllers.user.UserController.f
 POST   /user/update/password                   controllers.user.UserController.updatePassword
 POST   /user/registration/request              controllers.user.UserController.requestRegistration
 POST   /user/registration/confirm              controllers.user.UserController.confirmRegistration
+GET    /user/recovery/find/:searchString       controllers.user.UserController.find(searchString: String)
 POST   /user/recovery/request                  controllers.user.UserController.requestRecovery
 POST   /user/recovery/confirm                  controllers.user.UserController.confirmRecovery
 POST   /user/deletion/request                  controllers.user.UserController.requestDeletion

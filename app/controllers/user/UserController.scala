@@ -182,12 +182,27 @@ class UserController @Inject() (
       }
     }
 
+  def find(searchString: String): Action[AnyContent] =
+    Action.async {
+      userService
+        .getByIdentifier(searchString)
+        .map(
+          _.map(_.transformInto[User])
+            .pipe(_.asJson)
+            .pipe(Ok(_))
+        )
+        .recover {
+          case error =>
+            BadRequest(error.getMessage)
+        }
+    }
+
   def requestRecovery: Action[RecoveryRequest] =
     Action.async(circe.tolerantJson[RecoveryRequest]) { request =>
       val action = for {
         user <- EitherT.fromOptionF(
           userService
-            .getByNicknameOrEmail(request.body.identifier),
+            .get(request.body.userId.transformInto[UserId]),
           ErrorContext.User.NotFound.asServerError
         )
         recoveryJwt = createJwt(

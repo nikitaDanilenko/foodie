@@ -21,12 +21,7 @@ trait UserService {
   def get(userId: UserId): Future[Option[User]]
   def getByNickname(nickname: String): Future[Option[User]]
 
-  def getByEmail(email: String): Future[Option[User]]
-
-  def getByNicknameOrEmail(string: String)(implicit executionContext: ExecutionContext): Future[Option[User]] =
-    OptionT(getByNickname(string))
-      .orElse(OptionT(getByEmail(string)))
-      .value
+  def getByIdentifier(string: String): Future[Seq[User]]
 
   def add(user: User): Future[Boolean]
 
@@ -49,20 +44,14 @@ object UserService {
   trait Companion {
     def get(userId: UserId)(implicit executionContext: ExecutionContext): DBIO[Option[User]]
     def getByNickname(nickname: String)(implicit executionContext: ExecutionContext): DBIO[Option[User]]
-    def getByEmail(email: String)(implicit executionContext: ExecutionContext): DBIO[Option[User]]
+    def getByIdentifier(string: String)(implicit executionContext: ExecutionContext): DBIO[Seq[User]]
     def add(user: User)(implicit executionContext: ExecutionContext): DBIO[Boolean]
-
     def update(userId: UserId, userUpdate: UserUpdate)(implicit executionContext: ExecutionContext): DBIO[User]
     def updatePassword(userId: UserId, password: String)(implicit executionContext: ExecutionContext): DBIO[Boolean]
-
     def delete(userId: UserId)(implicit executionContext: ExecutionContext): DBIO[Boolean]
-
     def addSession(userId: UserId, sessionId: SessionId)(implicit executionContext: ExecutionContext): DBIO[SessionId]
-
     def deleteSession(userId: UserId, sessionId: SessionId)(implicit executionContext: ExecutionContext): DBIO[Boolean]
-
     def deleteAllSessions(userId: UserId)(implicit executionContext: ExecutionContext): DBIO[Boolean]
-
     def existsSession(userId: UserId, sessionId: SessionId)(implicit executionContext: ExecutionContext): DBIO[Boolean]
   }
 
@@ -75,7 +64,7 @@ object UserService {
       with HasDatabaseConfigProvider[PostgresProfile] {
     override def get(userId: UserId): Future[Option[User]]             = db.run(companion.get(userId))
     override def getByNickname(nickname: String): Future[Option[User]] = db.run(companion.getByNickname(nickname))
-    override def getByEmail(email: String): Future[Option[User]]       = db.run(companion.getByEmail(email))
+    override def getByIdentifier(string: String): Future[Seq[User]]    = db.run(companion.getByIdentifier(string))
     override def add(user: User): Future[Boolean]                      = db.run(companion.add(user))
 
     override def update(userId: UserId, userUpdate: UserUpdate): Future[User] =
@@ -118,15 +107,11 @@ object UserService {
         .map(_.transformInto[User])
         .value
 
-    override def getByEmail(email: String)(implicit executionContext: ExecutionContext): DBIO[Option[User]] =
-      OptionT(
-        Tables.User
-          .filter(_.email === email)
-          .result
-          .headOption: DBIO[Option[Tables.UserRow]]
-      )
-        .map(_.transformInto[User])
-        .value
+    override def getByIdentifier(string: String)(implicit executionContext: ExecutionContext): DBIO[Seq[User]] =
+      Tables.User
+        .filter(u => u.email === string || u.nickname === string)
+        .result
+        .map(_.map(_.transformInto[User]))
 
     override def add(user: User)(implicit executionContext: ExecutionContext): DBIO[Boolean] =
       (Tables.User += user.transformInto[Tables.UserRow])
