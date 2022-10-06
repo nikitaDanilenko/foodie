@@ -10,6 +10,7 @@ import controllers.user.{
   Credentials,
   LogoutRequest,
   PasswordChangeRequest,
+  RecoveryRequest,
   User,
   UserIdentifier,
   UserUpdate
@@ -126,6 +127,7 @@ object Bridge {
     mkAndWrite[PasswordChangeRequest]
     mkAndWrite[UserUpdate]
     mkAndWrite[LogoutRequest]
+    mkAndWrite[RecoveryRequest]
   }
 
 }
