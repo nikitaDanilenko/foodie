@@ -5,8 +5,8 @@ import Api.Types.User exposing (User)
 import Basics.Extra exposing (flip)
 import Either
 import Http exposing (Error)
-import Monocle.Compose as Compose
 import Pages.Recovery.Request.Page as Page
+import Pages.Recovery.Request.Requests as Requests
 import Util.HttpUtil as HttpUtil
 import Util.Initialization as Initialization
 
@@ -54,7 +54,11 @@ gotFindResponse model result =
     ( result
         |> Either.fromResult
         |> Either.unpack (flip setError model)
-            (flip Page.lenses.users.set model)
+            (\users ->
+                model
+                    |> Page.lenses.users.set users
+                    |> Page.lenses.mode.set Page.Requested
+            )
     , Cmd.none
     )
 
@@ -63,6 +67,7 @@ updateSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 updateSearchString model string =
     ( model
         |> Page.lenses.searchString.set string
+        |> Page.lenses.mode.set Page.Initial
     , Cmd.none
     )
 

@@ -2,7 +2,6 @@ module Pages.Util.Links exposing (..)
 
 import Basics.Extra exposing (flip)
 import Bootstrap.Button
-import Browser.Navigation
 import Configuration exposing (Configuration)
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (href)
@@ -38,8 +37,17 @@ loadingSymbol =
     Loading.render Loading.Spinner Loading.defaultConfig Loading.On
 
 
+
+-- todo: Switch parameter order
+
+
 frontendPage : List String -> Configuration -> String
 frontendPage pathSteps configuration =
     [ configuration.mainPageURL, "#" ]
         ++ pathSteps
         |> flip Url.Builder.relative []
+
+
+backendPage : Configuration -> List String -> String
+backendPage configuration pathSteps =
+    (configuration.backendURL :: pathSteps) |> flip Url.Builder.relative []
