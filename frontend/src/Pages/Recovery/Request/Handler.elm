@@ -32,8 +32,8 @@ update msg model =
         Page.GotFindResponse result ->
             gotFindResponse model result
 
-        Page.UpdateSearchString string ->
-            updateSearchString model string
+        Page.SetSearchString string ->
+            setSearchString model string
 
         Page.RequestRecovery userId ->
             requestRecovery model userId
@@ -51,20 +51,25 @@ find model =
 
 gotFindResponse : Page.Model -> Result Error (List User) -> ( Page.Model, Cmd Page.Msg )
 gotFindResponse model result =
-    ( result
+    result
         |> Either.fromResult
-        |> Either.unpack (flip setError model)
+        |> Either.unpack (\error -> ( setError error model, Cmd.none ))
             (\users ->
-                model
-                    |> Page.lenses.users.set users
-                    |> Page.lenses.mode.set Page.Requested
+                case users of
+                    user :: [] ->
+                        requestRecovery model user.id
+
+                    _ ->
+                        ( model
+                            |> Page.lenses.users.set users
+                            |> Page.lenses.mode.set Page.Requesting
+                        , Cmd.none
+                        )
             )
-    , Cmd.none
-    )
 
 
-updateSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
-updateSearchString model string =
+setSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
+setSearchString model string =
     ( model
         |> Page.lenses.searchString.set string
         |> Page.lenses.mode.set Page.Initial

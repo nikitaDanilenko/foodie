@@ -45,6 +45,6 @@ type alias Flags =
 type Msg
     = Find
     | GotFindResponse (Result Error (List User))
-    | UpdateSearchString String
+    | SetSearchString String
     | RequestRecovery UserId
     | GotRequestRecoveryResponse (Result Error ())

@@ -76,7 +76,7 @@ view model =
                 [ button
                     [ onClick Page.Request
                     , Style.classes.button.confirm
-                    , disabled <| not <| ValidatedInput.isValid model.nickname && ValidatedInput.isValid model.email
+                    , disabled <| not <| isValid
                     ]
                     [ text "Register" ]
                 ]
