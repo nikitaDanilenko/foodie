@@ -27,6 +27,9 @@ import Pages.Overview.View
 import Pages.Recipes.Handler
 import Pages.Recipes.Page
 import Pages.Recipes.View
+import Pages.Recovery.Request.Handler
+import Pages.Recovery.Request.Page
+import Pages.Recovery.Request.View
 import Pages.ReferenceNutrients.Handler
 import Pages.ReferenceNutrients.Page
 import Pages.ReferenceNutrients.View
@@ -96,6 +99,7 @@ type Page
     | ConfirmRegistration Pages.Registration.Confirm.Page.Model
     | UserSettings Pages.UserSettings.Page.Model
     | Deletion Pages.Deletion.Page.Model
+    | RequestRecovery Pages.Recovery.Request.Page.Model
     | NotFound
 
 
@@ -118,6 +122,7 @@ type Msg
     | ConfirmRegistrationMsg Pages.Registration.Confirm.Page.Msg
     | UserSettingsMsg Pages.UserSettings.Page.Msg
     | DeletionMsg Pages.Deletion.Page.Msg
+    | RequestRecoveryMsg Pages.Recovery.Request.Page.Msg
 
 
 titleFor : Model -> String
@@ -178,6 +183,9 @@ view model =
         Deletion deletion ->
             Html.map DeletionMsg (Pages.Deletion.View.view deletion)
 
+        RequestRecovery requestRecovery ->
+            Html.map RequestRecoveryMsg (Pages.Recovery.Request.View.view requestRecovery)
+
         NotFound ->
             div [] [ text "Page not found" ]
 
@@ -235,6 +243,9 @@ update msg model =
                 Deletion _ ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
+                RequestRecovery _ ->
+                    ( jwtLens.set (Just token) model, Cmd.none )
+
                 Login _ ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
@@ -283,6 +294,9 @@ update msg model =
         ( DeletionMsg deletionMsg, Deletion deletion ) ->
             stepThrough steps.deletion model (Pages.Deletion.Handler.update deletionMsg deletion)
 
+        ( RequestRecoveryMsg requestRecoveryMsg, RequestRecovery requestRecovery ) ->
+            stepThrough steps.requestRecovery model (Pages.Recovery.Request.Handler.update requestRecoveryMsg requestRecovery)
+
         _ ->
             ( model, Cmd.none )
 
@@ -328,6 +342,9 @@ stepTo url model =
                 DeletionRoute flags ->
                     Pages.Deletion.Handler.init flags |> stepThrough steps.deletion model
 
+                RequestRecoveryRoute flags ->
+                    Pages.Recovery.Request.Handler.init flags |> stepThrough steps.requestRecovery model
+
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -351,6 +368,7 @@ steps :
     , confirmRegistration : StepParameters Pages.Registration.Confirm.Page.Model Pages.Registration.Confirm.Page.Msg
     , userSettings : StepParameters Pages.UserSettings.Page.Model Pages.UserSettings.Page.Msg
     , deletion : StepParameters Pages.Deletion.Page.Model Pages.Deletion.Page.Msg
+    , requestRecovery : StepParameters Pages.Recovery.Request.Page.Model Pages.Recovery.Request.Page.Msg
     }
 steps =
     { login = StepParameters Login LoginMsg
@@ -365,6 +383,7 @@ steps =
     , confirmRegistration = StepParameters ConfirmRegistration ConfirmRegistrationMsg
     , userSettings = StepParameters UserSettings UserSettingsMsg
     , deletion = StepParameters Deletion DeletionMsg
+    , requestRecovery = StepParameters RequestRecovery RequestRecoveryMsg
     }
 
 
@@ -386,6 +405,7 @@ type Route
     | ConfirmRegistrationRoute Pages.Registration.Confirm.Page.Flags
     | UserSettingsRoute Pages.UserSettings.Page.Flags
     | DeletionRoute Pages.Deletion.Page.Flags
+    | RequestRecoveryRoute Pages.Recovery.Request.Page.Flags
 
 
 routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
@@ -435,6 +455,9 @@ routeParser jwt configuration =
                 |> Parser.map
                     (Pages.Deletion.Page.Flags configuration)
 
+        requestRecoveryParser =
+            s "request-recovery" |> Parser.map { configuration = configuration }
+
         flags =
             { configuration = configuration, jwt = jwt }
     in
@@ -451,6 +474,7 @@ routeParser jwt configuration =
         , route confirmRegistrationParser ConfirmRegistrationRoute
         , route userSettingsParser UserSettingsRoute
         , route deletionParser DeletionRoute
+        , route requestRecoveryParser RequestRecoveryRoute
         ]
 
 
