@@ -21,7 +21,7 @@ find configuration searchString =
 requestRecovery : Configuration -> UserId -> Cmd Page.Msg
 requestRecovery configuration userId =
     Http.post
-        { url = Links.backendPage configuration [ "user", "recovery", "find" ]
+        { url = Links.backendPage configuration [ "user", "recovery", "request" ]
         , body = encoderRecoveryRequest { userId = userId } |> Http.jsonBody
         , expect = Http.expectJson Page.GotFindResponse (Decode.list decoderUser)
         }
