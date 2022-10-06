@@ -1,7 +1,7 @@
 module Pages.Recovery.Request.View exposing (view)
 
 import Html exposing (Html, button, div, input, label, table, tbody, td, text, tr)
-import Html.Attributes exposing (disabled)
+import Html.Attributes exposing (disabled, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Pages.Recovery.Request.Page as Page
@@ -47,21 +47,17 @@ viewRequesting model =
 
             else
                 [ label [] [ text "Multiple users found. Please choose one." ]
-                , table []
-                    [ tbody [] (List.map chooseUser model.users)
-                    ]
+                , div []
+                    (List.map chooseUser model.users)
                 ]
 
         chooseUser user =
-            tr []
-                [ td [] [ label [] [ text user.nickname ] ]
-                , td []
-                    [ button
-                        [ onClick (Page.RequestRecovery user.id)
-                        , Style.classes.confirm
-                        ]
-                        [ text "Recover" ]
+            div []
+                [ button
+                    [ onClick (Page.RequestRecovery user.id)
+                    , Style.classes.button.navigation
                     ]
+                    [ text user.nickname ]
                 ]
     in
     div [ Style.classes.request ] (searchComponents model ++ remainder)
@@ -103,6 +99,7 @@ searchComponents model =
                     [ input
                         ([ onInput Page.SetSearchString
                          , Style.classes.editable
+                         , value <| model.searchString
                          ]
                             ++ enterAction
                         )
