@@ -3,7 +3,6 @@ package controllers.user
 import enumeratum.{ CirceEnum, Enum, EnumEntry }
 import io.circe.{ Decoder, Encoder }
 import io.circe.generic.JsonCodec
-import io.circe.generic.semiauto.deriveCodec
 
 import java.util.UUID
 
