@@ -47,7 +47,7 @@ request : Page.Model -> ( Page.Model, Cmd Page.Msg )
 request model =
     ( model
     , Requests.request model.configuration model.registrationJWT
-        { password = model.complementInput.password1
+        { password = model.complementInput.passwordInput.password1
         , displayName = model.complementInput.displayName
         }
     )

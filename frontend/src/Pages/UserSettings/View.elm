@@ -7,9 +7,11 @@ import Html.Attributes exposing (disabled, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Maybe.Extra
+import Monocle.Compose as Compose
 import Pages.UserSettings.Page as Page
 import Pages.UserSettings.Status as Status
 import Pages.Util.ComplementInput as ComplementInput
+import Pages.Util.PasswordInput as PasswordInput
 import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil exposing (Page(..))
 
@@ -28,7 +30,7 @@ view model =
     <|
         let
             isValidPassword =
-                ComplementInput.isValidPassword model.complementInput
+                PasswordInput.isValidPassword model.complementInput.passwordInput
 
             enterAction =
                 if isValidPassword then
@@ -36,6 +38,14 @@ view model =
 
                 else
                     []
+
+            password1Lens =
+                ComplementInput.lenses.passwordInput
+                    |> Compose.lensWithLens PasswordInput.lenses.password1
+
+            password2Lens =
+                ComplementInput.lenses.passwordInput
+                    |> Compose.lensWithLens PasswordInput.lenses.password2
         in
         div [ Style.classes.confirm ]
             [ div [] [ label [ Style.classes.info ] [ text "User settings" ] ]
@@ -91,12 +101,12 @@ view model =
                             , td []
                                 [ input
                                     ([ onInput
-                                        (flip ComplementInput.lenses.password1.set
+                                        (flip password1Lens.set
                                             model.complementInput
                                             >> Page.SetComplementInput
                                         )
                                      , type_ "password"
-                                     , value <| model.complementInput.password1
+                                     , value <| password1Lens.get <| model.complementInput
                                      , Style.classes.editable
                                      ]
                                         ++ enterAction
@@ -109,12 +119,12 @@ view model =
                             , td []
                                 [ input
                                     ([ onInput
-                                        (flip ComplementInput.lenses.password2.set
+                                        (flip password2Lens.set
                                             model.complementInput
                                             >> Page.SetComplementInput
                                         )
                                      , type_ "password"
-                                     , value <| model.complementInput.password2
+                                     , value <| password2Lens.get <| model.complementInput
                                      , Style.classes.editable
                                      ]
                                         ++ enterAction

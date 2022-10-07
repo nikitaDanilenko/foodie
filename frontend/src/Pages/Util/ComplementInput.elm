@@ -1,35 +1,27 @@
 module Pages.Util.ComplementInput exposing (..)
 
 import Monocle.Lens exposing (Lens)
+import Pages.Util.PasswordInput as PasswordInput exposing (PasswordInput)
 
 
 type alias ComplementInput =
     { displayName : Maybe String
-    , password1 : String
-    , password2 : String
+    , passwordInput : PasswordInput
     }
 
 
 initial : ComplementInput
 initial =
     { displayName = Nothing
-    , password1 = ""
-    , password2 = ""
+    , passwordInput = PasswordInput.initial
     }
 
 
 lenses :
     { displayName : Lens ComplementInput (Maybe String)
-    , password1 : Lens ComplementInput String
-    , password2 : Lens ComplementInput String
+    , passwordInput : Lens ComplementInput PasswordInput
     }
 lenses =
     { displayName = Lens .displayName (\b a -> { a | displayName = b })
-    , password1 = Lens .password1 (\b a -> { a | password1 = b })
-    , password2 = Lens .password2 (\b a -> { a | password2 = b })
+    , passwordInput = Lens .passwordInput (\b a -> { a | passwordInput = b })
     }
-
-
-isValidPassword : ComplementInput -> Bool
-isValidPassword complementInput =
-    complementInput.password1 == complementInput.password2

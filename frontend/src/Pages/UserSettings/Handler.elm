@@ -16,6 +16,7 @@ import Pages.UserSettings.Status as Status
 import Pages.Util.ComplementInput as ComplementInput exposing (ComplementInput)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.Links as Links
+import Pages.Util.PasswordInput as PasswordInput
 import Ports
 import Util.HttpUtil as HttpUtil
 import Util.Initialization exposing (Initialization(..))
@@ -130,7 +131,7 @@ updatePassword model =
     ( model
     , Requests.updatePassword
         model.flagsWithJWT
-        { password = model.complementInput.password1 }
+        { password = model.complementInput.passwordInput.password1 }
     )
 
 
@@ -141,7 +142,7 @@ gotUpdatePasswordResponse model result =
         |> Either.unpack (flip setError model)
             (\_ ->
                 Lens.modify Page.lenses.complementInput
-                    (ComplementInput.lenses.password1.set "" >> ComplementInput.lenses.password2.set "")
+                    (ComplementInput.lenses.passwordInput.set PasswordInput.initial)
                     model
             )
     , Cmd.none
