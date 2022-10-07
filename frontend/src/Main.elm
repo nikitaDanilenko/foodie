@@ -27,6 +27,9 @@ import Pages.Overview.View
 import Pages.Recipes.Handler
 import Pages.Recipes.Page
 import Pages.Recipes.View
+import Pages.Recovery.Confirm.Handler
+import Pages.Recovery.Confirm.Page
+import Pages.Recovery.Confirm.View
 import Pages.Recovery.Request.Handler
 import Pages.Recovery.Request.Page
 import Pages.Recovery.Request.View
@@ -100,6 +103,7 @@ type Page
     | UserSettings Pages.UserSettings.Page.Model
     | Deletion Pages.Deletion.Page.Model
     | RequestRecovery Pages.Recovery.Request.Page.Model
+    | ConfirmRecovery Pages.Recovery.Confirm.Page.Model
     | NotFound
 
 
@@ -123,6 +127,7 @@ type Msg
     | UserSettingsMsg Pages.UserSettings.Page.Msg
     | DeletionMsg Pages.Deletion.Page.Msg
     | RequestRecoveryMsg Pages.Recovery.Request.Page.Msg
+    | ConfirmRecoveryMsg Pages.Recovery.Confirm.Page.Msg
 
 
 titleFor : Model -> String
@@ -186,6 +191,9 @@ view model =
         RequestRecovery requestRecovery ->
             Html.map RequestRecoveryMsg (Pages.Recovery.Request.View.view requestRecovery)
 
+        ConfirmRecovery confirmRecovery ->
+            Html.map ConfirmRecoveryMsg (Pages.Recovery.Confirm.View.view confirmRecovery)
+
         NotFound ->
             div [] [ text "Page not found" ]
 
@@ -235,6 +243,7 @@ update msg model =
                     stepThrough steps.userSettings model (Pages.UserSettings.Handler.update (Pages.UserSettings.Page.UpdateJWT token) userSettings)
 
                 RequestRegistration _ ->
+                    --todo: Extract this update
                     ( jwtLens.set (Just token) model, Cmd.none )
 
                 ConfirmRegistration _ ->
@@ -244,6 +253,9 @@ update msg model =
                     ( jwtLens.set (Just token) model, Cmd.none )
 
                 RequestRecovery _ ->
+                    ( jwtLens.set (Just token) model, Cmd.none )
+
+                ConfirmRecovery _ ->
                     ( jwtLens.set (Just token) model, Cmd.none )
 
                 Login _ ->
@@ -297,6 +309,10 @@ update msg model =
         ( RequestRecoveryMsg requestRecoveryMsg, RequestRecovery requestRecovery ) ->
             stepThrough steps.requestRecovery model (Pages.Recovery.Request.Handler.update requestRecoveryMsg requestRecovery)
 
+        ( ConfirmRecoveryMsg confirmRecoveryMsg, ConfirmRecovery confirmRecovery ) ->
+            stepThrough steps.confirmRecovery model (Pages.Recovery.Confirm.Handler.update confirmRecoveryMsg confirmRecovery)
+
+
         _ ->
             ( model, Cmd.none )
 
@@ -345,6 +361,9 @@ stepTo url model =
                 RequestRecoveryRoute flags ->
                     Pages.Recovery.Request.Handler.init flags |> stepThrough steps.requestRecovery model
 
+                ConfirmRecoveryRoute flags ->
+                    Pages.Recovery.Confirm.Handler.init flags |> stepThrough steps.confirmRecovery model
+
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -369,6 +388,7 @@ steps :
     , userSettings : StepParameters Pages.UserSettings.Page.Model Pages.UserSettings.Page.Msg
     , deletion : StepParameters Pages.Deletion.Page.Model Pages.Deletion.Page.Msg
     , requestRecovery : StepParameters Pages.Recovery.Request.Page.Model Pages.Recovery.Request.Page.Msg
+    , confirmRecovery : StepParameters Pages.Recovery.Confirm.Page.Model Pages.Recovery.Confirm.Page.Msg
     }
 steps =
     { login = StepParameters Login LoginMsg
@@ -384,6 +404,7 @@ steps =
     , userSettings = StepParameters UserSettings UserSettingsMsg
     , deletion = StepParameters Deletion DeletionMsg
     , requestRecovery = StepParameters RequestRecovery RequestRecoveryMsg
+    , confirmRecovery = StepParameters ConfirmRecovery ConfirmRecoveryMsg
     }
 
 
@@ -406,6 +427,7 @@ type Route
     | UserSettingsRoute Pages.UserSettings.Page.Flags
     | DeletionRoute Pages.Deletion.Page.Flags
     | RequestRecoveryRoute Pages.Recovery.Request.Page.Flags
+    | ConfirmRecoveryRoute Pages.Recovery.Confirm.Page.Flags
 
 
 routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
@@ -458,6 +480,11 @@ routeParser jwt configuration =
         requestRecoveryParser =
             s "request-recovery" |> Parser.map { configuration = configuration }
 
+        confirmRecoveryParser =
+          (s "recover-account" </> ParserUtil.userIdentifierParser </> s "token" </> Parser.string)
+                |> Parser.map
+                    (Pages.Recovery.Confirm.Page.Flags configuration)
+
         flags =
             { configuration = configuration, jwt = jwt }
     in
@@ -475,6 +502,7 @@ routeParser jwt configuration =
         , route userSettingsParser UserSettingsRoute
         , route deletionParser DeletionRoute
         , route requestRecoveryParser RequestRecoveryRoute
+        , route confirmRecoveryParser ConfirmRecoveryRoute
         ]
 
 
