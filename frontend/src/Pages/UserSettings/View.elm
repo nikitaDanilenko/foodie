@@ -32,9 +32,9 @@ view model =
             isValidPassword =
                 PasswordInput.isValidPassword model.complementInput.passwordInput
 
-            enterAction =
+            enterPasswordAction =
                 if isValidPassword then
-                    [ onEnter Page.UpdateSettings ]
+                    [ onEnter Page.UpdatePassword ]
 
                 else
                     []
@@ -109,7 +109,7 @@ view model =
                                      , value <| password1Lens.get <| model.complementInput
                                      , Style.classes.editable
                                      ]
-                                        ++ enterAction
+                                        ++ enterPasswordAction
                                     )
                                     []
                                 ]
@@ -127,7 +127,7 @@ view model =
                                      , value <| password2Lens.get <| model.complementInput
                                      , Style.classes.editable
                                      ]
-                                        ++ enterAction
+                                        ++ enterPasswordAction
                                     )
                                     []
                                 ]
