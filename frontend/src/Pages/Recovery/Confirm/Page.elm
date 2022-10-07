@@ -13,7 +13,7 @@ type alias Model =
     { configuration : Configuration
     , recoveryJwt : JWT
     , userIdentifier : UserIdentifier
-    , passwordInput: PasswordInput
+    , passwordInput : PasswordInput
     , initialization : Initialization ()
     , mode : Mode
     }
@@ -37,9 +37,9 @@ type Mode
 
 
 type alias Flags =
-    { recoveryJwt : JWT
-    , configuration : Configuration
+    { configuration : Configuration
     , userIdentifier : UserIdentifier
+    , recoveryJwt : JWT
     }
 
 

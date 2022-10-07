@@ -45,7 +45,7 @@ viewResetting model =
             else
                 []
     in
-    div []
+    div [ Style.classes.confirm ]
         [ div [] [ label [ Style.classes.info ] [ text "User settings" ] ]
         , div []
             [ table []
