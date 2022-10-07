@@ -52,10 +52,9 @@ viewChecking model =
                 [ text "Delete" ]
             ]
         , div []
-            [ Links.linkButton
-                { url = Links.frontendPage model.configuration [ "login" ]
-                , attributes = [ Style.classes.button.navigation ]
-                , children = [ text "Back to main" ]
+            [ Links.toLoginButton
+                { configuration = model.configuration
+                , buttonText = "Back to main"
                 }
             ]
         ]
@@ -66,10 +65,9 @@ viewConfirmed model =
     div [ Style.classes.confirm ]
         [ div [] [ label [] [ text "User deletion successful." ] ]
         , div []
-            [ Links.linkButton
-                { url = Links.frontendPage model.configuration [ "login" ]
-                , attributes = [ Style.classes.button.navigation ]
-                , children = [ text "Main page" ]
+            [ Links.toLoginButton
+                { configuration = model.configuration
+                , buttonText = "Main page"
                 }
             ]
         ]

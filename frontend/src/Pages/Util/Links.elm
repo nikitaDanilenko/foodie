@@ -3,9 +3,10 @@ module Pages.Util.Links exposing (..)
 import Basics.Extra exposing (flip)
 import Bootstrap.Button
 import Configuration exposing (Configuration)
-import Html exposing (Attribute, Html)
+import Html exposing (Attribute, Html, text)
 import Html.Attributes exposing (href)
 import Loading
+import Pages.Util.Style as Style
 import Url.Builder
 
 
@@ -47,3 +48,16 @@ frontendPage configuration pathSteps =
 backendPage : Configuration -> List String -> String
 backendPage configuration pathSteps =
     (configuration.backendURL :: pathSteps) |> flip Url.Builder.relative []
+
+
+toLoginButton :
+    { configuration : Configuration
+    , buttonText : String
+    }
+    -> Html msg
+toLoginButton params =
+    linkButton
+        { url = frontendPage params.configuration [ "login" ]
+        , attributes = [ Style.classes.button.navigation ]
+        , children = [ text <| params.buttonText ]
+        }

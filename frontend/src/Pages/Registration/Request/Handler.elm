@@ -1,12 +1,10 @@
 module Pages.Registration.Request.Handler exposing (init, update)
 
 import Basics.Extra exposing (flip)
-import Browser.Navigation
 import Either
 import Http exposing (Error)
 import Pages.Registration.Request.Page as Page
 import Pages.Registration.Request.Requests as Requests
-import Pages.Util.Links as Links
 import Pages.Util.ValidatedInput as ValidatedInput exposing (ValidatedInput)
 import Util.HttpUtil as HttpUtil
 import Util.Initialization exposing (Initialization(..))
@@ -18,6 +16,7 @@ init flags =
       , email = ValidatedInput.nonEmptyString
       , configuration = flags.configuration
       , initialization = Loading ()
+      , mode = Page.Editing
       }
     , Cmd.none
     )
@@ -35,11 +34,8 @@ update msg model =
         Page.Request ->
             request model
 
-        Page.GotResponse result ->
-            gotResponse model result
-
-        Page.Back ->
-            back model
+        Page.GotRequestResponse result ->
+            gotRequestResponse model result
 
 
 setNickname : Page.Model -> ValidatedInput String -> ( Page.Model, Cmd Page.Msg )
@@ -67,28 +63,16 @@ request model =
     )
 
 
-gotResponse : Page.Model -> Result Error () -> ( Page.Model, Cmd Page.Msg )
-gotResponse model result =
-    result
+gotRequestResponse : Page.Model -> Result Error () -> ( Page.Model, Cmd Page.Msg )
+gotRequestResponse model result =
+    (result
         |> Either.fromResult
         |> Either.unpack
-            (\error ->
-                ( error
-                    |> HttpUtil.errorToExplanation
-                    |> Failure
-                    |> flip Page.lenses.initialization.set model
-                , Cmd.none
-                )
-            )
-            (always
-                ( model
-                , Links.frontendPage model.configuration [ "confirmation" ] |> Browser.Navigation.load
-                )
-            )
-
-
-back : Page.Model -> ( Page.Model, Cmd Page.Msg )
-back model =
-    ( model
-    , Links.frontendPage model.configuration [ "login" ] |> Browser.Navigation.load
+            (flip setError model)
+            (\_ -> model |> Page.lenses.mode.set Page.Confirmed),
+            Cmd.none
     )
+
+setError : Error -> Page.Model -> Page.Model
+setError =
+    HttpUtil.setError Page.lenses.initialization

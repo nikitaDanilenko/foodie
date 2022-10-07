@@ -12,6 +12,6 @@ request : Configuration -> UserIdentifier -> Cmd Page.Msg
 request configuration userIdentifier =
     Http.post
         { url = Url.Builder.relative [ configuration.backendURL, "user", "registration", "request" ] []
-        , expect = HttpUtil.expectWhatever Page.GotResponse
+        , expect = HttpUtil.expectWhatever Page.GotRequestResponse
         , body = Http.jsonBody (encoderUserIdentifier userIdentifier)
         }

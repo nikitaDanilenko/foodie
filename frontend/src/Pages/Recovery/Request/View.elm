@@ -68,10 +68,9 @@ viewRequested model =
     div [ Style.classes.confirm ]
         [ div [] [ label [] [ text "Requested user recovery. Please check your email" ] ]
         , div []
-            [ Links.linkButton
-                { url = Links.frontendPage model.configuration [ "login" ]
-                , attributes = [ Style.classes.button.navigation ]
-                , children = [ text "Main page" ]
+            [ Links.toLoginButton
+                { configuration = model.configuration
+                , buttonText = "Main page"
                 }
             ]
         ]

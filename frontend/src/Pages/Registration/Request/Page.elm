@@ -11,7 +11,8 @@ type alias Model =
     { nickname : ValidatedInput String
     , email : ValidatedInput String
     , configuration : Configuration
-    , initialization: Initialization ()
+    , initialization : Initialization ()
+    , mode : Mode
     }
 
 
@@ -19,12 +20,19 @@ lenses :
     { nickname : Lens Model (ValidatedInput String)
     , email : Lens Model (ValidatedInput String)
     , initialization : Lens Model (Initialization ())
+    , mode : Lens Model Mode
     }
 lenses =
     { nickname = Lens .nickname (\b a -> { a | nickname = b })
     , email = Lens .email (\b a -> { a | email = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
+    , mode = Lens .mode (\b a -> { a | mode = b })
     }
+
+
+type Mode
+    = Editing
+    | Confirmed
 
 
 type alias Flags =
@@ -36,5 +44,4 @@ type Msg
     = SetNickname (ValidatedInput String)
     | SetEmail (ValidatedInput String)
     | Request
-    | GotResponse (Result Error ())
-    | Back
+    | GotRequestResponse (Result Error ())
