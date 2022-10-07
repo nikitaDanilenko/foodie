@@ -5,12 +5,13 @@ import Html.Attributes exposing (autocomplete, type_)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Pages.Login.Page as Page
+import Pages.Util.Links as Links
 import Pages.Util.Style as Style
 
 
 view : Page.Model -> Html Page.Msg
-view _ =
-    div [ Style.ids.login ]
+view model =
+    div [ Style.classes.confirm ]
         [ div []
             [ label [] [ text "Nickname" ]
             , input
@@ -34,4 +35,18 @@ view _ =
             ]
         , div []
             [ button [ onClick Page.Login, Style.classes.button.confirm ] [ text "Log In" ] ]
+        , div []
+            [ Links.linkButton
+                { url = Links.frontendPage [ "request-registration" ] model.configuration
+                , attributes = [ Style.classes.button.navigation ]
+                , children = [ text "Create account" ]
+                }
+            ]
+        , div []
+            [ Links.linkButton
+                { url = Links.frontendPage [ "request-recovery" ] model.configuration
+                , attributes = [ Style.classes.button.navigation ]
+                , children = [ text "Recover account" ]
+                }
+            ]
         ]
