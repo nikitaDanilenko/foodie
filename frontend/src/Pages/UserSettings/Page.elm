@@ -18,6 +18,7 @@ type alias Model =
     , user : User
     , complementInput : ComplementInput
     , initialization : Initialization Status
+    , mode : Mode
     }
 
 
@@ -26,13 +27,20 @@ lenses :
     , user : Lens Model User
     , complementInput : Lens Model ComplementInput
     , initialization : Lens Model (Initialization Status)
+    , mode : Lens Model Mode
     }
 lenses =
     { jwt = LensUtil.jwtSubLens
     , user = Lens .user (\b a -> { a | user = b })
     , complementInput = Lens .complementInput (\b a -> { a | complementInput = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
+    , mode = Lens .mode (\b a -> { a | mode = b })
     }
+
+
+type Mode
+    = Regular
+    | RequestedDeletion
 
 
 type alias Flags =
@@ -51,5 +59,5 @@ type Msg
     | RequestDeletion
     | GotRequestDeletionResponse (Result Error ())
     | SetComplementInput ComplementInput
-    | Logout Mode
+    | Logout Api.Types.Mode.Mode
     | GotLogoutResponse (Result Error ())

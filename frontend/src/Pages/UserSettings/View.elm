@@ -28,140 +28,157 @@ view model =
         }
         model
     <|
-        let
-            isValidPassword =
-                PasswordInput.isValidPassword model.complementInput.passwordInput
+        case model.mode of
+            Page.Regular ->
+                viewRegular model
 
-            enterPasswordAction =
-                if isValidPassword then
-                    [ onEnter Page.UpdatePassword ]
+            Page.RequestedDeletion ->
+                viewRequestedDeletion model
 
-                else
-                    []
 
-            password1Lens =
-                ComplementInput.lenses.passwordInput
-                    |> Compose.lensWithLens PasswordInput.lenses.password1
+viewRegular : Page.Model -> Html Page.Msg
+viewRegular model =
+    let
+        isValidPassword =
+            PasswordInput.isValidPassword model.complementInput.passwordInput
 
-            password2Lens =
-                ComplementInput.lenses.passwordInput
-                    |> Compose.lensWithLens PasswordInput.lenses.password2
-        in
-        div [ Style.classes.confirm ]
-            [ div [] [ label [ Style.classes.info ] [ text "User settings" ] ]
-            , div []
-                [ table []
-                    [ tbody []
-                        [ tr []
-                            [ td [] [ label [] [ text "Nickname" ] ]
-                            , td [] [ label [] [ text <| model.user.nickname ] ]
-                            ]
-                        , tr []
-                            [ td [] [ label [] [ text "Email" ] ]
-                            , td [] [ label [] [ text <| model.user.email ] ]
-                            ]
-                        , tr []
-                            [ td [] [ label [] [ text "Display name" ] ]
-                            , td [] [ label [] [ text <| Maybe.withDefault "" <| model.user.displayName ] ]
-                            ]
-                        , tr []
-                            [ td [] [ label [] [ text "New display name" ] ]
-                            , td []
-                                [ input
-                                    [ onInput
-                                        (Just
-                                            >> Maybe.Extra.filter (String.isEmpty >> not)
-                                            >> (flip ComplementInput.lenses.displayName.set
-                                                    model.complementInput
-                                                    >> Page.SetComplementInput
-                                               )
-                                        )
-                                    , value <| Maybe.withDefault "" <| model.complementInput.displayName
-                                    , Style.classes.editable
-                                    , onEnter Page.UpdateSettings
-                                    ]
-                                    []
-                                ]
-                            ]
+        enterPasswordAction =
+            if isValidPassword then
+                [ onEnter Page.UpdatePassword ]
+
+            else
+                []
+
+        password1Lens =
+            ComplementInput.lenses.passwordInput
+                |> Compose.lensWithLens PasswordInput.lenses.password1
+
+        password2Lens =
+            ComplementInput.lenses.passwordInput
+                |> Compose.lensWithLens PasswordInput.lenses.password2
+    in
+    div [ Style.classes.confirm ]
+        [ div [] [ label [ Style.classes.info ] [ text "User settings" ] ]
+        , div []
+            [ table []
+                [ tbody []
+                    [ tr []
+                        [ td [] [ label [] [ text "Nickname" ] ]
+                        , td [] [ label [] [ text <| model.user.nickname ] ]
                         ]
-                    ]
-                , div []
-                    [ button
-                        [ onClick Page.UpdateSettings
-                        , Style.classes.button.confirm
+                    , tr []
+                        [ td [] [ label [] [ text "Email" ] ]
+                        , td [] [ label [] [ text <| model.user.email ] ]
                         ]
-                        [ text "Update settings" ]
-                    ]
-                ]
-            , div []
-                [ table []
-                    [ tbody []
-                        [ tr []
-                            [ td [] [ label [] [ text "New password" ] ]
-                            , td []
-                                [ input
-                                    ([ onInput
-                                        (flip password1Lens.set
-                                            model.complementInput
-                                            >> Page.SetComplementInput
-                                        )
-                                     , type_ "password"
-                                     , value <| password1Lens.get <| model.complementInput
-                                     , Style.classes.editable
-                                     ]
-                                        ++ enterPasswordAction
+                    , tr []
+                        [ td [] [ label [] [ text "Display name" ] ]
+                        , td [] [ label [] [ text <| Maybe.withDefault "" <| model.user.displayName ] ]
+                        ]
+                    , tr []
+                        [ td [] [ label [] [ text "New display name" ] ]
+                        , td []
+                            [ input
+                                [ onInput
+                                    (Just
+                                        >> Maybe.Extra.filter (String.isEmpty >> not)
+                                        >> (flip ComplementInput.lenses.displayName.set
+                                                model.complementInput
+                                                >> Page.SetComplementInput
+                                           )
                                     )
-                                    []
+                                , value <| Maybe.withDefault "" <| model.complementInput.displayName
+                                , Style.classes.editable
+                                , onEnter Page.UpdateSettings
                                 ]
-                            ]
-                        , tr []
-                            [ td [] [ label [] [ text "Password repetition" ] ]
-                            , td []
-                                [ input
-                                    ([ onInput
-                                        (flip password2Lens.set
-                                            model.complementInput
-                                            >> Page.SetComplementInput
-                                        )
-                                     , type_ "password"
-                                     , value <| password2Lens.get <| model.complementInput
-                                     , Style.classes.editable
-                                     ]
-                                        ++ enterPasswordAction
-                                    )
-                                    []
-                                ]
+                                []
                             ]
                         ]
                     ]
-                , div []
-                    [ button
-                        [ onClick Page.UpdatePassword
-                        , Style.classes.button.confirm
-                        , disabled <| not <| isValidPassword
-                        ]
-                        [ text "Update password" ]
-                    ]
                 ]
             , div []
                 [ button
-                    [ onClick Page.RequestDeletion
-                    , Style.classes.button.delete
+                    [ onClick Page.UpdateSettings
+                    , Style.classes.button.confirm
                     ]
-                    [ text "Delete account" ]
-                ]
-            , div []
-                [ button
-                    [ onClick (Page.Logout This)
-                    , Style.classes.button.logout
-                    ]
-                    [ text "Logout this device" ]
-                ]
-            , div []
-                [ button
-                    [ onClick (Page.Logout All)
-                    , Style.classes.button.logout
-                    ]
-                    [ text "Logout all devices" ]
+                    [ text "Update settings" ]
                 ]
             ]
+        , div []
+            [ table []
+                [ tbody []
+                    [ tr []
+                        [ td [] [ label [] [ text "New password" ] ]
+                        , td []
+                            [ input
+                                ([ onInput
+                                    (flip password1Lens.set
+                                        model.complementInput
+                                        >> Page.SetComplementInput
+                                    )
+                                 , type_ "password"
+                                 , value <| password1Lens.get <| model.complementInput
+                                 , Style.classes.editable
+                                 ]
+                                    ++ enterPasswordAction
+                                )
+                                []
+                            ]
+                        ]
+                    , tr []
+                        [ td [] [ label [] [ text "Password repetition" ] ]
+                        , td []
+                            [ input
+                                ([ onInput
+                                    (flip password2Lens.set
+                                        model.complementInput
+                                        >> Page.SetComplementInput
+                                    )
+                                 , type_ "password"
+                                 , value <| password2Lens.get <| model.complementInput
+                                 , Style.classes.editable
+                                 ]
+                                    ++ enterPasswordAction
+                                )
+                                []
+                            ]
+                        ]
+                    ]
+                ]
+            , div []
+                [ button
+                    [ onClick Page.UpdatePassword
+                    , Style.classes.button.confirm
+                    , disabled <| not <| isValidPassword
+                    ]
+                    [ text "Update password" ]
+                ]
+            ]
+        , div []
+            [ button
+                [ onClick Page.RequestDeletion
+                , Style.classes.button.delete
+                ]
+                [ text "Delete account" ]
+            ]
+        , div []
+            [ button
+                [ onClick (Page.Logout Api.Types.Mode.This)
+                , Style.classes.button.logout
+                ]
+                [ text "Logout this device" ]
+            ]
+        , div []
+            [ button
+                [ onClick (Page.Logout Api.Types.Mode.All)
+                , Style.classes.button.logout
+                ]
+                [ text "Logout all devices" ]
+            ]
+        ]
+
+
+viewRequestedDeletion : Page.Model -> Html Page.Msg
+viewRequestedDeletion _ =
+    div [ Style.classes.confirm ]
+        [ div [] [ label [] [ text "Account deletion requested. Please check your email to continue." ] ]
+        ]

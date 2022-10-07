@@ -56,6 +56,7 @@ init flags =
             }
       , complementInput = ComplementInput.initial
       , initialization = Loading Status.initial
+      , mode = Page.Regular
       }
     , cmd
     )
@@ -177,10 +178,12 @@ requestDeletion model =
 
 gotRequestDeletionResponse : Page.Model -> Result Error () -> ( Page.Model, Cmd Page.Msg )
 gotRequestDeletionResponse model result =
-    result
+    ( result
         |> Either.fromResult
-        |> Either.unpack (\error -> ( model |> setError error, Cmd.none ))
-            (\_ -> ( model, Links.frontendPage model.flagsWithJWT.configuration [ "confirmation" ] |> Browser.Navigation.load ))
+        |> Either.unpack (flip setError model)
+            (\_ -> model |> Page.lenses.mode.set Page.RequestedDeletion)
+    , Cmd.none
+    )
 
 
 setComplementInput : Page.Model -> ComplementInput -> ( Page.Model, Cmd Page.Msg )
@@ -190,7 +193,7 @@ setComplementInput model complementInput =
     )
 
 
-logout : Page.Model -> Mode -> ( Page.Model, Cmd Page.Msg )
+logout : Page.Model -> Api.Types.Mode.Mode -> ( Page.Model, Cmd Page.Msg )
 logout model mode =
     ( model
     , Requests.logout model.flagsWithJWT mode
