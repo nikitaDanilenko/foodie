@@ -215,54 +215,56 @@ update msg model =
         ( LoginMsg loginMsg, Login login ) ->
             stepThrough steps.login model (Pages.Login.Handler.update loginMsg login)
 
-        -- todo: Check all cases, and possibly refactor to have less duplication.
         ( FetchToken token, page ) ->
+            let
+                updatedModel =
+                    jwtLens.set (Just token) model
+            in
             case page of
                 Overview overview ->
-                    stepThrough steps.overview model (Pages.Overview.Handler.update (Pages.Overview.Page.UpdateJWT token) overview)
+                    stepThrough steps.overview updatedModel (Pages.Overview.Handler.update (Pages.Overview.Page.UpdateJWT token) overview)
 
                 Recipes recipes ->
-                    stepThrough steps.recipes model (Pages.Recipes.Handler.update (Pages.Recipes.Page.UpdateJWT token) recipes)
+                    stepThrough steps.recipes updatedModel (Pages.Recipes.Handler.update (Pages.Recipes.Page.UpdateJWT token) recipes)
 
                 Ingredients ingredients ->
-                    stepThrough steps.ingredients model (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateJWT token) ingredients)
+                    stepThrough steps.ingredients updatedModel (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateJWT token) ingredients)
 
                 Meals meals ->
-                    stepThrough steps.meals model (Pages.Meals.Handler.update (Pages.Meals.Page.UpdateJWT token) meals)
+                    stepThrough steps.meals updatedModel (Pages.Meals.Handler.update (Pages.Meals.Page.UpdateJWT token) meals)
 
                 MealEntries mealEntry ->
-                    stepThrough steps.mealEntries model (Pages.MealEntries.Handler.update (Pages.MealEntries.Page.UpdateJWT token) mealEntry)
+                    stepThrough steps.mealEntries updatedModel (Pages.MealEntries.Handler.update (Pages.MealEntries.Page.UpdateJWT token) mealEntry)
 
                 Statistics statistics ->
-                    stepThrough steps.statistics model (Pages.Statistics.Handler.update (Pages.Statistics.Page.UpdateJWT token) statistics)
+                    stepThrough steps.statistics updatedModel (Pages.Statistics.Handler.update (Pages.Statistics.Page.UpdateJWT token) statistics)
 
                 ReferenceNutrients referenceNutrients ->
-                    stepThrough steps.referenceNutrients model (Pages.ReferenceNutrients.Handler.update (Pages.ReferenceNutrients.Page.UpdateJWT token) referenceNutrients)
+                    stepThrough steps.referenceNutrients updatedModel (Pages.ReferenceNutrients.Handler.update (Pages.ReferenceNutrients.Page.UpdateJWT token) referenceNutrients)
 
                 UserSettings userSettings ->
-                    stepThrough steps.userSettings model (Pages.UserSettings.Handler.update (Pages.UserSettings.Page.UpdateJWT token) userSettings)
+                    stepThrough steps.userSettings updatedModel (Pages.UserSettings.Handler.update (Pages.UserSettings.Page.UpdateJWT token) userSettings)
 
                 RequestRegistration _ ->
-                    --todo: Extract this update
-                    ( jwtLens.set (Just token) model, Cmd.none )
+                    ( updatedModel, Cmd.none )
 
                 ConfirmRegistration _ ->
-                    ( jwtLens.set (Just token) model, Cmd.none )
+                    ( updatedModel, Cmd.none )
 
                 Deletion _ ->
-                    ( jwtLens.set (Just token) model, Cmd.none )
+                    ( updatedModel, Cmd.none )
 
                 RequestRecovery _ ->
-                    ( jwtLens.set (Just token) model, Cmd.none )
+                    ( updatedModel, Cmd.none )
 
                 ConfirmRecovery _ ->
-                    ( jwtLens.set (Just token) model, Cmd.none )
+                    ( updatedModel, Cmd.none )
 
                 Login _ ->
-                    ( jwtLens.set (Just token) model, Cmd.none )
+                    ( updatedModel, Cmd.none )
 
                 NotFound ->
-                    ( jwtLens.set (Just token) model, Cmd.none )
+                    ( updatedModel, Cmd.none )
 
         ( FetchFoods foods, Ingredients ingredients ) ->
             stepThrough steps.ingredients model (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateFoods foods) ingredients)
@@ -311,7 +313,6 @@ update msg model =
 
         ( ConfirmRecoveryMsg confirmRecoveryMsg, ConfirmRecovery confirmRecovery ) ->
             stepThrough steps.confirmRecovery model (Pages.Recovery.Confirm.Handler.update confirmRecoveryMsg confirmRecovery)
-
 
         _ ->
             ( model, Cmd.none )
@@ -481,7 +482,7 @@ routeParser jwt configuration =
             s "request-recovery" |> Parser.map { configuration = configuration }
 
         confirmRecoveryParser =
-          (s "recover-account" </> ParserUtil.userIdentifierParser </> s "token" </> Parser.string)
+            (s "recover-account" </> ParserUtil.userIdentifierParser </> s "token" </> Parser.string)
                 |> Parser.map
                     (Pages.Recovery.Confirm.Page.Flags configuration)
 
