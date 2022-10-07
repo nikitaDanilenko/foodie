@@ -46,7 +46,7 @@ viewResetting model =
                 []
     in
     div [ Style.classes.confirm ]
-        [ div [] [ label [ Style.classes.info ] [ text "User settings" ] ]
+        [ div [] [ label [ Style.classes.info ] [ text "Account recovery" ] ]
         , div []
             [ table []
                 [ tbody []
