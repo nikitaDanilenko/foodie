@@ -379,6 +379,7 @@ th {
 .confirm a {
     margin-top: 5px;
     width: 30%;
+    margin-bottom: 0;
 }
 
 .request .info,
