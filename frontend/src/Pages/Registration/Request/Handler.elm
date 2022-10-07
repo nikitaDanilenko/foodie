@@ -82,7 +82,7 @@ gotResponse model result =
             )
             (always
                 ( model
-                , Links.frontendPage [ "confirmation" ] model.configuration |> Browser.Navigation.load
+                , Links.frontendPage model.configuration [ "confirmation" ] |> Browser.Navigation.load
                 )
             )
 
@@ -90,6 +90,5 @@ gotResponse model result =
 back : Page.Model -> ( Page.Model, Cmd Page.Msg )
 back model =
     ( model
-    , Links.frontendPage [ "login" ] model.configuration |> Browser.Navigation.load
-      --todo: Use main page
+    , Links.frontendPage model.configuration [ "login" ] |> Browser.Navigation.load
     )

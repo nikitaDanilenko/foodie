@@ -128,7 +128,7 @@ editOrDeleteMealLine configuration meal =
         , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Page.DeleteMeal meal.id) ] [ text "Delete" ] ]
         , td [ Style.classes.controls ]
             [ Links.linkButton
-                { url = Links.frontendPage [ "meal-entry-editor", meal.id ] configuration
+                { url = Links.frontendPage configuration [ "meal-entry-editor", meal.id ]
                 , attributes = [ Style.classes.button.editor ]
                 , children = [ text "Entries" ]
                 }

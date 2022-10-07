@@ -127,7 +127,7 @@ editOrDeleteRecipeLine configuration recipe =
             ]
         , td [ Style.classes.controls ]
             [ Links.linkButton
-                { url = Links.frontendPage [ "ingredient-editor", recipe.id ] configuration
+                { url = Links.frontendPage configuration [ "ingredient-editor", recipe.id ]
                 , attributes = [ Style.classes.button.editor ]
                 , children = [ text "Ingredients" ]
                 }

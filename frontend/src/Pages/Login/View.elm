@@ -37,14 +37,14 @@ view model =
             [ button [ onClick Page.Login, Style.classes.button.confirm ] [ text "Log In" ] ]
         , div []
             [ Links.linkButton
-                { url = Links.frontendPage [ "request-registration" ] model.configuration
+                { url = Links.frontendPage model.configuration [ "request-registration" ]
                 , attributes = [ Style.classes.button.navigation ]
                 , children = [ text "Create account" ]
                 }
             ]
         , div []
             [ Links.linkButton
-                { url = Links.frontendPage [ "request-recovery" ] model.configuration
+                { url = Links.frontendPage model.configuration [ "request-recovery" ]
                 , attributes = [ Style.classes.button.navigation ]
                 , children = [ text "Recover account" ]
                 }

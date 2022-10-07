@@ -180,7 +180,7 @@ gotRequestDeletionResponse model result =
     result
         |> Either.fromResult
         |> Either.unpack (\error -> ( model |> setError error, Cmd.none ))
-            (\_ -> ( model, Links.frontendPage [ "confirmation" ] model.flagsWithJWT.configuration |> Browser.Navigation.load ))
+            (\_ -> ( model, Links.frontendPage model.flagsWithJWT.configuration [ "confirmation" ] |> Browser.Navigation.load ))
 
 
 setComplementInput : Page.Model -> ComplementInput -> ( Page.Model, Cmd Page.Msg )
@@ -210,7 +210,7 @@ gotLogoutResponse model result =
                 ( model
                 , Cmd.batch
                     [ Ports.doDeleteToken ()
-                    , Links.frontendPage [ "login" ] model.flagsWithJWT.configuration |> Browser.Navigation.load
+                    , Links.frontendPage model.flagsWithJWT.configuration [ "login" ] |> Browser.Navigation.load
                     ]
                 )
             )

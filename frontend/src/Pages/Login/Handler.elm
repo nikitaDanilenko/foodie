@@ -96,7 +96,7 @@ gotResponse model remoteData =
                     model
                 , Cmd.batch
                     [ Ports.storeToken token
-                    , Links.frontendPage ["overview"] model.configuration |> Browser.Navigation.load
+                    , Links.frontendPage model.configuration [ "overview" ] |> Browser.Navigation.load
                     ]
                 )
             )

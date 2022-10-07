@@ -69,8 +69,7 @@ viewRequested model =
         [ div [] [ label [] [ text "Requested user recovery. Please check your email" ] ]
         , div []
             [ Links.linkButton
-                --todo: Use main page
-                { url = Links.frontendPage [ "login" ] model.configuration
+                { url = Links.frontendPage model.configuration [ "login" ]
                 , attributes = [ Style.classes.button.navigation ]
                 , children = [ text "Main page" ]
                 }

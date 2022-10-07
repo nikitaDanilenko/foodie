@@ -53,7 +53,7 @@ viewChecking model =
             ]
         , div []
             [ Links.linkButton
-                { url = Links.frontendPage [ "login" ] model.configuration --todo: Use main page,
+                { url = Links.frontendPage model.configuration [ "login" ]
                 , attributes = [ Style.classes.button.navigation ]
                 , children = [ text "Back to main" ]
                 }
@@ -67,8 +67,7 @@ viewConfirmed model =
         [ div [] [ label [] [ text "User deletion successful." ] ]
         , div []
             [ Links.linkButton
-                --todo: Use main page
-                { url = Links.frontendPage [ "login" ] model.configuration
+                { url = Links.frontendPage model.configuration [ "login" ]
                 , attributes = [ Style.classes.button.navigation ]
                 , children = [ text "Main page" ]
                 }

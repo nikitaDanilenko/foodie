@@ -37,12 +37,8 @@ loadingSymbol =
     Loading.render Loading.Spinner Loading.defaultConfig Loading.On
 
 
-
--- todo: Switch parameter order
-
-
-frontendPage : List String -> Configuration -> String
-frontendPage pathSteps configuration =
+frontendPage : Configuration -> List String -> String
+frontendPage configuration pathSteps =
     [ configuration.mainPageURL, "#" ]
         ++ pathSteps
         |> flip Url.Builder.relative []

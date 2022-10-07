@@ -106,8 +106,7 @@ viewConfirmed model =
         [ div [] [ label [] [ text "Successfully reset password." ] ]
         , div []
             [ Links.linkButton
-                --todo: Use main page
-                { url = Links.frontendPage [ "login" ] model.configuration
+                { url = Links.frontendPage model.configuration [ "login" ]
                 , attributes = [ Style.classes.button.navigation ]
                 , children = [ text "Main page" ]
                 }

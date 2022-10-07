@@ -23,35 +23,35 @@ view model =
         div [ Style.ids.overviewMain ]
             [ div []
                 [ Links.linkButton
-                    { url = Links.frontendPage [ "recipes" ] model.flagsWithJWT.configuration
+                    { url = Links.frontendPage model.flagsWithJWT.configuration [ "recipes" ]
                     , attributes = [ Style.ids.recipesButton ]
                     , children = [ text "Recipes" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage [ "meals" ] model.flagsWithJWT.configuration
+                    { url = Links.frontendPage model.flagsWithJWT.configuration [ "meals" ]
                     , attributes = [ Style.ids.mealsButton ]
                     , children = [ text "Meals" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage [ "statistics" ] model.flagsWithJWT.configuration
+                    { url = Links.frontendPage model.flagsWithJWT.configuration [ "statistics" ]
                     , attributes = [ Style.ids.statisticsButton ]
                     , children = [ text "Statistics" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage [ "reference-nutrients" ] model.flagsWithJWT.configuration
+                    { url = Links.frontendPage model.flagsWithJWT.configuration [ "reference-nutrients" ]
                     , attributes = [ Style.ids.referenceNutrientsButton ]
                     , children = [ text "Reference nutrients" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage [ "user-settings" ] model.flagsWithJWT.configuration
+                    { url = Links.frontendPage model.flagsWithJWT.configuration [ "user-settings" ]
                     , attributes = [ Style.ids.userSettingsButton ]
                     , children = [ text "User settings" ]
                     }

@@ -142,8 +142,7 @@ viewConfirmed model =
         [ div [] [ label [] [ text "User creation successful." ] ]
         , div []
             [ Links.linkButton
-                --todo: Use main page
-                { url = Links.frontendPage [ "login" ] model.configuration
+                { url = Links.frontendPage model.configuration [ "login" ]
                 , attributes = [ Style.classes.button.navigation ]
                 , children = [ text "Main page" ]
                 }
