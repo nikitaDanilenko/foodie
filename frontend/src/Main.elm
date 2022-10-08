@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Api.Auxiliary exposing (JWT)
 import Basics.Extra exposing (flip)
 import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav
@@ -84,9 +85,13 @@ type alias Model =
     }
 
 
-jwtLens : Lens Model (Maybe String)
-jwtLens =
-    Lens .jwt (\b a -> { a | jwt = b })
+lenses :
+    { jwt : Lens Model (Maybe JWT)
+    }
+lenses =
+    { jwt =
+        Lens .jwt (\b a -> { a | jwt = b })
+    }
 
 
 type Page
@@ -216,55 +221,9 @@ update msg model =
             stepThrough steps.login model (Pages.Login.Handler.update loginMsg login)
 
         ( FetchToken token, page ) ->
-            let
-                updatedModel =
-                    jwtLens.set (Just token) model
-            in
-            case page of
-                Overview overview ->
-                    stepThrough steps.overview updatedModel (Pages.Overview.Handler.update (Pages.Overview.Page.UpdateJWT token) overview)
-
-                Recipes recipes ->
-                    stepThrough steps.recipes updatedModel (Pages.Recipes.Handler.update (Pages.Recipes.Page.UpdateJWT token) recipes)
-
-                Ingredients ingredients ->
-                    stepThrough steps.ingredients updatedModel (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateJWT token) ingredients)
-
-                Meals meals ->
-                    stepThrough steps.meals updatedModel (Pages.Meals.Handler.update (Pages.Meals.Page.UpdateJWT token) meals)
-
-                MealEntries mealEntry ->
-                    stepThrough steps.mealEntries updatedModel (Pages.MealEntries.Handler.update (Pages.MealEntries.Page.UpdateJWT token) mealEntry)
-
-                Statistics statistics ->
-                    stepThrough steps.statistics updatedModel (Pages.Statistics.Handler.update (Pages.Statistics.Page.UpdateJWT token) statistics)
-
-                ReferenceNutrients referenceNutrients ->
-                    stepThrough steps.referenceNutrients updatedModel (Pages.ReferenceNutrients.Handler.update (Pages.ReferenceNutrients.Page.UpdateJWT token) referenceNutrients)
-
-                UserSettings userSettings ->
-                    stepThrough steps.userSettings updatedModel (Pages.UserSettings.Handler.update (Pages.UserSettings.Page.UpdateJWT token) userSettings)
-
-                RequestRegistration _ ->
-                    ( updatedModel, Cmd.none )
-
-                ConfirmRegistration _ ->
-                    ( updatedModel, Cmd.none )
-
-                Deletion _ ->
-                    ( updatedModel, Cmd.none )
-
-                RequestRecovery _ ->
-                    ( updatedModel, Cmd.none )
-
-                ConfirmRecovery _ ->
-                    ( updatedModel, Cmd.none )
-
-                Login _ ->
-                    ( updatedModel, Cmd.none )
-
-                NotFound ->
-                    ( updatedModel, Cmd.none )
+            model
+                |> lenses.jwt.set (Just token)
+                |> (\m -> handleFetchToken m page token)
 
         ( FetchFoods foods, Ingredients ingredients ) ->
             stepThrough steps.ingredients model (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateFoods foods) ingredients)
@@ -315,6 +274,55 @@ update msg model =
             stepThrough steps.confirmRecovery model (Pages.Recovery.Confirm.Handler.update confirmRecoveryMsg confirmRecovery)
 
         _ ->
+            ( model, Cmd.none )
+
+
+handleFetchToken : Model -> Page -> JWT -> ( Model, Cmd Msg )
+handleFetchToken model page token =
+    case page of
+        Overview overview ->
+            stepThrough steps.overview model (Pages.Overview.Handler.update (Pages.Overview.Page.UpdateJWT token) overview)
+
+        Recipes recipes ->
+            stepThrough steps.recipes model (Pages.Recipes.Handler.update (Pages.Recipes.Page.UpdateJWT token) recipes)
+
+        Ingredients ingredients ->
+            stepThrough steps.ingredients model (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateJWT token) ingredients)
+
+        Meals meals ->
+            stepThrough steps.meals model (Pages.Meals.Handler.update (Pages.Meals.Page.UpdateJWT token) meals)
+
+        MealEntries mealEntry ->
+            stepThrough steps.mealEntries model (Pages.MealEntries.Handler.update (Pages.MealEntries.Page.UpdateJWT token) mealEntry)
+
+        Statistics statistics ->
+            stepThrough steps.statistics model (Pages.Statistics.Handler.update (Pages.Statistics.Page.UpdateJWT token) statistics)
+
+        ReferenceNutrients referenceNutrients ->
+            stepThrough steps.referenceNutrients model (Pages.ReferenceNutrients.Handler.update (Pages.ReferenceNutrients.Page.UpdateJWT token) referenceNutrients)
+
+        UserSettings userSettings ->
+            stepThrough steps.userSettings model (Pages.UserSettings.Handler.update (Pages.UserSettings.Page.UpdateJWT token) userSettings)
+
+        RequestRegistration _ ->
+            ( model, Cmd.none )
+
+        ConfirmRegistration _ ->
+            ( model, Cmd.none )
+
+        Deletion _ ->
+            ( model, Cmd.none )
+
+        RequestRecovery _ ->
+            ( model, Cmd.none )
+
+        ConfirmRecovery _ ->
+            ( model, Cmd.none )
+
+        Login _ ->
+            ( model, Cmd.none )
+
+        NotFound ->
             ( model, Cmd.none )
 
 
