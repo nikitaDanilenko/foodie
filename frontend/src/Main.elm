@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Addresses.Frontend
 import Api.Auxiliary exposing (JWT)
 import Basics.Extra exposing (flip)
 import Browser exposing (UrlRequest)
@@ -49,10 +50,9 @@ import Pages.Statistics.View
 import Pages.UserSettings.Handler
 import Pages.UserSettings.Page
 import Pages.UserSettings.View
-import Pages.Util.ParserUtil as ParserUtil
 import Ports exposing (doFetchToken, fetchFoods, fetchMeasures, fetchNutrients, fetchToken)
 import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), Parser, s)
+import Url.Parser as Parser exposing ((</>), Parser)
 
 
 main : Program Configuration Model Msg
@@ -443,54 +443,54 @@ routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
 routeParser jwt configuration =
     let
         loginParser =
-            s "login" |> Parser.map { configuration = configuration }
+            Addresses.Frontend.login.parser |> Parser.map { configuration = configuration }
 
         overviewParser =
-            s "overview" |> Parser.map flags
+            Addresses.Frontend.overview.parser |> Parser.map flags
 
         recipesParser =
-            s "recipes" |> Parser.map flags
+            Addresses.Frontend.recipes.parser |> Parser.map flags
 
         ingredientParser =
-            (s "ingredient-editor" </> ParserUtil.uuidParser)
+            Addresses.Frontend.ingredientEditor.parser
                 |> Parser.map
                     (Pages.Ingredients.Page.Flags configuration jwt)
 
         mealsParser =
-            s "meals" |> Parser.map flags
+            Addresses.Frontend.meals.parser |> Parser.map flags
 
         mealEntriesParser =
-            (s "meal-entry-editor" </> ParserUtil.uuidParser)
+            Addresses.Frontend.mealEntryEditor.parser
                 |> Parser.map
                     (Pages.MealEntries.Page.Flags configuration jwt)
 
         statisticsParser =
-            s "statistics" |> Parser.map flags
+            Addresses.Frontend.statistics.parser |> Parser.map flags
 
         referenceNutrientParser =
-            s "reference-nutrients" |> Parser.map flags
+            Addresses.Frontend.referenceNutrients.parser |> Parser.map flags
 
         requestRegistrationParser =
-            s "request-registration" |> Parser.map { configuration = configuration }
+            Addresses.Frontend.requestRegistration.parser |> Parser.map { configuration = configuration }
 
         confirmRegistrationParser =
-            (s "confirm-registration" </> ParserUtil.userIdentifierParser </> s "token" </> Parser.string)
+            Addresses.Frontend.confirmRegistration.parser
                 |> Parser.map
                     (Pages.Registration.Confirm.Page.Flags configuration)
 
         userSettingsParser =
-            s "user-settings" |> Parser.map flags
+            Addresses.Frontend.userSettings.parser |> Parser.map flags
 
         deletionParser =
-            (s "delete-account" </> ParserUtil.userIdentifierParser </> s "token" </> Parser.string)
+            Addresses.Frontend.deleteAccount.parser
                 |> Parser.map
                     (Pages.Deletion.Page.Flags configuration)
 
         requestRecoveryParser =
-            s "request-recovery" |> Parser.map { configuration = configuration }
+            Addresses.Frontend.requestRecovery.parser |> Parser.map { configuration = configuration }
 
         confirmRecoveryParser =
-            (s "recover-account" </> ParserUtil.userIdentifierParser </> s "token" </> Parser.string)
+            Addresses.Frontend.confirmRecovery.parser
                 |> Parser.map
                     (Pages.Recovery.Confirm.Page.Flags configuration)
 
