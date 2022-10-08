@@ -16,7 +16,7 @@ import Pages.Meals.Page as Page
 import Pages.Meals.Pagination as Pagination exposing (Pagination)
 import Pages.Meals.Requests as Requests
 import Pages.Meals.Status as Status
-import Ports exposing (doFetchToken)
+import Pages.Util.InitUtil as InitUtil
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
 import Util.Initialization as Initialization
@@ -27,17 +27,13 @@ init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
         ( jwt, cmd ) =
-            flags.jwt
-                |> Maybe.Extra.unwrap
-                    ( "", doFetchToken () )
-                    (\token ->
-                        ( token
-                        , Requests.fetchMeals
-                            { configuration = flags.configuration
-                            , jwt = token
-                            }
-                        )
-                    )
+            InitUtil.fetchIfEmpty flags.jwt
+                (\token ->
+                    Requests.fetchMeals
+                        { configuration = flags.configuration
+                        , jwt = token
+                        }
+                )
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration

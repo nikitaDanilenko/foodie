@@ -8,13 +8,12 @@ import Api.Types.Stats exposing (Stats)
 import Basics.Extra exposing (flip)
 import Either
 import Http exposing (Error)
-import Maybe.Extra
 import Monocle.Lens as Lens
 import Pages.Statistics.Page as Page
 import Pages.Statistics.Pagination as Pagination exposing (Pagination)
 import Pages.Statistics.Requests as Requests
 import Pages.Statistics.Status as Status
-import Ports
+import Pages.Util.InitUtil as InitUtil
 import Util.HttpUtil as HttpUtil
 import Util.Initialization as Initialization
 import Util.LensUtil as LensUtil
@@ -24,14 +23,8 @@ init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
         ( jwt, cmd ) =
-            flags.jwt
-                |> Maybe.Extra.unwrap
-                    ( "", Ports.doFetchToken () )
-                    (\token ->
-                        ( token
-                        , Cmd.none
-                        )
-                    )
+            InitUtil.fetchIfEmpty flags.jwt
+                (always Cmd.none)
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration

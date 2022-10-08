@@ -1,10 +1,9 @@
 module Pages.Overview.Handler exposing (init, update)
 
 import Api.Auxiliary exposing (JWT)
-import Maybe.Extra
 import Pages.Overview.Page as Page
 import Pages.Overview.Status as Status
-import Ports
+import Pages.Util.InitUtil as InitUtil
 import Util.Initialization as Initialization
 import Util.LensUtil as LensUtil
 
@@ -13,9 +12,8 @@ init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
         ( jwt, cmd ) =
-            flags.jwt
-                |> Maybe.Extra.unwrap ( "", Ports.doFetchToken () )
-                    (\token -> ( token, Cmd.none ))
+            InitUtil.fetchIfEmpty flags.jwt
+                (always Cmd.none)
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration

@@ -9,7 +9,6 @@ import Either exposing (Either(..))
 import Http exposing (Error)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional as Optional
@@ -20,6 +19,7 @@ import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput as ReferenceN
 import Pages.ReferenceNutrients.Requests as Requests
 import Pages.ReferenceNutrients.Status as Status
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.InitUtil as InitUtil
 import Ports
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
@@ -31,16 +31,13 @@ init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
         ( jwt, cmd ) =
-            flags.jwt
-                |> Maybe.Extra.unwrap ( "", Ports.doFetchToken () )
-                    (\token ->
-                        ( token
-                        , initialFetch
-                            { configuration = flags.configuration
-                            , jwt = token
-                            }
-                        )
-                    )
+            InitUtil.fetchIfEmpty flags.jwt
+                (\token ->
+                    initialFetch
+                        { configuration = flags.configuration
+                        , jwt = token
+                        }
+                )
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration

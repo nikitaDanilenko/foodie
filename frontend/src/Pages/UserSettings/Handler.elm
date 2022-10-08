@@ -7,7 +7,6 @@ import Basics.Extra exposing (flip)
 import Browser.Navigation
 import Either
 import Http exposing (Error)
-import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Pages.UserSettings.Page as Page
@@ -15,6 +14,7 @@ import Pages.UserSettings.Requests as Requests
 import Pages.UserSettings.Status as Status
 import Pages.Util.ComplementInput as ComplementInput exposing (ComplementInput)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.InitUtil as InitUtil
 import Pages.Util.Links as Links
 import Pages.Util.PasswordInput as PasswordInput
 import Ports
@@ -32,17 +32,13 @@ init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
         ( jwt, cmd ) =
-            flags.jwt
-                |> Maybe.Extra.unwrap
-                    ( "", Ports.doFetchToken () )
-                    (\token ->
-                        ( token
-                        , Requests.fetchUser
-                            { configuration = flags.configuration
-                            , jwt = token
-                            }
-                        )
-                    )
+            InitUtil.fetchIfEmpty flags.jwt
+                (\token ->
+                    Requests.fetchUser
+                        { configuration = flags.configuration
+                        , jwt = token
+                        }
+                )
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration

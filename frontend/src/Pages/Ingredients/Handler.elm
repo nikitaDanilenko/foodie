@@ -23,7 +23,8 @@ import Pages.Ingredients.RecipeInfo as RecipeInfo exposing (RecipeInfo)
 import Pages.Ingredients.Requests as Requests
 import Pages.Ingredients.Status as Status
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
-import Ports exposing (doFetchFoods, doFetchMeasures, doFetchToken, storeFoods, storeMeasures)
+import Pages.Util.InitUtil as InitUtil
+import Ports exposing (doFetchFoods, doFetchMeasures, storeFoods, storeMeasures)
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
 import Util.Initialization exposing (Initialization(..))
@@ -44,18 +45,14 @@ init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
         ( jwt, cmd ) =
-            flags.jwt
-                |> Maybe.Extra.unwrap
-                    ( "", doFetchToken () )
-                    (\token ->
-                        ( token
-                        , initialFetch
-                            { configuration = flags.configuration
-                            , jwt = token
-                            }
-                            flags.recipeId
-                        )
-                    )
+            InitUtil.fetchIfEmpty flags.jwt
+                (\token ->
+                    initialFetch
+                        { configuration = flags.configuration
+                        , jwt = token
+                        }
+                        flags.recipeId
+                )
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration

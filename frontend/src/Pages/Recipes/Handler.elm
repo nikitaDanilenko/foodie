@@ -16,7 +16,7 @@ import Pages.Recipes.RecipeCreationClientInput as RecipeCreationClientInput expo
 import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Recipes.Requests as Requests
 import Pages.Recipes.Status as Status
-import Ports exposing (doFetchToken)
+import Pages.Util.InitUtil as InitUtil
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
 import Util.Initialization as Initialization exposing (Initialization(..))
@@ -27,17 +27,13 @@ init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     let
         ( jwt, cmd ) =
-            flags.jwt
-                |> Maybe.Extra.unwrap
-                    ( "", doFetchToken () )
-                    (\token ->
-                        ( token
-                        , Requests.fetchRecipes
-                            { configuration = flags.configuration
-                            , jwt = token
-                            }
-                        )
-                    )
+            InitUtil.fetchIfEmpty flags.jwt
+                (\token ->
+                    Requests.fetchRecipes
+                        { configuration = flags.configuration
+                        , jwt = token
+                        }
+                )
     in
     ( { flagsWithJWT =
             { configuration = flags.configuration
@@ -93,6 +89,7 @@ update msg model =
 
         Page.SetPagination pagination ->
             setPagination model pagination
+
 
 updateRecipeCreation : Page.Model -> Maybe RecipeCreationClientInput -> ( Page.Model, Cmd Page.Msg )
 updateRecipeCreation model recipeToAdd =
