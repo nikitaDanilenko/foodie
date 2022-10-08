@@ -1,5 +1,6 @@
 module Pages.Recipes.View exposing (view)
 
+import Addresses.Frontend
 import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
@@ -127,7 +128,7 @@ editOrDeleteRecipeLine configuration recipe =
             ]
         , td [ Style.classes.controls ]
             [ Links.linkButton
-                { url = Links.frontendPage configuration [ "ingredient-editor", recipe.id ]
+                { url = Links.frontendPage configuration <| Addresses.Frontend.ingredientEditor.address <| recipe.id
                 , attributes = [ Style.classes.button.editor ]
                 , children = [ text "Ingredients" ]
                 }

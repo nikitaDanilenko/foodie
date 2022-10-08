@@ -1,5 +1,6 @@
 module Pages.Meals.View exposing (view)
 
+import Addresses.Frontend
 import Api.Lenses.MealUpdateLens as MealUpdateLens
 import Api.Lenses.SimpleDateLens as SimpleDateLens
 import Api.Types.Meal exposing (Meal)
@@ -128,7 +129,7 @@ editOrDeleteMealLine configuration meal =
         , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Page.DeleteMeal meal.id) ] [ text "Delete" ] ]
         , td [ Style.classes.controls ]
             [ Links.linkButton
-                { url = Links.frontendPage configuration [ "meal-entry-editor", meal.id ]
+                { url = Links.frontendPage configuration <| Addresses.Frontend.mealEntryEditor.address <| meal.id
                 , attributes = [ Style.classes.button.editor ]
                 , children = [ text "Entries" ]
                 }

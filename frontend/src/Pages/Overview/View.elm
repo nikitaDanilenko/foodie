@@ -1,5 +1,6 @@
 module Pages.Overview.View exposing (view)
 
+import Addresses.Frontend
 import Html exposing (Html, div, text)
 import Pages.Overview.Page as Page
 import Pages.Overview.Status as Status
@@ -23,35 +24,35 @@ view model =
         div [ Style.ids.overviewMain ]
             [ div []
                 [ Links.linkButton
-                    { url = Links.frontendPage model.flagsWithJWT.configuration [ "recipes" ]
+                    { url = Links.frontendPage model.flagsWithJWT.configuration <| Addresses.Frontend.recipes.address <| ()
                     , attributes = [ Style.ids.recipesButton ]
                     , children = [ text "Recipes" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage model.flagsWithJWT.configuration [ "meals" ]
+                    { url = Links.frontendPage model.flagsWithJWT.configuration <| Addresses.Frontend.meals.address <| ()
                     , attributes = [ Style.ids.mealsButton ]
                     , children = [ text "Meals" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage model.flagsWithJWT.configuration [ "statistics" ]
+                    { url = Links.frontendPage model.flagsWithJWT.configuration <| Addresses.Frontend.statistics.address <| ()
                     , attributes = [ Style.ids.statisticsButton ]
                     , children = [ text "Statistics" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage model.flagsWithJWT.configuration [ "reference-nutrients" ]
+                    { url = Links.frontendPage model.flagsWithJWT.configuration <| Addresses.Frontend.referenceNutrients.address <| ()
                     , attributes = [ Style.ids.referenceNutrientsButton ]
                     , children = [ text "Reference nutrients" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage model.flagsWithJWT.configuration [ "user-settings" ]
+                    { url = Links.frontendPage model.flagsWithJWT.configuration <| Addresses.Frontend.userSettings.address <| ()
                     , attributes = [ Style.ids.userSettingsButton ]
                     , children = [ text "User settings" ]
                     }

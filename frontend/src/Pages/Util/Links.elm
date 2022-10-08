@@ -1,5 +1,6 @@
 module Pages.Util.Links exposing (..)
 
+import Addresses.Frontend
 import Basics.Extra exposing (flip)
 import Bootstrap.Button
 import Configuration exposing (Configuration)
@@ -57,7 +58,7 @@ toLoginButton :
     -> Html msg
 toLoginButton params =
     linkButton
-        { url = frontendPage params.configuration [ "login" ]
+        { url = frontendPage params.configuration <| Addresses.Frontend.login.address ()
         , attributes = [ Style.classes.button.navigation ]
         , children = [ text <| params.buttonText ]
         }

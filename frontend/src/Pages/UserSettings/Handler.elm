@@ -1,5 +1,6 @@
 module Pages.UserSettings.Handler exposing (init, update)
 
+import Addresses.Frontend
 import Api.Auxiliary exposing (JWT, UserId)
 import Api.Types.Mode exposing (Mode)
 import Api.Types.User exposing (User)
@@ -205,7 +206,7 @@ gotLogoutResponse model result =
                 ( model
                 , Cmd.batch
                     [ Ports.doDeleteToken ()
-                    , Links.frontendPage model.flagsWithJWT.configuration [ "login" ] |> Browser.Navigation.load
+                    , () |> Addresses.Frontend.login.address |> Links.frontendPage model.flagsWithJWT.configuration |> Browser.Navigation.load
                     ]
                 )
             )

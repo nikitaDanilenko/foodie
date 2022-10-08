@@ -1,5 +1,6 @@
 module Pages.Login.Handler exposing (init, update)
 
+import Addresses.Frontend
 import Basics.Extra exposing (flip)
 import Browser.Navigation
 import Either
@@ -96,7 +97,7 @@ gotResponse model remoteData =
                     model
                 , Cmd.batch
                     [ Ports.storeToken token
-                    , Links.frontendPage model.configuration [ "overview" ] |> Browser.Navigation.load
+                    , Addresses.Frontend.overview.address () |> Links.frontendPage model.configuration |> Browser.Navigation.load
                     ]
                 )
             )
