@@ -1,12 +1,12 @@
 module Pages.Statistics.Requests exposing (fetchStats)
 
+import Addresses.Backend
 import Api.Types.RequestInterval exposing (RequestInterval)
 import Api.Types.Stats exposing (decoderStats)
-import Maybe.Extra
+import Http
 import Pages.Statistics.Page as Page
 import Pages.Util.DateUtil as DateUtil
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
-import Pages.Util.Links as Links
 import Url.Builder
 import Util.HttpUtil as HttpUtil
 
@@ -17,13 +17,14 @@ fetchStats flags requestInterval =
         toQuery name =
             Maybe.map (DateUtil.dateToString >> Url.Builder.string name)
 
-        query =
-            [ requestInterval.from |> toQuery "from"
-            , requestInterval.to |> toQuery "to"
-            ]
-                |> Maybe.Extra.values
+        interval =
+            { from = requestInterval.from |> toQuery "from"
+            , to = requestInterval.to |> toQuery "to"
+            }
     in
-    HttpUtil.getJsonWithJWT flags.jwt
-        { url = Links.backendPage flags.configuration [ "stats" ] query
+    HttpUtil.runPatternWithJwt
+        flags
+        (Addresses.Backend.stats.all interval)
+        { body = Http.emptyBody
         , expect = HttpUtil.expectJson Page.GotFetchStatsResponse decoderStats
         }

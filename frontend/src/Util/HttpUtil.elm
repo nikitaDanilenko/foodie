@@ -1,11 +1,15 @@
 module Util.HttpUtil exposing (..)
 
 import Api.Auxiliary exposing (JWT)
-import Http exposing (Error(..), Expect, expectStringResponse)
+import Configuration exposing (Configuration)
+import Http exposing (Body, Error(..), Expect, expectStringResponse)
 import Json.Decode as Decode
-import Json.Encode as Encode
+import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
+import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.Links as Links
+import Url.Builder exposing (QueryParameter)
 import Util.Initialization as Initialization exposing (ErrorExplanation, Initialization)
 
 
@@ -124,89 +128,6 @@ jwtHeader =
     Http.header userTokenHeader
 
 
-postJsonWithJWT :
-    JWT
-    ->
-        { url : String
-        , body : Encode.Value
-        , expect : Expect msg
-        }
-    -> Cmd msg
-postJsonWithJWT =
-    sendJsonWithJWTVerb "POST"
-
-
-patchJsonWithJWT :
-    JWT
-    ->
-        { url : String
-        , body : Encode.Value
-        , expect : Expect msg
-        }
-    -> Cmd msg
-patchJsonWithJWT =
-    sendJsonWithJWTVerb "PATCH"
-
-
-sendJsonWithJWTVerb :
-    String
-    -> JWT
-    ->
-        { url : String
-        , body : Encode.Value
-        , expect : Expect msg
-        }
-    -> Cmd msg
-sendJsonWithJWTVerb verb jwt request =
-    Http.request
-        { method = verb
-        , headers = [ jwtHeader jwt ]
-        , url = request.url
-        , body = Http.jsonBody request.body
-        , expect = request.expect
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-
-deleteWithJWT :
-    JWT
-    ->
-        { url : String
-        , expect : Expect msg
-        }
-    -> Cmd msg
-deleteWithJWT jwt request =
-    Http.request
-        { method = "DELETE"
-        , headers = [ jwtHeader jwt ]
-        , url = request.url
-        , body = Http.emptyBody
-        , expect = request.expect
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-
-getJsonWithJWT :
-    JWT
-    ->
-        { url : String
-        , expect : Expect msg
-        }
-    -> Cmd msg
-getJsonWithJWT jwt request =
-    Http.request
-        { method = "GET"
-        , headers = [ jwtHeader jwt ]
-        , url = request.url
-        , body = Http.emptyBody
-        , expect = request.expect
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-
 setError : Lens model (Initialization status) -> Error -> model -> model
 setError initializationLens =
     errorToExplanation
@@ -218,3 +139,117 @@ setJsonError initializationLens =
     Decode.errorToString
         >> BadBody
         >> setError initializationLens
+
+
+type Verb
+    = GET
+    | POST
+    | PUT
+    | PATCH
+    | DELETE
+
+
+verbToString : Verb -> String
+verbToString verb =
+    case verb of
+        GET ->
+            "GET"
+
+        POST ->
+            "POST"
+
+        PUT ->
+            "PUT"
+
+        PATCH ->
+            "PATCH"
+
+        DELETE ->
+            "DELETE"
+
+
+type alias RequestParameters msg =
+    { url : String
+    , jwt : Maybe JWT
+    , body : Body
+    , expect : Expect msg
+    }
+
+
+byVerb :
+    Verb
+    -> RequestParameters msg
+    -> Cmd msg
+byVerb verb ps =
+    Http.request
+        { method = verb |> verbToString
+        , headers = Maybe.map jwtHeader ps.jwt |> Maybe.Extra.toList
+        , url = ps.url
+        , body = ps.body
+        , expect = ps.expect
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+type alias Resource =
+    { url : String
+    , verb : Verb
+    }
+
+
+type alias ResourcePattern =
+    { verb : Verb
+    , address : List String
+    , query : List QueryParameter
+    }
+
+
+run :
+    Resource
+    ->
+        { jwt : Maybe JWT
+        , body : Body
+        , expect : Expect msg
+        }
+    -> Cmd msg
+run resource ps =
+    byVerb resource.verb
+        { url = resource.url
+        , jwt = ps.jwt
+        , body = ps.body
+        , expect = ps.expect
+        }
+
+
+runPattern :
+    Configuration
+    -> ResourcePattern
+    ->
+        { jwt : Maybe JWT
+        , body : Body
+        , expect : Expect msg
+        }
+    -> Cmd msg
+runPattern configuration resourcePattern =
+    run
+        { url = Links.backendPage configuration resourcePattern.address resourcePattern.query
+        , verb = resourcePattern.verb
+        }
+
+
+runPatternWithJwt :
+    FlagsWithJWT
+    -> ResourcePattern
+    ->
+        { body : Body
+        , expect : Expect msg
+        }
+    -> Cmd msg
+runPatternWithJwt flags pattern ps =
+    runPattern flags.configuration
+        pattern
+        { jwt = Just flags.jwt
+        , body = ps.body
+        , expect = ps.expect
+        }
