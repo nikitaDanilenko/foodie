@@ -144,9 +144,10 @@ gotSaveReferenceNutrientResponse model result =
         |> Either.fromResult
         |> Either.unpack (flip setError model)
             (\referenceNutrient ->
-                mapReferenceNutrientOrUpdateById referenceNutrient.nutrientCode
-                    (Either.andThenRight (always (Left referenceNutrient)))
-                    model
+                model
+                    |> mapReferenceNutrientOrUpdateById referenceNutrient.nutrientCode
+                        (always (Left referenceNutrient))
+                    |> Lens.modify Page.lenses.referenceNutrientsToAdd (Dict.remove referenceNutrient.nutrientCode)
             )
     , Cmd.none
     )
