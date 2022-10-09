@@ -6,7 +6,8 @@ import Maybe.Extra
 import Pages.Statistics.Page as Page
 import Pages.Util.DateUtil as DateUtil
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
-import Url.Builder exposing (string)
+import Pages.Util.Links as Links
+import Url.Builder
 import Util.HttpUtil as HttpUtil
 
 
@@ -23,6 +24,6 @@ fetchStats flags requestInterval =
                 |> Maybe.Extra.values
     in
     HttpUtil.getJsonWithJWT flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "stats" ] query
+        { url = Links.backendPage flags.configuration [ "stats" ] query
         , expect = HttpUtil.expectJson Page.GotFetchStatsResponse decoderStats
         }

@@ -8,14 +8,14 @@ import Api.Types.UserUpdate exposing (UserUpdate, encoderUserUpdate)
 import Json.Encode
 import Pages.UserSettings.Page as Page
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
-import Url.Builder
+import Pages.Util.Links as Links
 import Util.HttpUtil as HttpUtil
 
 
 fetchUser : FlagsWithJWT -> Cmd Page.Msg
 fetchUser flags =
     HttpUtil.getJsonWithJWT flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "user", "fetch" ] []
+        { url = Links.backendPage flags.configuration [ "user", "fetch" ] []
         , expect = HttpUtil.expectJson Page.GotFetchUserResponse decoderUser
         }
 
@@ -24,7 +24,7 @@ updatePassword : FlagsWithJWT -> PasswordChangeRequest -> Cmd Page.Msg
 updatePassword flags passwordChangeRequest =
     HttpUtil.postJsonWithJWT
         flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "user", "update", "password" ] []
+        { url = Links.backendPage flags.configuration [ "user", "update", "password" ] []
         , body = encoderPasswordChangeRequest passwordChangeRequest
         , expect = HttpUtil.expectWhatever Page.GotUpdatePasswordResponse
         }
@@ -34,7 +34,7 @@ updateSettings : FlagsWithJWT -> UserUpdate -> Cmd Page.Msg
 updateSettings flags userUpdate =
     HttpUtil.postJsonWithJWT
         flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "user", "update" ] []
+        { url = Links.backendPage flags.configuration [ "user", "update" ] []
         , body = encoderUserUpdate userUpdate
         , expect = HttpUtil.expectJson Page.GotUpdateSettingsResponse decoderUser
         }
@@ -44,7 +44,7 @@ requestDeletion : FlagsWithJWT -> Cmd Page.Msg
 requestDeletion flags =
     HttpUtil.postJsonWithJWT
         flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "user", "deletion", "request" ] []
+        { url = Links.backendPage flags.configuration [ "user", "deletion", "request" ] []
         , body = Json.Encode.object []
         , expect = HttpUtil.expectWhatever Page.GotRequestDeletionResponse
         }
@@ -54,7 +54,7 @@ logout : FlagsWithJWT -> Mode -> Cmd Page.Msg
 logout flags mode =
     HttpUtil.postJsonWithJWT
         flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "logout" ] []
+        { url = Links.backendPage flags.configuration [ "logout" ] []
         , body = encoderLogoutRequest { mode = mode }
         , expect = HttpUtil.expectWhatever Page.GotLogoutResponse
         }

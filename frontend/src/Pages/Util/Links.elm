@@ -46,9 +46,9 @@ frontendPage configuration pathSteps =
         |> flip Url.Builder.relative []
 
 
-backendPage : Configuration -> List String -> String
-backendPage configuration pathSteps =
-    (configuration.backendURL :: pathSteps) |> flip Url.Builder.relative []
+backendPage : Configuration -> List String -> List Url.Builder.QueryParameter -> String
+backendPage configuration pathSteps querySteps =
+    (configuration.backendURL :: pathSteps) |> flip Url.Builder.relative querySteps
 
 
 toLoginButton :

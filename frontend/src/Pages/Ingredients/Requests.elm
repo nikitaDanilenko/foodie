@@ -20,14 +20,14 @@ import Http exposing (Error)
 import Json.Decode as Decode
 import Pages.Ingredients.Page as Page
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
-import Url.Builder
+import Pages.Util.Links as Links
 import Util.HttpUtil as HttpUtil
 
 
 fetchIngredients : FlagsWithJWT -> RecipeId -> Cmd Page.Msg
 fetchIngredients flags recipeId =
     fetchList
-        { addressSuffix = Url.Builder.relative [ "recipe", recipeId, "ingredient", "all" ] []
+        { addressSuffix = [ "recipe", recipeId, "ingredient", "all" ]
         , decoder = decoderIngredient
         , gotMsg = Page.GotFetchIngredientsResponse
         }
@@ -37,7 +37,7 @@ fetchIngredients flags recipeId =
 fetchRecipe : FlagsWithJWT -> RecipeId -> Cmd Page.Msg
 fetchRecipe flags recipeId =
     HttpUtil.getJsonWithJWT flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "recipe", recipeId ] []
+        { url = Links.backendPage flags.configuration [ "recipe", recipeId ] []
         , expect = HttpUtil.expectJson Page.GotFetchRecipeResponse decoderRecipe
         }
 
@@ -45,7 +45,7 @@ fetchRecipe flags recipeId =
 fetchFoods : FlagsWithJWT -> Cmd Page.Msg
 fetchFoods =
     fetchList
-        { addressSuffix = Url.Builder.relative [ "recipe", "foods" ] []
+        { addressSuffix = [ "recipe", "foods" ]
         , decoder = decoderFood
         , gotMsg = Page.GotFetchFoodsResponse
         }
@@ -54,14 +54,14 @@ fetchFoods =
 fetchMeasures : FlagsWithJWT -> Cmd Page.Msg
 fetchMeasures =
     fetchList
-        { addressSuffix = Url.Builder.relative [ "recipe", "measures" ] []
+        { addressSuffix = [ "recipe", "measures" ]
         , decoder = decoderMeasure
         , gotMsg = Page.GotFetchMeasuresResponse
         }
 
 
 fetchList :
-    { addressSuffix : String
+    { addressSuffix : List String
     , decoder : Decode.Decoder a
     , gotMsg : Result Error (List a) -> Page.Msg
     }
@@ -69,7 +69,7 @@ fetchList :
     -> Cmd Page.Msg
 fetchList ps flags =
     HttpUtil.getJsonWithJWT flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, ps.addressSuffix ] []
+        { url = Links.backendPage flags.configuration ps.addressSuffix []
         , expect = HttpUtil.expectJson ps.gotMsg (Decode.list ps.decoder)
         }
 
@@ -77,7 +77,7 @@ fetchList ps flags =
 addFood : { configuration : Configuration, jwt : JWT, ingredientCreation : IngredientCreation } -> Cmd Page.Msg
 addFood ps =
     HttpUtil.patchJsonWithJWT ps.jwt
-        { url = Url.Builder.relative [ ps.configuration.backendURL, "recipe", "ingredient", "create" ] []
+        { url = Links.backendPage ps.configuration [ "recipe", "ingredient", "create" ] []
         , body = encoderIngredientCreation ps.ingredientCreation
         , expect = HttpUtil.expectJson Page.GotAddFoodResponse decoderIngredient
         }
@@ -87,15 +87,15 @@ saveIngredient : FlagsWithJWT -> IngredientUpdate -> Cmd Page.Msg
 saveIngredient flags ingredientUpdate =
     HttpUtil.patchJsonWithJWT
         flags.jwt
-        { url = Url.Builder.relative [ flags.configuration.backendURL, "recipe", "ingredient", "update" ] []
+        { url = Links.backendPage flags.configuration [ "recipe", "ingredient", "update" ] []
         , body = encoderIngredientUpdate ingredientUpdate
         , expect = HttpUtil.expectJson Page.GotSaveIngredientResponse decoderIngredient
         }
 
 
 deleteIngredient : FlagsWithJWT -> IngredientId -> Cmd Page.Msg
-deleteIngredient fs iid =
+deleteIngredient fs ingredientId =
     HttpUtil.deleteWithJWT fs.jwt
-        { url = Url.Builder.relative [ fs.configuration.backendURL, "recipe", "ingredient", "delete", iid ] []
-        , expect = HttpUtil.expectWhatever (Page.GotDeleteIngredientResponse iid)
+        { url = Links.backendPage fs.configuration [ "recipe", "ingredient", "delete", ingredientId ] []
+        , expect = HttpUtil.expectWhatever (Page.GotDeleteIngredientResponse ingredientId)
         }

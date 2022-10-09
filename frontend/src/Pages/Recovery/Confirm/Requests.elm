@@ -17,7 +17,7 @@ confirm :
 confirm params =
     HttpUtil.postJsonWithJWT
         params.recoveryJwt
-        { url = Links.backendPage params.configuration [ "user", "recovery", "confirm" ]
+        { url = Links.backendPage params.configuration [ "user", "recovery", "confirm" ] []
         , body = encoderPasswordChangeRequest { password = params.password }
         , expect = HttpUtil.expectWhatever Page.GotConfirmResponse
         }
