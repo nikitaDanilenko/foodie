@@ -1,46 +1,46 @@
 # Map static resources from the /public folder to the /assets URL path
 GET    /assets/*file                           controllers.Assets.versioned(path="/public", file: Asset)
 
-GET    /recipe/measures                        controllers.recipe.RecipeController.getMeasures
-GET    /recipe/foods                           controllers.recipe.RecipeController.getFoods
-GET    /recipe/all                             controllers.recipe.RecipeController.getRecipes
-GET    /recipe/:id                             controllers.recipe.RecipeController.get(id: java.util.UUID)
-POST   /recipe/create                          controllers.recipe.RecipeController.create
-PATCH  /recipe/update                          controllers.recipe.RecipeController.update
-DELETE /recipe/delete/:id                      controllers.recipe.RecipeController.delete(id: java.util.UUID)
-GET    /recipe/:id/ingredient/all              controllers.recipe.RecipeController.getIngredients(id: java.util.UUID)
-PATCH  /recipe/ingredient/create               controllers.recipe.RecipeController.addIngredient
-PATCH  /recipe/ingredient/update               controllers.recipe.RecipeController.updateIngredient
-DELETE /recipe/ingredient/delete/:id           controllers.recipe.RecipeController.removeIngredient(id: java.util.UUID)
+GET    /recipes/measures                       controllers.recipe.RecipeController.getMeasures
+GET    /recipes/foods                          controllers.recipe.RecipeController.getFoods
+GET    /recipes                                controllers.recipe.RecipeController.getRecipes
+GET    /recipes/:id                            controllers.recipe.RecipeController.get(id: java.util.UUID)
+POST   /recipes                                controllers.recipe.RecipeController.create
+PATCH  /recipes                                controllers.recipe.RecipeController.update
+DELETE /recipes/:id                            controllers.recipe.RecipeController.delete(id: java.util.UUID)
+GET    /recipes/:id/ingredients                controllers.recipe.RecipeController.getIngredients(id: java.util.UUID)
+POST   /recipes/ingredients                    controllers.recipe.RecipeController.addIngredient
+PATCH  /recipes/ingredients                    controllers.recipe.RecipeController.updateIngredient
+DELETE /recipes/ingredients/:id                controllers.recipe.RecipeController.removeIngredient(id: java.util.UUID)
 
-GET    /meal/all                               controllers.meal.MealController.all
-GET    /meal/:id                               controllers.meal.MealController.get(id: java.util.UUID)
-POST   /meal/create                            controllers.meal.MealController.create
-PATCH  /meal/update                            controllers.meal.MealController.update
-DELETE /meal/delete/:id                        controllers.meal.MealController.delete(id: java.util.UUID)
-GET    /meal/:id/entry/all                     controllers.meal.MealController.getMealEntries(id: java.util.UUID)
-POST   /meal/entry/create                      controllers.meal.MealController.addMealEntry
-PATCH  /meal/entry/update                      controllers.meal.MealController.updateMealEntry
-DELETE /meal/entry/delete/:id                  controllers.meal.MealController.deleteMealEntry(id: java.util.UUID)
+GET    /meals                                  controllers.meal.MealController.all
+GET    /meals/:id                              controllers.meal.MealController.get(id: java.util.UUID)
+POST   /meals                                  controllers.meal.MealController.create
+PATCH  /meals                                  controllers.meal.MealController.update
+DELETE /meals/:id                              controllers.meal.MealController.delete(id: java.util.UUID)
+GET    /meals/:id/entries                      controllers.meal.MealController.getMealEntries(id: java.util.UUID)
+POST   /meals/entries                          controllers.meal.MealController.addMealEntry
+PATCH  /meals/entries                          controllers.meal.MealController.updateMealEntry
+DELETE /meals/entries/:id                      controllers.meal.MealController.deleteMealEntry(id: java.util.UUID)
 
 GET    /stats                                  controllers.stats.StatsController.get(from: Option[String], to: Option[String])
 GET    /stats/nutrients                        controllers.stats.StatsController.allNutrients
-GET    /stats/reference/all                    controllers.stats.StatsController.referenceNutrients
-POST   /stats/reference/create                 controllers.stats.StatsController.createReferenceNutrient
-PATCH  /stats/reference/update                 controllers.stats.StatsController.updateReferenceNutrient
-DELETE /stats/reference/delete/:nutrientCode   controllers.stats.StatsController.deleteReferenceNutrient(nutrientCode: Int)
+GET    /stats/references                       controllers.stats.StatsController.referenceNutrients
+POST   /stats/references                       controllers.stats.StatsController.createReferenceNutrient
+PATCH  /stats/references                       controllers.stats.StatsController.updateReferenceNutrient
+DELETE /stats/references/:nutrientCode         controllers.stats.StatsController.deleteReferenceNutrient(nutrientCode: Int)
 
 GET    /                                       controllers.home.HomeController.home
-POST   /login                                  controllers.user.UserController.login
-POST   /logout                                 controllers.user.UserController.logout
-POST   /user/create                            controllers.user.UserController.create
-POST   /user/update                            controllers.user.UserController.update
-GET    /user/fetch                             controllers.user.UserController.fetch
-POST   /user/update/password                   controllers.user.UserController.updatePassword
-POST   /user/registration/request              controllers.user.UserController.requestRegistration
-POST   /user/registration/confirm              controllers.user.UserController.confirmRegistration
-GET    /user/recovery/find/:searchString       controllers.user.UserController.find(searchString: String)
-POST   /user/recovery/request                  controllers.user.UserController.requestRecovery
-POST   /user/recovery/confirm                  controllers.user.UserController.confirmRecovery
-POST   /user/deletion/request                  controllers.user.UserController.requestDeletion
-POST   /user/deletion/confirm                  controllers.user.UserController.confirmDeletion
+POST   /users/login                            controllers.user.UserController.login
+POST   /users/logout                           controllers.user.UserController.logout
+POST   /users/create                           controllers.user.UserController.create
+PATCH  /users                                  controllers.user.UserController.update
+GET    /users                                  controllers.user.UserController.fetch
+PATCH  /users/password                         controllers.user.UserController.updatePassword
+POST   /users/registration/request             controllers.user.UserController.requestRegistration
+POST   /users/registration/confirm             controllers.user.UserController.confirmRegistration
+GET    /users/recovery/find/:searchString      controllers.user.UserController.find(searchString: String)
+POST   /users/recovery/request                 controllers.user.UserController.requestRecovery
+POST   /users/recovery/confirm                 controllers.user.UserController.confirmRecovery
+POST   /users/deletion/request                 controllers.user.UserController.requestDeletion
+POST   /users/deletion/confirm                 controllers.user.UserController.confirmDeletion
