@@ -8,13 +8,11 @@ import Http exposing (Error)
 import Monocle.Compose as Compose
 import Pages.Login.Page as Page
 import Pages.Login.Requests as Requests
-import Pages.Login.Status as Status
 import Pages.Util.Links as Links
 import Ports
 import Util.CredentialsUtil as CredentialsUtil
 import Util.HttpUtil as HttpUtil
 import Util.Initialization exposing (Initialization(..))
-import Util.LensUtil as LensUtil
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
@@ -23,7 +21,7 @@ init flags =
             { nickname = ""
             , password = ""
             }
-      , initialization = Loading Status.initial
+      , initialization = Loading ()
       , configuration = flags.configuration
       }
     , Cmd.none
@@ -89,12 +87,7 @@ gotResponse model remoteData =
                 )
             )
             (\token ->
-                ( (LensUtil.initializationField
-                    Page.lenses.initialization
-                    Status.lenses.jwt
-                  ).set
-                    True
-                    model
+                ( model
                 , Cmd.batch
                     [ Ports.storeToken token
                     , Addresses.Frontend.overview.address () |> Links.frontendPage model.configuration |> Browser.Navigation.load
