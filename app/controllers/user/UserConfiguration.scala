@@ -74,7 +74,7 @@ object UserConfiguration {
 
   private def emailComponents(userConfiguration: UserConfiguration): Map[Operation, AddressWithMessage] =
     Map(
-      Operation.Registration -> AddressWithMessage("finish-registration", userConfiguration.registrationMessage),
+      Operation.Registration -> AddressWithMessage("confirm-registration", userConfiguration.registrationMessage),
       Operation.Recovery     -> AddressWithMessage("recover-account", userConfiguration.recoveryMessage),
       Operation.Deletion     -> AddressWithMessage("delete-account", userConfiguration.deletionMessage)
     )
