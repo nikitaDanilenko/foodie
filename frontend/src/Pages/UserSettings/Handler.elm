@@ -52,7 +52,7 @@ init flags =
             , email = ""
             }
       , complementInput = ComplementInput.initial
-      , initialization = Loading Status.initial
+      , initialization = Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
       , mode = Page.Regular
       }
     , cmd
