@@ -66,4 +66,29 @@
     instead of relying on the correct setting while building the Docker image.
   - When starting the service via `docker-compose.yml` remove the `.env` file entries,
     because both the `deployment.env` and the `.env` files are read (in that order).
-    This should be a workaround - a better solution is preferable! 
+    This should be a workaround - a better solution is preferable!
+- Working local (dev) mailer setup
+  ```hocon
+  play.mailer {
+    host = "localhost"
+    tls = no
+    from = "foodie@luth"
+    port = 25
+    debug = yes
+  }
+  ```
+- There are the following caveats when using a `localhost` mailer
+  - The Docker networks need to be allowed explicitly.
+    In the case of `postfix` add the corresponding networks to `mynetworks`.
+  - The Docker networks may need to be controlled such that the range is sensible.
+    It is possible to limit the range, cf. [here](https://serverfault.com/questions/916941/configuring-docker-to-not-use-the-172-17-0-0-range)
+  - Neither a user nor a password is necessary, because the service is always running.
+  - `localhost` needs to be exposed to Docker.
+    To do that add
+    ```yaml
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+    ```
+    to the desired service (usually `backend`).
+    Then use `host.docker.internal` as a reference to `localhost`.
+    N.B.: In a Docker container `localhost` is the container itself
