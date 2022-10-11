@@ -18,7 +18,7 @@ find configuration searchString =
         (Addresses.Backend.users.recovery.find searchString)
         { jwt = Nothing
         , body = Http.emptyBody
-        , expect = Http.expectJson Page.GotFindResponse (Decode.list decoderUser)
+        , expect = HttpUtil.expectJson Page.GotFindResponse (Decode.list decoderUser)
         }
 
 
@@ -29,5 +29,5 @@ requestRecovery configuration userId =
         Addresses.Backend.users.recovery.request
         { jwt = Nothing
         , body = encoderRecoveryRequest { userId = userId } |> Http.jsonBody
-        , expect = Http.expectJson Page.GotFindResponse (Decode.list decoderUser)
+        , expect = HttpUtil.expectWhatever Page.GotRequestRecoveryResponse
         }
