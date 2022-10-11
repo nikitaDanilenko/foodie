@@ -21,6 +21,9 @@ services:
       - deployment.env
     depends_on:
       - db
+    extra_hosts:
+      # Expose 'localhost' to the docker container
+      - "host.docker.internal:host-gateway"
   frontend:
     container_name: foodie-frontend
     image: nikitadanilenko/foodie-frontend:latest
