@@ -7,7 +7,7 @@ import services.mail.EmailParameters
 
 case class UserConfiguration(
     restrictedDurationInSeconds: Int,
-    subject: String,
+    subject: Subject,
     greeting: String,
     registrationMessage: String,
     recoveryMessage: String,
@@ -79,6 +79,13 @@ object UserConfiguration {
       Operation.Deletion     -> AddressWithMessage("delete-account", userConfiguration.deletionMessage)
     )
 
+  private def subjectBy(subject: Subject, operation: Operation): String =
+    operation match {
+      case Operation.Registration => subject.registration
+      case Operation.Recovery     => subject.recovery
+      case Operation.Deletion     => subject.deletion
+    }
+
   private def emailWith(
       userConfiguration: UserConfiguration,
       operation: Operation,
@@ -98,7 +105,7 @@ object UserConfiguration {
     EmailParameters(
       to = Seq(userIdentifier.email),
       cc = Seq.empty,
-      subject = userConfiguration.subject,
+      subject = subjectBy(userConfiguration.subject, operation),
       message = message
     )
 
