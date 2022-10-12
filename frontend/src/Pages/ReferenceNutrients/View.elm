@@ -10,6 +10,7 @@ import Html.Attributes exposing (colspan, disabled, scope, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
+import Maybe.Extra
 import Monocle.Compose as Compose
 import Pages.ReferenceNutrients.Page as Page exposing (NutrientMap)
 import Pages.ReferenceNutrients.Pagination as Pagination
@@ -158,11 +159,15 @@ view model =
 
 editOrDeleteReferenceNutrientLine : Page.NutrientMap -> ReferenceNutrient -> Html Page.Msg
 editOrDeleteReferenceNutrientLine nutrientMap referenceNutrient =
-    tr [ Style.classes.editing ]
+    let
+        editMsg =
+            Page.EnterEditReferenceNutrient referenceNutrient.nutrientCode
+    in
+    tr [ Style.classes.editing, onClick editMsg ]
         [ td [ Style.classes.editable ] [ label [] [ text <| Page.nutrientNameOrEmpty nutrientMap <| referenceNutrient.nutrientCode ] ]
         , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| String.fromFloat <| referenceNutrient.amount ] ]
         , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| Page.nutrientUnitOrEmpty nutrientMap <| referenceNutrient.nutrientCode ] ]
-        , td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick (Page.EnterEditReferenceNutrient referenceNutrient.nutrientCode) ] [ text "Edit" ] ]
+        , td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick editMsg ] [ text "Edit" ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Page.DeleteReferenceNutrient referenceNutrient.nutrientCode) ] [ text "Delete" ] ]
         ]
 
@@ -216,13 +221,26 @@ viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient
         addMsg =
             Page.AddNutrient nutrient.code
 
+        selectMsg =
+            Page.SelectNutrient nutrient.code
+
+        maybeReferenceNutrientToAdd =
+            Dict.get nutrient.code referenceNutrientsToAdd
+
+        rowClickAction =
+            if Maybe.Extra.isJust maybeReferenceNutrientToAdd then
+                []
+
+            else
+                [ onClick selectMsg ]
+
         process =
-            case Dict.get nutrient.code referenceNutrientsToAdd of
+            case maybeReferenceNutrientToAdd of
                 Nothing ->
                     [ td [ Style.classes.editable, Style.classes.numberCell ] []
                     , td [ Style.classes.editable, Style.classes.numberCell ] []
                     , td [ Style.classes.controls ] []
-                    , td [] [ button [ Style.classes.button.select, onClick (Page.SelectNutrient nutrient.code) ] [ text "Select" ] ]
+                    , td [] [ button [ Style.classes.button.select, onClick selectMsg ] [ text "Select" ] ]
                     ]
 
                 Just referenceNutrientToAdd ->
@@ -269,7 +287,7 @@ viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient
                     , td [ Style.classes.controls ] [ button [ Style.classes.button.cancel, onClick (Page.DeselectNutrient nutrient.code) ] [ text "Cancel" ] ]
                     ]
     in
-    tr [ Style.classes.editing ]
+    tr ([ Style.classes.editing ] ++ rowClickAction)
         (td [ Style.classes.editable ] [ label [] [ text nutrient.name ] ]
             :: process
         )
