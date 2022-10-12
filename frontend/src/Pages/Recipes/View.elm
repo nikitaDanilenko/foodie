@@ -115,12 +115,16 @@ createRecipe maybeCreation =
 
 editOrDeleteRecipeLine : Configuration -> Recipe -> Html Page.Msg
 editOrDeleteRecipeLine configuration recipe =
-    tr [ Style.classes.editing ]
+    let
+        editMsg =
+            Page.EnterEditRecipe recipe.id
+    in
+    tr [ Style.classes.editing, onClick editMsg ]
         [ td [ Style.classes.editable ] [ label [] [ text recipe.name ] ]
         , td [ Style.classes.editable ] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
         , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
         , td [ Style.classes.controls ]
-            [ button [ Style.classes.button.edit, onClick (Page.EnterEditRecipe recipe.id) ] [ text "Edit" ] ]
+            [ button [ Style.classes.button.edit, onClick editMsg ] [ text "Edit" ] ]
         , td [ Style.classes.controls ]
             [ button
                 [ Style.classes.button.delete, onClick (Page.DeleteRecipe recipe.id) ]
