@@ -173,7 +173,11 @@ view model =
 
 editOrDeleteMealEntryLine : Page.RecipeMap -> MealEntry -> Html Page.Msg
 editOrDeleteMealEntryLine recipeMap mealEntry =
-    tr [ Style.classes.editing ]
+    let
+        editMsg =
+            Page.EnterEditMealEntry mealEntry.id
+    in
+    tr [ Style.classes.editing, onClick editMsg ]
         [ td [ Style.classes.editable ] [ label [] [ text <| Page.recipeNameOrEmpty recipeMap <| mealEntry.recipeId ] ]
         , td [ Style.classes.editable ] [ label [] [ text <| Page.descriptionOrEmpty recipeMap <| mealEntry.recipeId ] ]
         , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| String.fromFloat <| mealEntry.numberOfServings ] ]
@@ -223,16 +227,32 @@ viewRecipeLine mealEntriesToAdd mealEntries recipe =
         addMsg =
             Page.AddRecipe recipe.id
 
+        selectMsg =
+            Page.SelectRecipe recipe.id
+
+        maybeRecipeToAdd =
+            Dict.get recipe.id mealEntriesToAdd
+
+        rowClickAction =
+            if Maybe.Extra.isJust maybeRecipeToAdd then
+                []
+
+            else
+                [ onClick selectMsg ]
+
         process =
-            case Dict.get recipe.id mealEntriesToAdd of
+            case maybeRecipeToAdd of
                 Nothing ->
                     [ td [ Style.classes.editable, Style.classes.numberCell ] []
                     , td [ Style.classes.controls ] []
-                    , td [ Style.classes.controls ] [ button [ Style.classes.button.select, onClick (Page.SelectRecipe recipe.id) ] [ text "Select" ] ]
+                    , td [ Style.classes.controls ] [ button [ Style.classes.button.select, onClick selectMsg ] [ text "Select" ] ]
                     ]
 
                 Just mealEntryToAdd ->
                     let
+                        validInput =
+                            mealEntryToAdd.numberOfServings |> ValidatedInput.isValid
+
                         ( confirmName, confirmMsg ) =
                             case DictUtil.firstSuch (\mealEntry -> Editing.field .recipeId mealEntry == mealEntryToAdd.recipeId) mealEntries of
                                 Nothing ->
@@ -252,8 +272,8 @@ viewRecipeLine mealEntriesToAdd mealEntries recipe =
                     in
                     [ td [ Style.classes.numberCell ]
                         [ input
-                            [ value mealEntryToAdd.numberOfServings.text
-                            , onInput
+                            ([ value mealEntryToAdd.numberOfServings.text
+                             , onInput
                                 (flip
                                     (ValidatedInput.lift
                                         MealEntryCreationClientInput.lenses.numberOfServings
@@ -261,16 +281,23 @@ viewRecipeLine mealEntriesToAdd mealEntries recipe =
                                     mealEntryToAdd
                                     >> Page.UpdateAddRecipe
                                 )
-                            , onEnter confirmMsg
-                            , Style.classes.numberLabel
-                            ]
+                             , Style.classes.numberLabel
+                             ]
+                                ++ (if validInput then
+                                        [ onEnter confirmMsg ]
+
+                                    else
+                                        []
+                                   )
+                            )
                             []
                         ]
                     , td [ Style.classes.controls ]
                         [ button
                             [ Style.classes.button.confirm
-                            , disabled
-                                (mealEntryToAdd.numberOfServings |> ValidatedInput.isValid |> not)
+                            , disabled <|
+                                not <|
+                                    validInput
                             , onClick confirmMsg
                             ]
                             [ text confirmName ]
@@ -278,7 +305,7 @@ viewRecipeLine mealEntriesToAdd mealEntries recipe =
                     , td [ Style.classes.controls ] [ button [ Style.classes.button.cancel, onClick (Page.DeselectRecipe recipe.id) ] [ text "Cancel" ] ]
                     ]
     in
-    tr [ Style.classes.editing ]
+    tr ([ Style.classes.editing ] ++ rowClickAction)
         (td [] [ label [] [ text recipe.name ] ]
             :: td [] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
             :: process

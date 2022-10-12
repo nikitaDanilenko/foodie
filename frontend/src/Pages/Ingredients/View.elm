@@ -385,7 +385,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                         [ button [ Style.classes.button.cancel, onClick (Page.DeselectFood food.id) ] [ text "Cancel" ] ]
                     ]
     in
-    tr [ Style.classes.editing ]
-        (td ([ Style.classes.editable ] ++ rowClickAction) [ label [] [ text food.name ] ]
+    tr ([ Style.classes.editing ] ++ rowClickAction)
+        (td [ Style.classes.editable ] [ label [] [ text food.name ] ]
             :: process
         )
