@@ -26,6 +26,7 @@ app.ports.doFetchToken.subscribe(function() {
 
 app.ports.doDeleteToken.subscribe(function() {
     localStorage.removeItem(tokenKey);
+    app.ports.deleteToken.send(null);
 });
 
 app.ports.storeFoods.subscribe(function(foods) {

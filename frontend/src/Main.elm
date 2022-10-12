@@ -7,6 +7,7 @@ import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav
 import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
+import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 import Pages.Deletion.Handler
 import Pages.Deletion.Page
@@ -74,6 +75,7 @@ subscriptions _ =
         , fetchFoods FetchFoods
         , fetchMeasures FetchMeasures
         , fetchNutrients FetchNutrients
+        , Ports.deleteToken DeleteToken
         ]
 
 
@@ -116,6 +118,7 @@ type Msg
     = ClickedLink UrlRequest
     | ChangedUrl Url
     | FetchToken String
+    | DeleteToken ()
     | FetchFoods String
     | FetchMeasures String
     | FetchNutrients String
@@ -222,8 +225,11 @@ update msg model =
 
         ( FetchToken token, page ) ->
             model
-                |> lenses.jwt.set (Just token)
+                |> lenses.jwt.set (Maybe.Extra.filter (String.isEmpty >> not) (Just token))
                 |> (\m -> handleFetchToken m page token)
+
+        ( DeleteToken _, _ ) ->
+            ( model |> lenses.jwt.set Nothing, Cmd.none )
 
         ( FetchFoods foods, Ingredients ingredients ) ->
             stepThrough steps.ingredients model (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateFoods foods) ingredients)
