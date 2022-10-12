@@ -179,7 +179,7 @@ view model =
 
 editOrDeleteIngredientLine : Page.MeasureMap -> Page.FoodMap -> Ingredient -> Html Page.Msg
 editOrDeleteIngredientLine measureMap foodMap ingredient =
-    tr [ Style.classes.editing ]
+    tr [ Style.classes.editing, onClick (Page.EnterEditIngredient ingredient.id) ]
         [ td [ Style.classes.editable ] [ label [] [ text <| Page.ingredientNameOrEmpty foodMap <| ingredient.foodId ] ]
         , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| String.fromFloat <| ingredient.amountUnit.factor ] ]
         , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| Maybe.Extra.unwrap "" .name <| flip Dict.get measureMap <| ingredient.amountUnit.measureId ] ]
@@ -287,13 +287,26 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
         addMsg =
             Page.AddFood food.id
 
+        selectMsg =
+            Page.SelectFood food
+
+        maybeIngredientToAdd =
+            Dict.get food.id ingredientsToAdd
+
+        rowClickAction =
+            if Maybe.Extra.isJust maybeIngredientToAdd then
+                []
+
+            else
+                [ onClick selectMsg ]
+
         process =
-            case Dict.get food.id ingredientsToAdd of
+            case maybeIngredientToAdd of
                 Nothing ->
                     [ td [ Style.classes.editable, Style.classes.numberCell ] []
                     , td [ Style.classes.editable, Style.classes.numberCell ] []
                     , td [ Style.classes.controls ] []
-                    , td [ Style.classes.controls ] [ button [ Style.classes.button.select, onClick (Page.SelectFood food) ] [ text "Select" ] ]
+                    , td [ Style.classes.controls ] [ button [ Style.classes.button.select, onClick selectMsg ] [ text "Select" ] ]
                     ]
 
                 Just ingredientToAdd ->
@@ -361,6 +374,6 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                     ]
     in
     tr [ Style.classes.editing ]
-        (td [ Style.classes.editable ] [ label [] [ text food.name ] ]
+        (td ([ Style.classes.editable ] ++ rowClickAction) [ label [] [ text food.name ] ]
             :: process
         )
