@@ -1,8 +1,11 @@
-module Pages.Util.HtmlUtil exposing (..)
+module Pages.Util.HtmlUtil exposing (onEscape, searchAreaWith)
 
-import Html exposing (Html, button, div, input, label, text)
+import Html exposing (Attribute, Html, button, div, input, label, text)
 import Html.Attributes exposing (disabled, value)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (on, onClick, onInput)
+import Keyboard.Event exposing (KeyboardEvent)
+import Keyboard.Key as Key
+import Maybe.Extra
 import Pages.Util.Links as Links
 import Pages.Util.Style as Style
 
@@ -28,3 +31,15 @@ searchAreaWith ps =
             ]
             [ text "Clear" ]
         ]
+
+
+onEscape : msg -> Attribute msg
+onEscape =
+    mkEscapeEventMsg
+        >> Keyboard.Event.considerKeyboardEvent
+        >> on "keydown"
+
+
+mkEscapeEventMsg : msg -> KeyboardEvent -> Maybe msg
+mkEscapeEventMsg msg keyboardEvent =
+    Just msg |> Maybe.Extra.filter (always (keyboardEvent.keyCode == Key.Escape))
