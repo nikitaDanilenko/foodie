@@ -311,6 +311,9 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
 
                 Just ingredientToAdd ->
                     let
+                        validInput =
+                            ingredientToAdd.amountUnit.factor |> ValidatedInput.isValid
+
                         ( confirmName, confirmMsg ) =
                             case DictUtil.firstSuch (\ingredient -> Editing.field .foodId ingredient == ingredientToAdd.foodId) ingredients of
                                 Nothing ->
@@ -327,8 +330,8 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                     in
                     [ td [ Style.classes.numberCell ]
                         [ input
-                            [ value ingredientToAdd.amountUnit.factor.text
-                            , onInput
+                            ([ value ingredientToAdd.amountUnit.factor.text
+                             , onInput
                                 (flip
                                     (ValidatedInput.lift
                                         (IngredientCreationClientInput.amountUnit
@@ -338,9 +341,15 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                                     ingredientToAdd
                                     >> Page.UpdateAddFood
                                 )
-                            , onEnter confirmMsg
-                            , Style.classes.numberLabel
-                            ]
+                             , Style.classes.numberLabel
+                             ]
+                                ++ (if validInput then
+                                        [ onEnter confirmMsg ]
+
+                                    else
+                                        []
+                                   )
+                            )
                             []
                         ]
                     , td [ Style.classes.numberCell ]
@@ -362,8 +371,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                     , td [ Style.classes.controls ]
                         [ button
                             [ Style.classes.button.confirm
-                            , disabled
-                                (ingredientToAdd.amountUnit.factor |> ValidatedInput.isValid |> not)
+                            , disabled <| not <| validInput
                             , onClick confirmMsg
                             ]
                             [ text confirmName
