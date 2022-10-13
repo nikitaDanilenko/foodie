@@ -119,10 +119,10 @@ editOrDeleteRecipeLine configuration recipe =
         editMsg =
             Page.EnterEditRecipe recipe.id
     in
-    tr [ Style.classes.editing, onClick editMsg ]
-        [ td [ Style.classes.editable ] [ label [] [ text recipe.name ] ]
-        , td [ Style.classes.editable ] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
-        , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
+    tr [ Style.classes.editing ]
+        [ td [ Style.classes.editable, onClick editMsg ] [ label [] [ text recipe.name ] ]
+        , td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
+        , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
         , td [ Style.classes.controls ]
             [ button [ Style.classes.button.edit, onClick editMsg ] [ text "Edit" ] ]
         , td [ Style.classes.controls ]
