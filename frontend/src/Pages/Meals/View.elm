@@ -146,6 +146,7 @@ editMealLine mealUpdate =
     editMealLineWith
         { saveMsg = Page.SaveMealEdit mealUpdate.id
         , dateLens = MealUpdateLens.date
+        , setDate = True
         , nameLens = MealUpdateLens.name
         , updateMsg = Page.UpdateMeal
         , confirmOnClick = Page.SaveMealEdit mealUpdate.id
@@ -161,6 +162,7 @@ createMealLine mealCreation =
     editMealLineWith
         { saveMsg = Page.CreateMeal
         , dateLens = MealCreationClientInput.lenses.date
+        , setDate = False
         , nameLens = MealCreationClientInput.lenses.name
         , updateMsg = Just >> Page.UpdateMealCreation
         , confirmOnClick = Page.CreateMeal
@@ -174,6 +176,7 @@ createMealLine mealCreation =
 editMealLineWith :
     { saveMsg : Page.Msg
     , dateLens : Lens editedValue SimpleDate
+    , setDate : Bool
     , nameLens : Lens editedValue (Maybe String)
     , updateMsg : editedValue -> Page.Msg
     , confirmOnClick : Page.Msg
@@ -188,15 +191,21 @@ editMealLineWith handling editedValue =
         date =
             handling.dateLens.get <| editedValue
 
+        dateValue =
+            if handling.setDate then
+                [ value <| DateUtil.dateToString <| date.date ]
+
+            else
+                []
+
         name =
             Maybe.withDefault "" <| handling.nameLens.get <| editedValue
     in
     tr [ Style.classes.editLine ]
         [ td [ Style.classes.editable, Style.classes.date ]
             [ input
-                [ type_ "date"
-                , value <| DateUtil.dateToString <| date.date
-                , onInput
+                ([ type_ "date"
+                 , onInput
                     (Parser.run DateUtil.dateParser
                         >> Result.withDefault date.date
                         >> flip
@@ -206,9 +215,11 @@ editMealLineWith handling editedValue =
                             editedValue
                         >> handling.updateMsg
                     )
-                , onEnter handling.saveMsg
-                , Style.classes.date
-                ]
+                 , onEnter handling.saveMsg
+                 , Style.classes.date
+                 ]
+                    ++ dateValue
+                )
                 []
             ]
         , td [ Style.classes.editable, Style.classes.time ]
