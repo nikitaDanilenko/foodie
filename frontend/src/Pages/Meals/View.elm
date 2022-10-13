@@ -198,6 +198,13 @@ editMealLineWith handling editedValue =
             else
                 []
 
+        timeValue =
+            if handling.setDate then
+                [ value <| Maybe.Extra.unwrap "" DateUtil.timeToString <| date.time ]
+
+            else
+                []
+
         name =
             Maybe.withDefault "" <| handling.nameLens.get <| editedValue
     in
@@ -224,8 +231,7 @@ editMealLineWith handling editedValue =
             ]
         , td [ Style.classes.editable, Style.classes.time ]
             [ input
-                [ type_ "time"
-                , value <| Maybe.Extra.unwrap "" DateUtil.timeToString <| date.time
+                ([ type_ "time"
                 , onInput
                     (Parser.run DateUtil.timeParser
                         >> Result.toMaybe
@@ -238,7 +244,7 @@ editMealLineWith handling editedValue =
                     )
                 , onEnter handling.saveMsg
                 , Style.classes.time
-                ]
+                ] ++ timeValue)
                 []
             ]
         , td [ Style.classes.editable ]
