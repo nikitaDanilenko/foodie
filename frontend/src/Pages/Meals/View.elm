@@ -23,6 +23,7 @@ import Pages.Meals.Page as Page
 import Pages.Meals.Pagination as Pagination
 import Pages.Meals.Status as Status
 import Pages.Util.DateUtil as DateUtil
+import Pages.Util.HtmlUtil as HtmlUtil
 import Pages.Util.Links as Links
 import Pages.Util.PaginationSettings as PaginationSettings
 import Pages.Util.Style as Style
@@ -150,7 +151,7 @@ editMealLine mealUpdate =
         , updateMsg = Page.UpdateMeal
         , confirmOnClick = Page.SaveMealEdit mealUpdate.id
         , confirmName = "Save"
-        , cancelOnClick = Page.ExitEditMealAt mealUpdate.id
+        , cancelMsg = Page.ExitEditMealAt mealUpdate.id
         , cancelName = "Cancel"
         }
         mealUpdate
@@ -165,7 +166,7 @@ createMealLine mealCreation =
         , updateMsg = Just >> Page.UpdateMealCreation
         , confirmOnClick = Page.CreateMeal
         , confirmName = "Add"
-        , cancelOnClick = Page.UpdateMealCreation Nothing
+        , cancelMsg = Page.UpdateMealCreation Nothing
         , cancelName = "Cancel"
         }
         mealCreation
@@ -178,7 +179,7 @@ editMealLineWith :
     , updateMsg : editedValue -> Page.Msg
     , confirmOnClick : Page.Msg
     , confirmName : String
-    , cancelOnClick : Page.Msg
+    , cancelMsg : Page.Msg
     , cancelName : String
     }
     -> editedValue
@@ -208,6 +209,7 @@ editMealLineWith handling editedValue =
                     )
                 , onEnter handling.saveMsg
                 , Style.classes.date
+                , HtmlUtil.onEscape handling.cancelMsg
                 ]
                 []
             ]
@@ -227,6 +229,7 @@ editMealLineWith handling editedValue =
                     )
                 , onEnter handling.saveMsg
                 , Style.classes.time
+                , HtmlUtil.onEscape handling.cancelMsg
                 ]
                 []
             ]
@@ -240,6 +243,7 @@ editMealLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
+                , HtmlUtil.onEscape handling.cancelMsg
                 ]
                 []
             ]
@@ -248,7 +252,7 @@ editMealLineWith handling editedValue =
                 [ text handling.confirmName ]
             ]
         , td [ Style.classes.controls ]
-            [ button [ Style.classes.button.cancel, onClick handling.cancelOnClick ]
+            [ button [ Style.classes.button.cancel, onClick handling.cancelMsg ]
                 [ text handling.cancelName ]
             ]
         ]
