@@ -71,6 +71,6 @@ intWithOptionalLeadingZero =
 timeParser : Parser Time
 timeParser =
     Parser.succeed Time
-        |= Parser.int
+        |= intWithOptionalLeadingZero
         |. Parser.symbol ":"
-        |= Parser.int
+        |= intWithOptionalLeadingZero
