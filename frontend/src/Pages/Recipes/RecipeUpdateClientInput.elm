@@ -32,7 +32,10 @@ from recipe =
     { id = recipe.id
     , name = ValidatedInput.nonEmptyString |> ValidatedInput.lenses.value.set recipe.name
     , description = recipe.description
-    , numberOfServings = ValidatedInput.positive |> ValidatedInput.lenses.value.set recipe.numberOfServings
+    , numberOfServings =
+        ValidatedInput.positive
+            |> ValidatedInput.lenses.value.set recipe.numberOfServings
+            |> ValidatedInput.lenses.text.set (recipe.numberOfServings |> String.fromFloat)
     }
 
 

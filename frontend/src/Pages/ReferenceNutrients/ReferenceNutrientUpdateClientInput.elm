@@ -22,7 +22,10 @@ lenses =
 from : ReferenceNutrient -> ReferenceNutrientUpdateClientInput
 from referenceNutrient =
     { nutrientCode = referenceNutrient.nutrientCode
-    , amount = ValidatedInput.positive |> ValidatedInput.lenses.value.set referenceNutrient.amount
+    , amount =
+        ValidatedInput.positive
+            |> ValidatedInput.lenses.value.set referenceNutrient.amount
+            |> ValidatedInput.lenses.text.set (referenceNutrient.amount |> String.fromFloat)
     }
 
 

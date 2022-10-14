@@ -7,7 +7,7 @@ import Configuration exposing (Configuration)
 import Dict
 import Either exposing (Either(..))
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (colspan, scope, value)
+import Html.Attributes exposing (colspan, disabled, scope, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
@@ -149,7 +149,6 @@ editRecipeLine recipeUpdateClientInput =
         , descriptionLens = RecipeUpdateClientInput.lenses.description
         , numberOfServingsLens = RecipeUpdateClientInput.lenses.numberOfServings
         , updateMsg = Page.UpdateRecipe
-        , confirmOnClick = Page.SaveRecipeEdit recipeUpdateClientInput.id
         , confirmName = "Save"
         , cancelMsg = Page.ExitEditRecipeAt recipeUpdateClientInput.id
         , cancelName = "Cancel"
@@ -165,7 +164,6 @@ createRecipeLine recipeCreationClientInput =
         , descriptionLens = RecipeCreationClientInput.lenses.description
         , numberOfServingsLens = RecipeCreationClientInput.lenses.numberOfServings
         , updateMsg = Just >> Page.UpdateRecipeCreation
-        , confirmOnClick = Page.CreateRecipe
         , confirmName = "Add"
         , cancelMsg = Page.UpdateRecipeCreation Nothing
         , cancelName = "Cancel"
@@ -179,7 +177,6 @@ editRecipeLineWith :
     , descriptionLens : Lens editedValue (Maybe String)
     , numberOfServingsLens : Lens editedValue (ValidatedInput Float)
     , updateMsg : editedValue -> Page.Msg
-    , confirmOnClick : Page.Msg
     , confirmName : String
     , cancelMsg : Page.Msg
     , cancelName : String
@@ -187,23 +184,38 @@ editRecipeLineWith :
     -> editedValue
     -> Html Page.Msg
 editRecipeLineWith handling editedValue =
+    let
+        validInput =
+            handling.nameLens.get editedValue
+                |> .value
+                |> String.isEmpty
+                |> not
+
+        validatedSaveAction =
+            if validInput then
+                [ onEnter handling.saveMsg ]
+
+            else
+                []
+    in
     tr [ Style.classes.editLine ]
         [ td [ Style.classes.editable ]
             [ input
-                [ value <| .value <| handling.nameLens.get <| editedValue
-                , onInput
+                ([ value <| .text <| handling.nameLens.get <| editedValue
+                 , onInput
                     (flip (ValidatedInput.lift handling.nameLens).set editedValue
                         >> handling.updateMsg
                     )
-                , onEnter handling.saveMsg
-                , HtmlUtil.onEscape handling.cancelMsg
-                ]
+                 , HtmlUtil.onEscape handling.cancelMsg
+                 ]
+                    ++ validatedSaveAction
+                )
                 []
             ]
         , td [ Style.classes.editable ]
             [ input
-                [ value <| Maybe.withDefault "" <| handling.descriptionLens.get <| editedValue
-                , onInput
+                ([ value <| Maybe.withDefault "" <| handling.descriptionLens.get <| editedValue
+                 , onInput
                     (flip
                         (Just
                             >> Maybe.Extra.filter (String.isEmpty >> not)
@@ -212,15 +224,16 @@ editRecipeLineWith handling editedValue =
                         editedValue
                         >> handling.updateMsg
                     )
-                , onEnter handling.saveMsg
-                , HtmlUtil.onEscape handling.cancelMsg
-                ]
+                 , HtmlUtil.onEscape handling.cancelMsg
+                 ]
+                    ++ validatedSaveAction
+                )
                 []
             ]
         , td [ Style.classes.numberCell ]
             [ input
-                [ value <| String.fromFloat <| .value <| handling.numberOfServingsLens.get <| editedValue
-                , onInput
+                ([ value <| .text <| handling.numberOfServingsLens.get <| editedValue
+                 , onInput
                     (flip
                         (ValidatedInput.lift
                             handling.numberOfServingsLens
@@ -228,14 +241,19 @@ editRecipeLineWith handling editedValue =
                         editedValue
                         >> handling.updateMsg
                     )
-                , onEnter handling.saveMsg
-                , HtmlUtil.onEscape handling.cancelMsg
-                , Style.classes.numberLabel
-                ]
+                 , HtmlUtil.onEscape handling.cancelMsg
+                 , Style.classes.numberLabel
+                 ]
+                    ++ validatedSaveAction
+                )
                 []
             ]
         , td [ Style.classes.controls ]
-            [ button [ Style.classes.button.confirm, onClick handling.confirmOnClick ]
+            [ button
+                [ Style.classes.button.confirm
+                , onClick handling.saveMsg
+                , disabled <| not <| validInput
+                ]
                 [ text handling.confirmName ]
             ]
         , td [ Style.classes.controls ]

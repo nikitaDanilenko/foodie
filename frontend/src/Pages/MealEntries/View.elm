@@ -201,9 +201,7 @@ editMealEntryLine recipeMap mealEntry mealEntryUpdateClientInput =
         , td [ Style.classes.numberCell ]
             [ input
                 [ value
-                    (mealEntryUpdateClientInput.numberOfServings.value
-                        |> String.fromFloat
-                    )
+                    mealEntryUpdateClientInput.numberOfServings.text
                 , onInput
                     (flip
                         (ValidatedInput.lift

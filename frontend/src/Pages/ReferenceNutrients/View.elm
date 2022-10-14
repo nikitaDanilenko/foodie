@@ -186,9 +186,7 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
         , td [ Style.classes.numberCell ]
             [ input
                 [ value
-                    (referenceNutrientUpdateClientInput.amount.value
-                        |> String.fromFloat
-                    )
+                    referenceNutrientUpdateClientInput.amount.text
                 , onInput
                     (flip
                         (ValidatedInput.lift

@@ -206,9 +206,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
         , td [ Style.classes.numberCell ]
             [ input
                 [ value
-                    (ingredientUpdateClientInput.amountUnit.factor.value
-                        |> String.fromFloat
-                    )
+                    ingredientUpdateClientInput.amountUnit.factor.text
                 , onInput
                     (flip
                         (ValidatedInput.lift

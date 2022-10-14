@@ -1,10 +1,10 @@
 module Pages.Util.ValidatedInput exposing
     ( ValidatedInput
     , isValid
+    , lenses
     , lift
     , nonEmptyString
     , positive
-    , lenses
     )
 
 import Basics.Extra exposing (flip)
@@ -76,7 +76,7 @@ positive : ValidatedInput Float
 positive =
     { value = 1
     , ifEmptyValue = 1
-    , text = ""
+    , text = "1"
     , parse =
         String.toFloat
             >> Maybe.Extra.filter (\x -> x > 0)

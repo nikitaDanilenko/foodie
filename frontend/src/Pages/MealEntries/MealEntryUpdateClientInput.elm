@@ -24,7 +24,10 @@ from : MealEntry -> MealEntryUpdateClientInput
 from mealEntry =
     { mealEntryId = mealEntry.id
     , recipeId = mealEntry.recipeId
-    , numberOfServings = ValidatedInput.positive |> ValidatedInput.lenses.value.set mealEntry.numberOfServings
+    , numberOfServings =
+        ValidatedInput.positive
+            |> ValidatedInput.lenses.value.set mealEntry.numberOfServings
+            |> ValidatedInput.lenses.text.set (mealEntry.numberOfServings |> String.fromFloat)
     }
 
 

@@ -22,7 +22,10 @@ default mId =
 from : AmountUnit -> AmountUnitClientInput
 from au =
     { measureId = au.measureId
-    , factor = ValidatedInput.lenses.value.set au.factor ValidatedInput.positive
+    , factor =
+        ValidatedInput.positive
+            |> ValidatedInput.lenses.value.set au.factor
+            |> ValidatedInput.lenses.text.set (au.factor |> String.fromFloat)
     }
 
 
