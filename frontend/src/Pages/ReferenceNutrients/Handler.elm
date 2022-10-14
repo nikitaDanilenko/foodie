@@ -20,6 +20,7 @@ import Pages.ReferenceNutrients.Requests as Requests
 import Pages.ReferenceNutrients.Status as Status
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.InitUtil as InitUtil
+import Pages.Util.PaginationSettings as PaginationSettings
 import Ports
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
@@ -317,7 +318,13 @@ updateNutrients model =
 
 setNutrientsSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 setNutrientsSearchString model string =
-    ( model |> Page.lenses.nutrientsSearchString.set string
+    ( model
+        |> Page.lenses.nutrientsSearchString.set string
+        |> (Page.lenses.pagination
+                |> Compose.lensWithLens Pagination.lenses.nutrients
+                |> Compose.lensWithLens PaginationSettings.lenses.currentPage
+           ).set
+            1
     , Cmd.none
     )
 

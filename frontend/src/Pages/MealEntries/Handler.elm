@@ -20,6 +20,7 @@ import Pages.MealEntries.Requests as Requests
 import Pages.MealEntries.Status as Status
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.InitUtil as InitUtil
+import Pages.Util.PaginationSettings as PaginationSettings
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
 import Util.Initialization exposing (Initialization(..))
@@ -312,7 +313,13 @@ updateJWT model jwt =
 
 setRecipesSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 setRecipesSearchString model string =
-    ( model |> Page.lenses.recipesSearchString.set string
+    ( model
+        |> Page.lenses.recipesSearchString.set string
+        |> (Page.lenses.pagination
+                |> Compose.lensWithLens Pagination.lenses.recipes
+                |> Compose.lensWithLens PaginationSettings.lenses.currentPage
+           ).set
+            1
     , Cmd.none
     )
 

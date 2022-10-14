@@ -24,6 +24,7 @@ import Pages.Ingredients.Requests as Requests
 import Pages.Ingredients.Status as Status
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.InitUtil as InitUtil
+import Pages.Util.PaginationSettings as PaginationSettings
 import Ports exposing (doFetchFoods, doFetchMeasures, storeFoods, storeMeasures)
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
@@ -334,7 +335,13 @@ updateMeasures model =
 
 setFoodsSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 setFoodsSearchString model string =
-    ( Page.lenses.foodsSearchString.set string model
+    ( model
+        |> Page.lenses.foodsSearchString.set string
+        |> (Page.lenses.pagination
+                |> Compose.lensWithLens Pagination.lenses.foods
+                |> Compose.lensWithLens PaginationSettings.lenses.currentPage
+           ).set
+            1
     , Cmd.none
     )
 
