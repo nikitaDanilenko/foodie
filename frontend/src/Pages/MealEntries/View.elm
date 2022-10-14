@@ -177,10 +177,10 @@ editOrDeleteMealEntryLine recipeMap mealEntry =
         editMsg =
             Page.EnterEditMealEntry mealEntry.id
     in
-    tr [ Style.classes.editing, onClick editMsg ]
-        [ td [ Style.classes.editable ] [ label [] [ text <| Page.recipeNameOrEmpty recipeMap <| mealEntry.recipeId ] ]
-        , td [ Style.classes.editable ] [ label [] [ text <| Page.descriptionOrEmpty recipeMap <| mealEntry.recipeId ] ]
-        , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| String.fromFloat <| mealEntry.numberOfServings ] ]
+    tr [ Style.classes.editing ]
+        [ td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| Page.recipeNameOrEmpty recipeMap <| mealEntry.recipeId ] ]
+        , td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| Page.descriptionOrEmpty recipeMap <| mealEntry.recipeId ] ]
+        , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| String.fromFloat <| mealEntry.numberOfServings ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick (Page.EnterEditMealEntry mealEntry.id) ] [ text "Edit" ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Page.DeleteMealEntry mealEntry.id) ] [ text "Delete" ] ]
         ]
@@ -188,6 +188,13 @@ editOrDeleteMealEntryLine recipeMap mealEntry =
 
 editMealEntryLine : Page.RecipeMap -> MealEntry -> MealEntryUpdateClientInput -> Html Page.Msg
 editMealEntryLine recipeMap mealEntry mealEntryUpdateClientInput =
+    let
+        saveMsg =
+            Page.SaveMealEntryEdit mealEntryUpdateClientInput
+
+        cancelMsg =
+            Page.ExitEditMealEntryAt mealEntry.id
+    in
     tr [ Style.classes.editLine ]
         [ td [] [ label [] [ text <| Page.recipeNameOrEmpty recipeMap <| mealEntry.recipeId ] ]
         , td [] [ label [] [ text <| Page.descriptionOrEmpty recipeMap <| mealEntry.recipeId ] ]
@@ -205,17 +212,18 @@ editMealEntryLine recipeMap mealEntry mealEntryUpdateClientInput =
                         mealEntryUpdateClientInput
                         >> Page.UpdateMealEntry
                     )
-                , onEnter (Page.SaveMealEntryEdit mealEntryUpdateClientInput)
+                , onEnter saveMsg
+                , HtmlUtil.onEscape cancelMsg
                 , Style.classes.numberLabel
                 ]
                 []
             ]
         , td []
-            [ button [ Style.classes.button.confirm, onClick (Page.SaveMealEntryEdit mealEntryUpdateClientInput) ]
+            [ button [ Style.classes.button.confirm, onClick saveMsg ]
                 [ text "Save" ]
             ]
         , td []
-            [ button [ Style.classes.button.cancel, onClick (Page.ExitEditMealEntryAt mealEntry.id) ]
+            [ button [ Style.classes.button.cancel, onClick cancelMsg ]
                 [ text "Cancel" ]
             ]
         ]

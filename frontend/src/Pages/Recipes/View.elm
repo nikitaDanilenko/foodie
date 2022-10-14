@@ -19,6 +19,7 @@ import Pages.Recipes.Pagination as Pagination
 import Pages.Recipes.RecipeCreationClientInput as RecipeCreationClientInput exposing (RecipeCreationClientInput)
 import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Recipes.Status as Status
+import Pages.Util.HtmlUtil as HtmlUtil
 import Pages.Util.Links as Links
 import Pages.Util.PaginationSettings as PaginationSettings
 import Pages.Util.Style as Style
@@ -119,10 +120,10 @@ editOrDeleteRecipeLine configuration recipe =
         editMsg =
             Page.EnterEditRecipe recipe.id
     in
-    tr [ Style.classes.editing, onClick editMsg ]
-        [ td [ Style.classes.editable ] [ label [] [ text recipe.name ] ]
-        , td [ Style.classes.editable ] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
-        , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
+    tr [ Style.classes.editing ]
+        [ td [ Style.classes.editable, onClick editMsg ] [ label [] [ text recipe.name ] ]
+        , td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
+        , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| String.fromFloat <| recipe.numberOfServings ] ]
         , td [ Style.classes.controls ]
             [ button [ Style.classes.button.edit, onClick editMsg ] [ text "Edit" ] ]
         , td [ Style.classes.controls ]
@@ -150,7 +151,7 @@ editRecipeLine recipeUpdateClientInput =
         , updateMsg = Page.UpdateRecipe
         , confirmOnClick = Page.SaveRecipeEdit recipeUpdateClientInput.id
         , confirmName = "Save"
-        , cancelOnClick = Page.ExitEditRecipeAt recipeUpdateClientInput.id
+        , cancelMsg = Page.ExitEditRecipeAt recipeUpdateClientInput.id
         , cancelName = "Cancel"
         }
         recipeUpdateClientInput
@@ -166,7 +167,7 @@ createRecipeLine recipeCreationClientInput =
         , updateMsg = Just >> Page.UpdateRecipeCreation
         , confirmOnClick = Page.CreateRecipe
         , confirmName = "Add"
-        , cancelOnClick = Page.UpdateRecipeCreation Nothing
+        , cancelMsg = Page.UpdateRecipeCreation Nothing
         , cancelName = "Cancel"
         }
         recipeCreationClientInput
@@ -180,7 +181,7 @@ editRecipeLineWith :
     , updateMsg : editedValue -> Page.Msg
     , confirmOnClick : Page.Msg
     , confirmName : String
-    , cancelOnClick : Page.Msg
+    , cancelMsg : Page.Msg
     , cancelName : String
     }
     -> editedValue
@@ -195,6 +196,7 @@ editRecipeLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
+                , HtmlUtil.onEscape handling.cancelMsg
                 ]
                 []
             ]
@@ -211,6 +213,7 @@ editRecipeLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
+                , HtmlUtil.onEscape handling.cancelMsg
                 ]
                 []
             ]
@@ -226,6 +229,7 @@ editRecipeLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
+                , HtmlUtil.onEscape handling.cancelMsg
                 , Style.classes.numberLabel
                 ]
                 []
@@ -235,7 +239,7 @@ editRecipeLineWith handling editedValue =
                 [ text handling.confirmName ]
             ]
         , td [ Style.classes.controls ]
-            [ button [ Style.classes.button.cancel, onClick handling.cancelOnClick ]
+            [ button [ Style.classes.button.cancel, onClick handling.cancelMsg ]
                 [ text handling.cancelName ]
             ]
         , td [] []

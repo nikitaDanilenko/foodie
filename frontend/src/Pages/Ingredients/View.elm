@@ -183,10 +183,10 @@ editOrDeleteIngredientLine measureMap foodMap ingredient =
         editMsg =
             Page.EnterEditIngredient ingredient.id
     in
-    tr [ Style.classes.editing, onClick editMsg ]
-        [ td [ Style.classes.editable ] [ label [] [ text <| Page.ingredientNameOrEmpty foodMap <| ingredient.foodId ] ]
-        , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| String.fromFloat <| ingredient.amountUnit.factor ] ]
-        , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| Maybe.Extra.unwrap "" .name <| flip Dict.get measureMap <| ingredient.amountUnit.measureId ] ]
+    tr [ Style.classes.editing ]
+        [ td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| Page.ingredientNameOrEmpty foodMap <| ingredient.foodId ] ]
+        , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| String.fromFloat <| ingredient.amountUnit.factor ] ]
+        , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| Maybe.Extra.unwrap "" .name <| flip Dict.get measureMap <| ingredient.amountUnit.measureId ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick editMsg ] [ text "Edit" ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Page.DeleteIngredient ingredient.id) ] [ text "Delete" ] ]
         ]
@@ -197,6 +197,9 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
     let
         saveMsg =
             Page.SaveIngredientEdit ingredientUpdateClientInput
+
+        cancelMsg =
+            Page.ExitEditIngredientAt ingredient.id
     in
     tr [ Style.classes.editLine ]
         [ td [] [ label [] [ text <| Page.ingredientNameOrEmpty foodMap <| ingredient.foodId ] ]
@@ -217,6 +220,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                         >> Page.UpdateIngredient
                     )
                 , onEnter saveMsg
+                , HtmlUtil.onEscape cancelMsg
                 , Style.classes.numberLabel
                 ]
                 []
@@ -234,7 +238,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                         , input = ingredientUpdateClientInput
                         }
                 }
-                [ Style.classes.numberLabel ]
+                [ Style.classes.numberLabel, HtmlUtil.onEscape cancelMsg ]
                 (ingredient.amountUnit.measureId
                     |> flip Dict.get measureMap
                     |> Maybe.map .name
@@ -245,7 +249,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                 [ text "Save" ]
             ]
         , td []
-            [ button [ Style.classes.button.cancel, onClick (Page.ExitEditIngredientAt ingredient.id) ]
+            [ button [ Style.classes.button.cancel, onClick cancelMsg ]
                 [ text "Cancel" ]
             ]
         ]
@@ -293,6 +297,9 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
 
         selectMsg =
             Page.SelectFood food
+
+        cancelMsg =
+            Page.DeselectFood food.id
 
         maybeIngredientToAdd =
             Dict.get food.id ingredientsToAdd
@@ -346,6 +353,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                                     >> Page.UpdateAddFood
                                 )
                              , Style.classes.numberLabel
+                             , HtmlUtil.onEscape cancelMsg
                              ]
                                 ++ (if validInput then
                                         [ onEnter confirmMsg ]
@@ -369,7 +377,9 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                                     , input = ingredientToAdd
                                     }
                             }
-                            [ Style.classes.numberLabel ]
+                            [ Style.classes.numberLabel
+                            , HtmlUtil.onEscape cancelMsg
+                            ]
                             (ingredientToAdd.amountUnit.measureId |> String.fromInt |> Just)
                         ]
                     , td [ Style.classes.controls ]
@@ -382,7 +392,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                             ]
                         ]
                     , td [ Style.classes.controls ]
-                        [ button [ Style.classes.button.cancel, onClick (Page.DeselectFood food.id) ] [ text "Cancel" ] ]
+                        [ button [ Style.classes.button.cancel, onClick cancelMsg ] [ text "Cancel" ] ]
                     ]
     in
     tr ([ Style.classes.editing ] ++ rowClickAction)

@@ -21,7 +21,7 @@ object Stats {
       .map(_.transformInto[LocalDate])
 
     val modifier: BigDecimal => BigDecimal = if (days.nonEmpty) {
-      val numberOfDays = days.max.toEpochDay - days.min.toEpochDay
+      val numberOfDays = 1 + days.max.toEpochDay - days.min.toEpochDay
       _ / numberOfDays
     } else _ => 0
 

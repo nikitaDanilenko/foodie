@@ -23,6 +23,7 @@ import Pages.Meals.Page as Page
 import Pages.Meals.Pagination as Pagination
 import Pages.Meals.Status as Status
 import Pages.Util.DateUtil as DateUtil
+import Pages.Util.HtmlUtil as HtmlUtil
 import Pages.Util.Links as Links
 import Pages.Util.PaginationSettings as PaginationSettings
 import Pages.Util.Style as Style
@@ -125,10 +126,10 @@ editOrDeleteMealLine configuration meal =
         editMsg =
             Page.EnterEditMeal meal.id
     in
-    tr [ Style.classes.editing, onClick editMsg ]
-        [ td [ Style.classes.editable ] [ label [] [ text <| DateUtil.dateToString <| meal.date.date ] ]
-        , td [ Style.classes.editable ] [ label [] [ text <| Maybe.Extra.unwrap "" DateUtil.timeToString <| meal.date.time ] ]
-        , td [ Style.classes.editable ] [ label [] [ text <| Maybe.withDefault "" <| meal.name ] ]
+    tr [ Style.classes.editing ]
+        [ td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| DateUtil.dateToString <| meal.date.date ] ]
+        , td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| Maybe.Extra.unwrap "" DateUtil.timeToString <| meal.date.time ] ]
+        , td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| Maybe.withDefault "" <| meal.name ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick editMsg ] [ text "Edit" ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Page.DeleteMeal meal.id) ] [ text "Delete" ] ]
         , td [ Style.classes.controls ]
@@ -151,7 +152,7 @@ editMealLine mealUpdate =
         , updateMsg = Page.UpdateMeal
         , confirmOnClick = Page.SaveMealEdit mealUpdate.id
         , confirmName = "Save"
-        , cancelOnClick = Page.ExitEditMealAt mealUpdate.id
+        , cancelMsg = Page.ExitEditMealAt mealUpdate.id
         , cancelName = "Cancel"
         }
         mealUpdate
@@ -167,7 +168,7 @@ createMealLine mealCreation =
         , updateMsg = Just >> Page.UpdateMealCreation
         , confirmOnClick = Page.CreateMeal
         , confirmName = "Add"
-        , cancelOnClick = Page.UpdateMealCreation Nothing
+        , cancelMsg = Page.UpdateMealCreation Nothing
         , cancelName = "Cancel"
         }
         mealCreation
@@ -181,7 +182,7 @@ editMealLineWith :
     , updateMsg : editedValue -> Page.Msg
     , confirmOnClick : Page.Msg
     , confirmName : String
-    , cancelOnClick : Page.Msg
+    , cancelMsg : Page.Msg
     , cancelName : String
     }
     -> editedValue
@@ -224,7 +225,7 @@ editMealLineWith handling editedValue =
                     )
                  , onEnter handling.saveMsg
                  , Style.classes.date
-                 ]
+                 , HtmlUtil.onEscape handling.cancelMsg]
                     ++ dateValue
                 )
                 []
@@ -244,6 +245,7 @@ editMealLineWith handling editedValue =
                     )
                 , onEnter handling.saveMsg
                 , Style.classes.time
+                , HtmlUtil.onEscape handling.cancelMsg
                 ] ++ timeValue)
                 []
             ]
@@ -257,6 +259,7 @@ editMealLineWith handling editedValue =
                         >> handling.updateMsg
                     )
                 , onEnter handling.saveMsg
+                , HtmlUtil.onEscape handling.cancelMsg
                 ]
                 []
             ]
@@ -265,7 +268,7 @@ editMealLineWith handling editedValue =
                 [ text handling.confirmName ]
             ]
         , td [ Style.classes.controls ]
-            [ button [ Style.classes.button.cancel, onClick handling.cancelOnClick ]
+            [ button [ Style.classes.button.cancel, onClick handling.cancelMsg ]
                 [ text handling.cancelName ]
             ]
         ]

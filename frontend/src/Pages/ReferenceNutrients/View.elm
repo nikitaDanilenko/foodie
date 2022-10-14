@@ -163,10 +163,10 @@ editOrDeleteReferenceNutrientLine nutrientMap referenceNutrient =
         editMsg =
             Page.EnterEditReferenceNutrient referenceNutrient.nutrientCode
     in
-    tr [ Style.classes.editing, onClick editMsg ]
-        [ td [ Style.classes.editable ] [ label [] [ text <| Page.nutrientNameOrEmpty nutrientMap <| referenceNutrient.nutrientCode ] ]
-        , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| String.fromFloat <| referenceNutrient.amount ] ]
-        , td [ Style.classes.editable, Style.classes.numberLabel ] [ label [] [ text <| Page.nutrientUnitOrEmpty nutrientMap <| referenceNutrient.nutrientCode ] ]
+    tr [ Style.classes.editing ]
+        [ td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| Page.nutrientNameOrEmpty nutrientMap <| referenceNutrient.nutrientCode ] ]
+        , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| String.fromFloat <| referenceNutrient.amount ] ]
+        , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| Page.nutrientUnitOrEmpty nutrientMap <| referenceNutrient.nutrientCode ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick editMsg ] [ text "Edit" ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Page.DeleteReferenceNutrient referenceNutrient.nutrientCode) ] [ text "Delete" ] ]
         ]
@@ -177,6 +177,9 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
     let
         saveMsg =
             Page.SaveReferenceNutrientEdit referenceNutrientUpdateClientInput
+
+        cancelMsg =
+            Page.ExitEditReferenceNutrientAt referenceNutrient.nutrientCode
     in
     tr [ Style.classes.editLine ]
         [ td [] [ label [] [ text (referenceNutrient.nutrientCode |> Page.nutrientNameOrEmpty nutrientMap) ] ]
@@ -195,6 +198,7 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
                         >> Page.UpdateReferenceNutrient
                     )
                 , onEnter saveMsg
+                , HtmlUtil.onEscape cancelMsg
                 , Style.classes.numberLabel
                 ]
                 []
@@ -209,7 +213,7 @@ editReferenceNutrientLine nutrientMap referenceNutrient referenceNutrientUpdateC
                 [ text "Save" ]
             ]
         , td []
-            [ button [ Style.classes.button.cancel, onClick (Page.ExitEditReferenceNutrientAt referenceNutrient.nutrientCode) ]
+            [ button [ Style.classes.button.cancel, onClick cancelMsg ]
                 [ text "Cancel" ]
             ]
         ]
@@ -223,6 +227,9 @@ viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient
 
         selectMsg =
             Page.SelectNutrient nutrient.code
+
+        cancelMsg =
+            Page.DeselectNutrient nutrient.code
 
         maybeReferenceNutrientToAdd =
             Dict.get nutrient.code referenceNutrientsToAdd
@@ -271,6 +278,7 @@ viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient
                                     >> Page.UpdateAddNutrient
                                 )
                             , onEnter confirmMsg
+                            , HtmlUtil.onEscape cancelMsg
                             , Style.classes.numberLabel
                             ]
                             []
@@ -284,7 +292,7 @@ viewNutrientLine nutrientMap referenceNutrients referenceNutrientsToAdd nutrient
                             ]
                             [ text <| confirmName ]
                         ]
-                    , td [ Style.classes.controls ] [ button [ Style.classes.button.cancel, onClick (Page.DeselectNutrient nutrient.code) ] [ text "Cancel" ] ]
+                    , td [ Style.classes.controls ] [ button [ Style.classes.button.cancel, onClick cancelMsg ] [ text "Cancel" ] ]
                     ]
     in
     tr ([ Style.classes.editing ] ++ rowClickAction)
