@@ -1,24 +1,23 @@
 module Pages.Meals.View exposing (view)
 
 import Addresses.Frontend
-import Api.Lenses.MealUpdateLens as MealUpdateLens
-import Api.Lenses.SimpleDateLens as SimpleDateLens
 import Api.Types.Meal exposing (Meal)
-import Api.Types.MealUpdate exposing (MealUpdate)
 import Api.Types.SimpleDate exposing (SimpleDate)
 import Basics.Extra exposing (flip)
 import Configuration exposing (Configuration)
 import Dict
 import Either exposing (Either(..))
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (colspan, scope, type_, value)
+import Html.Attributes exposing (colspan, disabled, scope, type_, value)
 import Html.Attributes.Extra exposing (stringProperty)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra exposing (onEnter)
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
+import Monocle.Optional exposing (Optional)
 import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
+import Pages.Meals.MealUpdateClientInput as MealUpdateClientInput exposing (MealUpdateClientInput)
 import Pages.Meals.Page as Page
 import Pages.Meals.Pagination as Pagination
 import Pages.Meals.Status as Status
@@ -26,6 +25,7 @@ import Pages.Util.DateUtil as DateUtil
 import Pages.Util.HtmlUtil as HtmlUtil
 import Pages.Util.Links as Links
 import Pages.Util.PaginationSettings as PaginationSettings
+import Pages.Util.SimpleDateInput as SimpleDateInput exposing (SimpleDateInput)
 import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil
 import Paginate
@@ -142,20 +142,20 @@ editOrDeleteMealLine configuration meal =
         ]
 
 
-editMealLine : MealUpdate -> Html Page.Msg
-editMealLine mealUpdate =
+editMealLine : MealUpdateClientInput -> Html Page.Msg
+editMealLine mealUpdateClientInput =
     editMealLineWith
-        { saveMsg = Page.SaveMealEdit mealUpdate.id
-        , dateLens = MealUpdateLens.date
+        { saveMsg = Page.SaveMealEdit mealUpdateClientInput.id
+        , dateLens = MealUpdateClientInput.lenses.date
         , setDate = True
-        , nameLens = MealUpdateLens.name
+        , nameLens = MealUpdateClientInput.lenses.name
         , updateMsg = Page.UpdateMeal
-        , confirmOnClick = Page.SaveMealEdit mealUpdate.id
+        , confirmOnClick = Page.SaveMealEdit mealUpdateClientInput.id
         , confirmName = "Save"
-        , cancelMsg = Page.ExitEditMealAt mealUpdate.id
+        , cancelMsg = Page.ExitEditMealAt mealUpdateClientInput.id
         , cancelName = "Cancel"
         }
-        mealUpdate
+        mealUpdateClientInput
 
 
 createMealLine : MealCreationClientInput -> Html Page.Msg
@@ -176,9 +176,9 @@ createMealLine mealCreation =
 
 editMealLineWith :
     { saveMsg : Page.Msg
-    , dateLens : Lens editedValue SimpleDate
+    , dateLens : Lens editedValue SimpleDateInput
     , setDate : Bool
-    , nameLens : Lens editedValue (Maybe String)
+    , nameLens : Optional editedValue String
     , updateMsg : editedValue -> Page.Msg
     , confirmOnClick : Page.Msg
     , confirmName : String
@@ -192,40 +192,62 @@ editMealLineWith handling editedValue =
         date =
             handling.dateLens.get <| editedValue
 
+        deepDateLens =
+            handling.dateLens
+                |> Compose.lensWithLens SimpleDateInput.lenses.date
+
+        deepTimeLens =
+            handling.dateLens
+                |> Compose.lensWithLens SimpleDateInput.lenses.time
+
         dateValue =
-            if handling.setDate then
-                [ value <| DateUtil.dateToString <| date.date ]
+            date
+                |> .date
+                |> Maybe.Extra.filter (\_ -> handling.setDate)
+                |> Maybe.map (DateUtil.dateToString >> value)
+                |> Maybe.Extra.toList
+
+        dateParsedInteraction =
+            Parser.run DateUtil.dateParser
+                >> Result.toMaybe
+                >> flip
+                    deepDateLens.set
+                    editedValue
+                >> handling.updateMsg
+
+        validatedEnterInteraction =
+            if deepDateLens.get editedValue |> Maybe.Extra.isJust then
+                [ onEnter handling.saveMsg ]
 
             else
                 []
 
         timeValue =
-            if handling.setDate then
-                [ value <| Maybe.Extra.unwrap "" DateUtil.timeToString <| date.time ]
+            date
+                |> .time
+                |> Maybe.Extra.filter (\_ -> handling.setDate)
+                |> Maybe.map (DateUtil.timeToString >> value)
+                |> Maybe.Extra.toList
 
-            else
-                []
+        timeInteraction =
+            Parser.run DateUtil.timeParser
+                >> Result.toMaybe
+                >> flip
+                    deepTimeLens.set
+                    editedValue
+                >> handling.updateMsg
 
         name =
-            Maybe.withDefault "" <| handling.nameLens.get <| editedValue
+            Maybe.withDefault "" <| handling.nameLens.getOption <| editedValue
     in
     tr [ Style.classes.editLine ]
         [ td [ Style.classes.editable, Style.classes.date ]
             [ input
                 ([ type_ "date"
-                 , onInput
-                    (Parser.run DateUtil.dateParser
-                        >> Result.withDefault date.date
-                        >> flip
-                            (handling.dateLens
-                                |> Compose.lensWithLens SimpleDateLens.date
-                            ).set
-                            editedValue
-                        >> handling.updateMsg
-                    )
-                 , onEnter handling.saveMsg
                  , Style.classes.date
-                 , HtmlUtil.onEscape handling.cancelMsg]
+                 , onInput dateParsedInteraction
+                 , HtmlUtil.onEscape handling.cancelMsg
+                 ]
                     ++ dateValue
                 )
                 []
@@ -233,38 +255,33 @@ editMealLineWith handling editedValue =
         , td [ Style.classes.editable, Style.classes.time ]
             [ input
                 ([ type_ "time"
-                , onInput
-                    (Parser.run DateUtil.timeParser
-                        >> Result.toMaybe
-                        >> flip
-                            (handling.dateLens
-                                |> Compose.lensWithLens SimpleDateLens.time
-                            ).set
-                            editedValue
-                        >> handling.updateMsg
-                    )
-                , onEnter handling.saveMsg
-                , Style.classes.time
-                , HtmlUtil.onEscape handling.cancelMsg
-                ] ++ timeValue)
+                 , Style.classes.time
+                 , onInput timeInteraction
+                 , HtmlUtil.onEscape handling.cancelMsg
+                 ]
+                    ++ timeValue
+                )
                 []
             ]
         , td [ Style.classes.editable ]
             [ input
-                [ value <| name
-                , onInput
-                    (Just
-                        >> Maybe.Extra.filter (String.isEmpty >> not)
-                        >> flip handling.nameLens.set editedValue
+                ([ value <| name
+                 , onInput
+                    (flip handling.nameLens.set editedValue
                         >> handling.updateMsg
                     )
-                , onEnter handling.saveMsg
-                , HtmlUtil.onEscape handling.cancelMsg
-                ]
+                 , HtmlUtil.onEscape handling.cancelMsg
+                 ]
+                    ++ validatedEnterInteraction
+                )
                 []
             ]
         , td [ Style.classes.controls ]
-            [ button [ Style.classes.button.confirm, onClick handling.confirmOnClick ]
+            [ button
+                [ Style.classes.button.confirm
+                , onClick handling.confirmOnClick
+                , disabled <| Maybe.Extra.isNothing <| date.date
+                ]
                 [ text handling.confirmName ]
             ]
         , td [ Style.classes.controls ]

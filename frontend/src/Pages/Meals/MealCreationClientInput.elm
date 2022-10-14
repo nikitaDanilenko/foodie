@@ -1,42 +1,42 @@
 module Pages.Meals.MealCreationClientInput exposing (..)
 
 import Api.Types.MealCreation exposing (MealCreation)
-import Api.Types.SimpleDate exposing (SimpleDate)
+import Maybe.Extra
 import Monocle.Lens exposing (Lens)
+import Monocle.Optional exposing (Optional)
+import Pages.Util.SimpleDateInput as SimpleDateInput exposing (SimpleDateInput)
 
 
 type alias MealCreationClientInput =
-    { date : SimpleDate
+    { date : SimpleDateInput
     , name : Maybe String
     }
 
 
 default : MealCreationClientInput
 default =
-    { date =
-        { date =
-            { year = 2022
-            , month = 1
-            , day = 1
-            }
-        , time = Nothing
-        }
+    { date = SimpleDateInput.default
     , name = Nothing
     }
 
 
 lenses :
-    { date : Lens MealCreationClientInput SimpleDate
-    , name : Lens MealCreationClientInput (Maybe String)
+    { date : Lens MealCreationClientInput SimpleDateInput
+    , name : Optional MealCreationClientInput String
     }
 lenses =
     { date = Lens .date (\b a -> { a | date = b })
-    , name = Lens .name (\b a -> { a | name = b })
+    , name = Optional .name (\b a -> { a | name = Just b |> Maybe.Extra.filter (String.isEmpty >> not) })
     }
 
 
-toCreation : MealCreationClientInput -> MealCreation
+toCreation : MealCreationClientInput -> Maybe MealCreation
 toCreation input =
-    { date = input.date
-    , name = input.name
-    }
+    input.date
+        |> SimpleDateInput.to
+        |> Maybe.map
+            (\date ->
+                { date = date
+                , name = input.name
+                }
+            )

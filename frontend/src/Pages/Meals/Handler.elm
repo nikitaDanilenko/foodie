@@ -2,7 +2,6 @@ module Pages.Meals.Handler exposing (init, update, updateJWT)
 
 import Api.Auxiliary exposing (JWT, MealId)
 import Api.Types.Meal exposing (Meal)
-import Api.Types.MealUpdate exposing (MealUpdate)
 import Basics.Extra exposing (flip)
 import Dict
 import Either exposing (Either(..))
@@ -12,6 +11,7 @@ import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional as Optional
 import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
+import Pages.Meals.MealUpdateClientInput as MealUpdateClientInput exposing (MealUpdateClientInput)
 import Pages.Meals.Page as Page
 import Pages.Meals.Pagination as Pagination exposing (Pagination)
 import Pages.Meals.Requests as Requests
@@ -60,8 +60,8 @@ update msg model =
         Page.GotCreateMealResponse dataOrError ->
             gotCreateMealResponse model dataOrError
 
-        Page.UpdateMeal mealUpdate ->
-            updateMeal model mealUpdate
+        Page.UpdateMeal mealUpdateClientInput ->
+            updateMeal model mealUpdateClientInput
 
         Page.SaveMealEdit mealId ->
             saveMealEdit model mealId
@@ -103,7 +103,8 @@ createMeal : Page.Model -> ( Page.Model, Cmd Page.Msg )
 createMeal model =
     ( model
     , model.mealToAdd
-        |> Maybe.Extra.unwrap Cmd.none (MealCreationClientInput.toCreation >> Requests.createMeal model.flagsWithJWT)
+        |> Maybe.andThen MealCreationClientInput.toCreation
+        |> Maybe.Extra.unwrap Cmd.none (Requests.createMeal model.flagsWithJWT)
     )
 
 
@@ -122,11 +123,11 @@ gotCreateMealResponse model dataOrError =
     )
 
 
-updateMeal : Page.Model -> MealUpdate -> ( Page.Model, Cmd Page.Msg )
-updateMeal model mealUpdate =
+updateMeal : Page.Model -> MealUpdateClientInput -> ( Page.Model, Cmd Page.Msg )
+updateMeal model mealUpdateClientInput =
     ( model
-        |> mapMealOrUpdateById mealUpdate.id
-            (Either.mapRight (Editing.updateLens.set mealUpdate))
+        |> mapMealOrUpdateById mealUpdateClientInput.id
+            (Either.mapRight (Editing.updateLens.set mealUpdateClientInput))
     , Cmd.none
     )
 
@@ -134,14 +135,14 @@ updateMeal model mealUpdate =
 saveMealEdit : Page.Model -> MealId -> ( Page.Model, Cmd Page.Msg )
 saveMealEdit model mealId =
     ( model
-    , Maybe.Extra.unwrap
-        Cmd.none
-        (Either.unwrap Cmd.none
-            (.update
-                >> Requests.saveMeal model.flagsWithJWT
-            )
-        )
-        (Dict.get mealId model.meals)
+    , model
+        |> Page.lenses.meals.get
+        |> Dict.get mealId
+        |> Maybe.andThen Either.rightToMaybe
+        |> Maybe.andThen (.update >> MealUpdateClientInput.to)
+        |> Maybe.Extra.unwrap
+            Cmd.none
+            (Requests.saveMeal model.flagsWithJWT)
     )
 
 
@@ -163,7 +164,7 @@ enterEditMeal : Page.Model -> MealId -> ( Page.Model, Cmd Page.Msg )
 enterEditMeal model mealId =
     ( model
         |> mapMealOrUpdateById mealId
-            (Either.unpack (\meal -> { original = meal, update = mealUpdateFromMeal meal }) identity >> Right)
+            (Either.unpack (\meal -> { original = meal, update = MealUpdateClientInput.from meal }) identity >> Right)
     , Cmd.none
     )
 
@@ -232,14 +233,6 @@ setPagination model pagination =
     ( model |> Page.lenses.pagination.set pagination
     , Cmd.none
     )
-
-
-mealUpdateFromMeal : Meal -> MealUpdate
-mealUpdateFromMeal meal =
-    { id = meal.id
-    , date = meal.date
-    , name = meal.name
-    }
 
 
 mapMealOrUpdateById : MealId -> (Page.MealOrUpdate -> Page.MealOrUpdate) -> Page.Model -> Page.Model

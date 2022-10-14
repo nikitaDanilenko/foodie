@@ -2,13 +2,13 @@ module Pages.Meals.Page exposing (..)
 
 import Api.Auxiliary exposing (JWT, MealId)
 import Api.Types.Meal exposing (Meal)
-import Api.Types.MealUpdate exposing (MealUpdate)
 import Configuration exposing (Configuration)
 import Dict exposing (Dict)
 import Either exposing (Either)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
 import Pages.Meals.MealCreationClientInput exposing (MealCreationClientInput)
+import Pages.Meals.MealUpdateClientInput exposing (MealUpdateClientInput)
 import Pages.Meals.Pagination exposing (Pagination)
 import Pages.Meals.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
@@ -27,7 +27,7 @@ type alias Model =
 
 
 type alias MealOrUpdate =
-    Either Meal (Editing Meal MealUpdate)
+    Either Meal (Editing Meal MealUpdateClientInput)
 
 
 type alias MealOrUpdateMap =
@@ -60,7 +60,7 @@ type Msg
     = UpdateMealCreation (Maybe MealCreationClientInput)
     | CreateMeal
     | GotCreateMealResponse (Result Error Meal)
-    | UpdateMeal MealUpdate
+    | UpdateMeal MealUpdateClientInput
     | SaveMealEdit MealId
     | GotSaveMealResponse (Result Error Meal)
     | EnterEditMeal MealId
