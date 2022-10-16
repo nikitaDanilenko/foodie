@@ -22,8 +22,7 @@ import Pages.Ingredients.Pagination as Pagination exposing (Pagination)
 import Pages.Ingredients.RecipeInfo as RecipeInfo exposing (RecipeInfo)
 import Pages.Ingredients.Requests as Requests
 import Pages.Ingredients.Status as Status
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
-import Pages.Util.InitUtil as InitUtil
+import Pages.Util.FlagsWithJWT as FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.PaginationSettings as PaginationSettings
 import Ports exposing (doFetchFoods, doFetchMeasures, storeFoods, storeMeasures)
 import Util.Editing as Editing exposing (Editing)
@@ -44,21 +43,7 @@ initialFetch flags recipeId =
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    let
-        ( jwt, cmd ) =
-            InitUtil.fetchIfEmpty flags.jwt
-                (\token ->
-                    initialFetch
-                        { configuration = flags.configuration
-                        , jwt = token
-                        }
-                        flags.recipeId
-                )
-    in
-    ( { flagsWithJWT =
-            { configuration = flags.configuration
-            , jwt = jwt
-            }
+    ( { flagsWithJWT = flags |> FlagsWithJWT.from
       , recipeId = flags.recipeId
       , ingredients = Dict.empty
       , foods = Dict.empty
@@ -66,10 +51,12 @@ init flags =
       , foodsSearchString = ""
       , foodsToAdd = Dict.empty
       , recipeInfo = Nothing
-      , initialization = Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , initialization = Loading Status.initial
       , pagination = Pagination.initial
       }
-    , cmd
+    , initialFetch
+        (flags |> FlagsWithJWT.from)
+        flags.recipeId
     )
 
 
@@ -278,14 +265,9 @@ gotFetchRecipeResponse model result =
 
 updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model token =
-    let
-        newModel =
-            model
-                |> Page.lenses.jwt.set token
-                |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
-    in
-    ( newModel
-    , initialFetch newModel.flagsWithJWT model.recipeId
+    ( model
+        |> Page.lenses.jwt.set token
+    , Cmd.none
     )
 
 

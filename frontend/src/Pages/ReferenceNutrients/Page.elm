@@ -50,7 +50,7 @@ type alias ReferenceNutrientOrUpdateMap =
 
 type alias Flags =
     { configuration : Configuration
-    , jwt : Maybe JWT
+    , jwt : JWT
     }
 
 

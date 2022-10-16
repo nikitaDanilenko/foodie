@@ -10,7 +10,6 @@ import Http exposing (Error)
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Statistics.Pagination exposing (Pagination)
-import Pages.Statistics.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Initialization exposing (Initialization)
 import Util.LensUtil as LensUtil
@@ -20,7 +19,7 @@ type alias Model =
     { flagsWithJWT : FlagsWithJWT
     , requestInterval : RequestInterval
     , stats : Stats
-    , initialization : Initialization Status
+    , initialization : Initialization ()
     , pagination: Pagination
     }
 
@@ -31,7 +30,7 @@ lenses :
     , from : Lens Model (Maybe Date)
     , to : Lens Model (Maybe Date)
     , stats : Lens Model Stats
-    , initialization : Lens Model (Initialization Status)
+    , initialization : Lens Model (Initialization ())
     , pagination : Lens Model Pagination
     }
 lenses =
@@ -51,7 +50,7 @@ lenses =
 
 type alias Flags =
     { configuration : Configuration
-    , jwt : Maybe String
+    , jwt : JWT
     }
 
 

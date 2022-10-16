@@ -16,7 +16,7 @@ import Pages.Meals.Page as Page
 import Pages.Meals.Pagination as Pagination exposing (Pagination)
 import Pages.Meals.Requests as Requests
 import Pages.Meals.Status as Status
-import Pages.Util.InitUtil as InitUtil
+import Pages.Util.FlagsWithJWT as FlagsWithJWT
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
 import Util.Initialization as Initialization
@@ -25,26 +25,14 @@ import Util.LensUtil as LensUtil
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    let
-        ( jwt, cmd ) =
-            InitUtil.fetchIfEmpty flags.jwt
-                (\token ->
-                    Requests.fetchMeals
-                        { configuration = flags.configuration
-                        , jwt = token
-                        }
-                )
-    in
-    ( { flagsWithJWT =
-            { configuration = flags.configuration
-            , jwt = jwt
-            }
+    ( { flagsWithJWT = FlagsWithJWT.from flags
       , meals = Dict.empty
       , mealToAdd = Nothing
-      , initialization = Initialization.Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
       }
-    , cmd
+    , Requests.fetchMeals
+        (FlagsWithJWT.from flags)
     )
 
 
@@ -217,14 +205,9 @@ gotFetchMealsResponse model dataOrError =
 
 updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model jwt =
-    let
-        newModel =
-            model
-                |> Page.lenses.jwt.set jwt
-                |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
-    in
-    ( newModel
-    , Requests.fetchMeals newModel.flagsWithJWT
+    ( model
+        |> Page.lenses.jwt.set jwt
+    , Cmd.none
     )
 
 

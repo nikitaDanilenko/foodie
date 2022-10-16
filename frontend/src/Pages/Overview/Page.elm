@@ -3,7 +3,6 @@ module Pages.Overview.Page exposing (..)
 import Api.Auxiliary exposing (JWT)
 import Configuration exposing (Configuration)
 import Monocle.Lens exposing (Lens)
-import Pages.Overview.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Initialization exposing (Initialization)
 import Util.LensUtil as LensUtil
@@ -11,13 +10,13 @@ import Util.LensUtil as LensUtil
 
 type alias Model =
     { flagsWithJWT : FlagsWithJWT
-    , initialization : Initialization Status
+    , initialization : Initialization ()
     }
 
 
 lenses :
     { jwt : Lens Model JWT
-    , initialization : Lens Model (Initialization Status)
+    , initialization : Lens Model (Initialization ())
     }
 lenses =
     { jwt = LensUtil.jwtSubLens
@@ -31,5 +30,5 @@ type Msg
 
 type alias Flags =
     { configuration : Configuration
-    , jwt : Maybe String
+    , jwt : JWT
     }

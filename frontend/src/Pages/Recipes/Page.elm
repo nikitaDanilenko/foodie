@@ -52,7 +52,7 @@ lenses =
 
 type alias Flags =
     { configuration : Configuration
-    , jwt : Maybe String
+    , jwt : JWT
     }
 
 

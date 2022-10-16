@@ -53,7 +53,7 @@ type alias MealEntryOrUpdateMap =
 
 type alias Flags =
     { configuration : Configuration
-    , jwt : Maybe JWT
+    , jwt : JWT
     , mealId : MealId
     }
 

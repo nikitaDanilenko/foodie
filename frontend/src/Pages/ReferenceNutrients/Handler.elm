@@ -18,8 +18,7 @@ import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput as Referenc
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput as ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
 import Pages.ReferenceNutrients.Requests as Requests
 import Pages.ReferenceNutrients.Status as Status
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
-import Pages.Util.InitUtil as InitUtil
+import Pages.Util.FlagsWithJWT as FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.PaginationSettings as PaginationSettings
 import Ports
 import Util.Editing as Editing exposing (Editing)
@@ -30,28 +29,16 @@ import Util.LensUtil as LensUtil
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    let
-        ( jwt, cmd ) =
-            InitUtil.fetchIfEmpty flags.jwt
-                (\token ->
-                    initialFetch
-                        { configuration = flags.configuration
-                        , jwt = token
-                        }
-                )
-    in
-    ( { flagsWithJWT =
-            { configuration = flags.configuration
-            , jwt = jwt
-            }
+    ( { flagsWithJWT = FlagsWithJWT.from flags
       , referenceNutrients = Dict.empty
       , nutrients = Dict.empty
       , nutrientsSearchString = ""
       , referenceNutrientsToAdd = Dict.empty
-      , initialization = Initialization.Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
       }
-    , cmd
+    , initialFetch
+        (FlagsWithJWT.from flags)
     )
 
 
@@ -283,14 +270,9 @@ updateAddNutrient model referenceNutrientCreationClientInput =
 
 updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model jwt =
-    let
-        newModel =
-            model
-                |> Page.lenses.jwt.set jwt
-                |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
-    in
-    ( newModel
-    , initialFetch newModel.flagsWithJWT
+    ( model
+        |> Page.lenses.jwt.set jwt
+    , Cmd.none
     )
 
 

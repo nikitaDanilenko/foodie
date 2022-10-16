@@ -15,7 +15,6 @@ import Pages.UserSettings.Requests as Requests
 import Pages.UserSettings.Status as Status
 import Pages.Util.ComplementInput as ComplementInput exposing (ComplementInput)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
-import Pages.Util.InitUtil as InitUtil
 import Pages.Util.Links as Links
 import Pages.Util.PasswordInput as PasswordInput
 import Ports
@@ -31,20 +30,7 @@ initialFetch =
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    let
-        ( jwt, cmd ) =
-            InitUtil.fetchIfEmpty flags.jwt
-                (\token ->
-                    Requests.fetchUser
-                        { configuration = flags.configuration
-                        , jwt = token
-                        }
-                )
-    in
-    ( { flagsWithJWT =
-            { configuration = flags.configuration
-            , jwt = jwt
-            }
+    ( { flagsWithJWT = flags
       , user =
             { id = ""
             , nickname = ""
@@ -52,10 +38,10 @@ init flags =
             , email = ""
             }
       , complementInput = ComplementInput.initial
-      , initialization = Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , initialization = Loading Status.initial
       , mode = Page.Regular
       }
-    , cmd
+    , initialFetch flags
     )
 
 
@@ -98,14 +84,9 @@ update msg model =
 
 updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model token =
-    let
-        newModel =
-            model
-                |> Page.lenses.jwt.set token
-                |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
-    in
-    ( newModel
-    , initialFetch newModel.flagsWithJWT
+    ( model
+        |> Page.lenses.jwt.set token
+    , Cmd.none
     )
 
 

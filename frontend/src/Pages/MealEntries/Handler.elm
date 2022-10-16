@@ -18,8 +18,7 @@ import Pages.MealEntries.Page as Page exposing (Msg(..))
 import Pages.MealEntries.Pagination as Pagination exposing (Pagination)
 import Pages.MealEntries.Requests as Requests
 import Pages.MealEntries.Status as Status
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
-import Pages.Util.InitUtil as InitUtil
+import Pages.Util.FlagsWithJWT as FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.PaginationSettings as PaginationSettings
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
@@ -29,31 +28,20 @@ import Util.LensUtil as LensUtil
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    let
-        ( jwt, cmd ) =
-            InitUtil.fetchIfEmpty flags.jwt
-                (\token ->
-                    initialFetch
-                        { configuration = flags.configuration
-                        , jwt = token
-                        }
-                        flags.mealId
-                )
-    in
     ( { flagsWithJWT =
-            { configuration = flags.configuration
-            , jwt = jwt
-            }
+            FlagsWithJWT.from flags
       , mealId = flags.mealId
       , mealInfo = Nothing
       , mealEntries = Dict.empty
       , recipes = Dict.empty
       , recipesSearchString = ""
       , mealEntriesToAdd = Dict.empty
-      , initialization = Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , initialization = Loading Status.initial
       , pagination = Pagination.initial
       }
-    , cmd
+    , initialFetch
+        (FlagsWithJWT.from flags)
+        flags.mealId
     )
 
 
@@ -300,14 +288,9 @@ updateAddRecipe model mealEntryCreationClientInput =
 
 updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model jwt =
-    let
-        newModel =
-            model
-                |> Page.lenses.jwt.set jwt
-                |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
-    in
-    ( newModel
-    , initialFetch newModel.flagsWithJWT newModel.mealId
+    ( model
+        |> Page.lenses.jwt.set jwt
+    , Cmd.none
     )
 
 

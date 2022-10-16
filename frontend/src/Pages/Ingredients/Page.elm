@@ -106,7 +106,7 @@ type Msg
 
 type alias Flags =
     { configuration : Configuration
-    , jwt : Maybe JWT
+    , jwt : JWT
     , recipeId : RecipeId
     }
 

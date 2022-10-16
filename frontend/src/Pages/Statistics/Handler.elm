@@ -12,30 +12,20 @@ import Monocle.Lens as Lens
 import Pages.Statistics.Page as Page
 import Pages.Statistics.Pagination as Pagination exposing (Pagination)
 import Pages.Statistics.Requests as Requests
-import Pages.Statistics.Status as Status
-import Pages.Util.InitUtil as InitUtil
 import Util.HttpUtil as HttpUtil
 import Util.Initialization as Initialization
-import Util.LensUtil as LensUtil
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    let
-        ( jwt, cmd ) =
-            InitUtil.fetchIfEmpty flags.jwt
-                (always Cmd.none)
-    in
-    ( { flagsWithJWT =
-            { configuration = flags.configuration
-            , jwt = jwt
-            }
+
+    ( { flagsWithJWT = flags
       , requestInterval = RequestIntervalLens.default
       , stats = defaultStats
-      , initialization = Initialization.Loading (Status.initial |> Status.lenses.jwt.set (jwt |> String.isEmpty |> not))
+      , initialization = Initialization.Loading ()
       , pagination = Pagination.initial
       }
-    , cmd
+    , Cmd.none
     )
 
 
@@ -90,7 +80,6 @@ updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
 updateJWT model jwt =
     ( model
         |> Page.lenses.jwt.set jwt
-        |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.jwt).set True
     , Cmd.none
     )
 

@@ -1,7 +1,8 @@
 module Main exposing (main)
 
 import Addresses.Frontend
-import Api.Auxiliary exposing (JWT)
+import Api.Auxiliary exposing (JWT, MealId, RecipeId)
+import Api.Types.UserIdentifier exposing (UserIdentifier)
 import Basics.Extra exposing (flip)
 import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav
@@ -83,16 +84,20 @@ type alias Model =
     { key : Nav.Key
     , page : Page
     , configuration : Configuration
-    , jwt : Maybe String
+    , jwt : Maybe JWT
+    , entryRoute : Maybe Route
     }
 
 
 lenses :
     { jwt : Lens Model (Maybe JWT)
+    , page : Lens Model Page
+    , entryRoute : Lens Model (Maybe Route)
     }
 lenses =
-    { jwt =
-        Lens .jwt (\b a -> { a | jwt = b })
+    { jwt = Lens .jwt (\b a -> { a | jwt = b })
+    , page = Lens .page (\b a -> { a | page = b })
+    , entryRoute = Lens .entryRoute (\b a -> { a | entryRoute = b })
     }
 
 
@@ -145,16 +150,14 @@ titleFor _ =
 
 init : Configuration -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init configuration url key =
-    let
-        ( model, cmd ) =
-            stepTo url
-                { page = NotFound
-                , key = key
-                , configuration = configuration
-                , jwt = Nothing
-                }
-    in
-    ( model, Cmd.batch [ doFetchToken (), cmd ] )
+    ( { page = NotFound
+      , key = key
+      , configuration = configuration
+      , jwt = Nothing
+      , entryRoute = parsePage url
+      }
+    , doFetchToken ()
+    )
 
 
 view : Model -> Html Msg
@@ -218,15 +221,17 @@ update msg model =
                     ( model, Nav.load href )
 
         ( ChangedUrl url, _ ) ->
-            stepTo url model
+            model
+                |> lenses.entryRoute.set (url |> parsePage)
+                |> followRoute
 
         ( LoginMsg loginMsg, Login login ) ->
             stepThrough steps.login model (Pages.Login.Handler.update loginMsg login)
 
-        ( FetchToken token, page ) ->
+        ( FetchToken token, _ ) ->
             model
                 |> lenses.jwt.set (Maybe.Extra.filter (String.isEmpty >> not) (Just token))
-                |> (\m -> handleFetchToken m page token)
+                |> followRoute
 
         ( DeleteToken _, _ ) ->
             ( model |> lenses.jwt.set Nothing, Cmd.none )
@@ -283,106 +288,6 @@ update msg model =
             ( model, Cmd.none )
 
 
-handleFetchToken : Model -> Page -> JWT -> ( Model, Cmd Msg )
-handleFetchToken model page token =
-    case page of
-        Overview overview ->
-            stepThrough steps.overview model (Pages.Overview.Handler.update (Pages.Overview.Page.UpdateJWT token) overview)
-
-        Recipes recipes ->
-            stepThrough steps.recipes model (Pages.Recipes.Handler.update (Pages.Recipes.Page.UpdateJWT token) recipes)
-
-        Ingredients ingredients ->
-            stepThrough steps.ingredients model (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateJWT token) ingredients)
-
-        Meals meals ->
-            stepThrough steps.meals model (Pages.Meals.Handler.update (Pages.Meals.Page.UpdateJWT token) meals)
-
-        MealEntries mealEntry ->
-            stepThrough steps.mealEntries model (Pages.MealEntries.Handler.update (Pages.MealEntries.Page.UpdateJWT token) mealEntry)
-
-        Statistics statistics ->
-            stepThrough steps.statistics model (Pages.Statistics.Handler.update (Pages.Statistics.Page.UpdateJWT token) statistics)
-
-        ReferenceNutrients referenceNutrients ->
-            stepThrough steps.referenceNutrients model (Pages.ReferenceNutrients.Handler.update (Pages.ReferenceNutrients.Page.UpdateJWT token) referenceNutrients)
-
-        UserSettings userSettings ->
-            stepThrough steps.userSettings model (Pages.UserSettings.Handler.update (Pages.UserSettings.Page.UpdateJWT token) userSettings)
-
-        RequestRegistration _ ->
-            ( model, Cmd.none )
-
-        ConfirmRegistration _ ->
-            ( model, Cmd.none )
-
-        Deletion _ ->
-            ( model, Cmd.none )
-
-        RequestRecovery _ ->
-            ( model, Cmd.none )
-
-        ConfirmRecovery _ ->
-            ( model, Cmd.none )
-
-        Login _ ->
-            ( model, Cmd.none )
-
-        NotFound ->
-            ( model, Cmd.none )
-
-
-stepTo : Url -> Model -> ( Model, Cmd Msg )
-stepTo url model =
-    case Parser.parse (routeParser model.jwt model.configuration) (fragmentToPath url) of
-        Just answer ->
-            case answer of
-                LoginRoute flags ->
-                    Pages.Login.Handler.init flags |> stepThrough steps.login model
-
-                OverviewRoute flags ->
-                    Pages.Overview.Handler.init flags |> stepThrough steps.overview model
-
-                RecipesRoute flags ->
-                    Pages.Recipes.Handler.init flags |> stepThrough steps.recipes model
-
-                IngredientRoute flags ->
-                    Pages.Ingredients.Handler.init flags |> stepThrough steps.ingredients model
-
-                MealsRoute flags ->
-                    Pages.Meals.Handler.init flags |> stepThrough steps.meals model
-
-                MealEntriesRoute flags ->
-                    Pages.MealEntries.Handler.init flags |> stepThrough steps.mealEntries model
-
-                StatisticsRoute flags ->
-                    Pages.Statistics.Handler.init flags |> stepThrough steps.statistics model
-
-                ReferenceNutrientsRoute flags ->
-                    Pages.ReferenceNutrients.Handler.init flags |> stepThrough steps.referenceNutrients model
-
-                RequestRegistrationRoute flags ->
-                    Pages.Registration.Request.Handler.init flags |> stepThrough steps.requestRegistration model
-
-                ConfirmRegistrationRoute flags ->
-                    Pages.Registration.Confirm.Handler.init flags |> stepThrough steps.confirmRegistration model
-
-                UserSettingsRoute flags ->
-                    Pages.UserSettings.Handler.init flags |> stepThrough steps.userSettings model
-
-                DeletionRoute flags ->
-                    Pages.Deletion.Handler.init flags |> stepThrough steps.deletion model
-
-                RequestRecoveryRoute flags ->
-                    Pages.Recovery.Request.Handler.init flags |> stepThrough steps.requestRecovery model
-
-                ConfirmRecoveryRoute flags ->
-                    Pages.Recovery.Confirm.Handler.init flags |> stepThrough steps.confirmRecovery model
-
-        Nothing ->
-            ( { model | page = NotFound }, Cmd.none )
-
-
 type alias StepParameters model msg =
     { page : model -> Page
     , message : msg -> Msg
@@ -429,96 +334,128 @@ stepThrough ps model ( subModel, cmd ) =
 
 
 type Route
-    = LoginRoute Pages.Login.Page.Flags
-    | OverviewRoute Pages.Overview.Page.Flags
-    | RecipesRoute Pages.Recipes.Page.Flags
-    | IngredientRoute Pages.Ingredients.Page.Flags
-    | MealsRoute Pages.Meals.Page.Flags
-    | MealEntriesRoute Pages.MealEntries.Page.Flags
-    | StatisticsRoute Pages.Statistics.Page.Flags
-    | ReferenceNutrientsRoute Pages.ReferenceNutrients.Page.Flags
-    | RequestRegistrationRoute Pages.Registration.Request.Page.Flags
-    | ConfirmRegistrationRoute Pages.Registration.Confirm.Page.Flags
-    | UserSettingsRoute Pages.UserSettings.Page.Flags
-    | DeletionRoute Pages.Deletion.Page.Flags
-    | RequestRecoveryRoute Pages.Recovery.Request.Page.Flags
-    | ConfirmRecoveryRoute Pages.Recovery.Confirm.Page.Flags
+    = LoginRoute
+    | OverviewRoute
+    | RecipesRoute
+    | IngredientRoute RecipeId
+    | MealsRoute
+    | MealEntriesRoute MealId
+    | StatisticsRoute
+    | ReferenceNutrientsRoute
+    | RequestRegistrationRoute
+    | ConfirmRegistrationRoute UserIdentifier JWT
+    | UserSettingsRoute
+    | DeletionRoute UserIdentifier JWT
+    | RequestRecoveryRoute
+    | ConfirmRecoveryRoute UserIdentifier JWT
 
 
-routeParser : Maybe String -> Configuration -> Parser (Route -> a) a
-routeParser jwt configuration =
-    let
-        loginParser =
-            Addresses.Frontend.login.parser |> Parser.map { configuration = configuration }
-
-        overviewParser =
-            Addresses.Frontend.overview.parser |> Parser.map flags
-
-        recipesParser =
-            Addresses.Frontend.recipes.parser |> Parser.map flags
-
-        ingredientParser =
-            Addresses.Frontend.ingredientEditor.parser
-                |> Parser.map
-                    (Pages.Ingredients.Page.Flags configuration jwt)
-
-        mealsParser =
-            Addresses.Frontend.meals.parser |> Parser.map flags
-
-        mealEntriesParser =
-            Addresses.Frontend.mealEntryEditor.parser
-                |> Parser.map
-                    (Pages.MealEntries.Page.Flags configuration jwt)
-
-        statisticsParser =
-            Addresses.Frontend.statistics.parser |> Parser.map flags
-
-        referenceNutrientParser =
-            Addresses.Frontend.referenceNutrients.parser |> Parser.map flags
-
-        requestRegistrationParser =
-            Addresses.Frontend.requestRegistration.parser |> Parser.map { configuration = configuration }
-
-        confirmRegistrationParser =
-            Addresses.Frontend.confirmRegistration.parser
-                |> Parser.map
-                    (Pages.Registration.Confirm.Page.Flags configuration)
-
-        userSettingsParser =
-            Addresses.Frontend.userSettings.parser |> Parser.map flags
-
-        deletionParser =
-            Addresses.Frontend.deleteAccount.parser
-                |> Parser.map
-                    (Pages.Deletion.Page.Flags configuration)
-
-        requestRecoveryParser =
-            Addresses.Frontend.requestRecovery.parser |> Parser.map { configuration = configuration }
-
-        confirmRecoveryParser =
-            Addresses.Frontend.confirmRecovery.parser
-                |> Parser.map
-                    (Pages.Recovery.Confirm.Page.Flags configuration)
-
-        flags =
-            { configuration = configuration, jwt = jwt }
-    in
+plainRouteParser : Parser (Route -> a) a
+plainRouteParser =
     Parser.oneOf
-        [ route loginParser LoginRoute
-        , route overviewParser OverviewRoute
-        , route recipesParser RecipesRoute
-        , route ingredientParser IngredientRoute
-        , route mealsParser MealsRoute
-        , route mealEntriesParser MealEntriesRoute
-        , route statisticsParser StatisticsRoute
-        , route referenceNutrientParser ReferenceNutrientsRoute
-        , route requestRegistrationParser RequestRegistrationRoute
-        , route confirmRegistrationParser ConfirmRegistrationRoute
-        , route userSettingsParser UserSettingsRoute
-        , route deletionParser DeletionRoute
-        , route requestRecoveryParser RequestRecoveryRoute
-        , route confirmRecoveryParser ConfirmRecoveryRoute
+        [ route Addresses.Frontend.login.parser LoginRoute
+        , route Addresses.Frontend.overview.parser OverviewRoute
+        , route Addresses.Frontend.recipes.parser RecipesRoute
+        , route Addresses.Frontend.ingredientEditor.parser IngredientRoute
+        , route Addresses.Frontend.meals.parser MealsRoute
+        , route Addresses.Frontend.mealEntryEditor.parser MealEntriesRoute
+        , route Addresses.Frontend.statistics.parser StatisticsRoute
+        , route Addresses.Frontend.referenceNutrients.parser ReferenceNutrientsRoute
+        , route Addresses.Frontend.requestRegistration.parser RequestRegistrationRoute
+        , route Addresses.Frontend.confirmRegistration.parser ConfirmRegistrationRoute
+        , route Addresses.Frontend.userSettings.parser UserSettingsRoute
+        , route Addresses.Frontend.deleteAccount.parser DeletionRoute
+        , route Addresses.Frontend.requestRecovery.parser RequestRecoveryRoute
+        , route Addresses.Frontend.confirmRecovery.parser ConfirmRecoveryRoute
         ]
+
+
+parsePage : Url -> Maybe Route
+parsePage =
+    fragmentToPath >> Parser.parse plainRouteParser
+
+
+followRoute : Model -> ( Model, Cmd Msg )
+followRoute model =
+    case ( model.jwt, model.entryRoute ) of
+        ( _, Nothing ) ->
+            ( { model | page = NotFound }, Cmd.none )
+
+        ( Nothing, Just _ ) ->
+            Pages.Login.Handler.init { configuration = model.configuration } |> stepThrough steps.login model
+
+        ( Just userJWT, Just entryRoute ) ->
+            let
+                flagsWithJWT =
+                    { configuration = model.configuration, jwt = userJWT }
+            in
+            case entryRoute of
+                LoginRoute ->
+                    Pages.Login.Handler.init { configuration = model.configuration } |> stepThrough steps.login model
+
+                OverviewRoute ->
+                    Pages.Overview.Handler.init flagsWithJWT |> stepThrough steps.overview model
+
+                RecipesRoute ->
+                    Pages.Recipes.Handler.init flagsWithJWT |> stepThrough steps.recipes model
+
+                IngredientRoute recipeId ->
+                    Pages.Ingredients.Handler.init
+                        { configuration = flagsWithJWT.configuration
+                        , jwt = flagsWithJWT.jwt
+                        , recipeId = recipeId
+                        }
+                        |> stepThrough steps.ingredients model
+
+                MealsRoute ->
+                    Pages.Meals.Handler.init flagsWithJWT |> stepThrough steps.meals model
+
+                MealEntriesRoute mealId ->
+                    Pages.MealEntries.Handler.init
+                        { configuration = flagsWithJWT.configuration
+                        , jwt = flagsWithJWT.jwt
+                        , mealId = mealId
+                        }
+                        |> stepThrough steps.mealEntries model
+
+                StatisticsRoute ->
+                    Pages.Statistics.Handler.init flagsWithJWT |> stepThrough steps.statistics model
+
+                ReferenceNutrientsRoute ->
+                    Pages.ReferenceNutrients.Handler.init flagsWithJWT |> stepThrough steps.referenceNutrients model
+
+                RequestRegistrationRoute ->
+                    Pages.Registration.Request.Handler.init { configuration = model.configuration } |> stepThrough steps.requestRegistration model
+
+                ConfirmRegistrationRoute userIdentifier jwt ->
+                    Pages.Registration.Confirm.Handler.init
+                        { configuration = flagsWithJWT.configuration
+                        , userIdentifier = userIdentifier
+                        , registrationJWT = jwt
+                        }
+                        |> stepThrough steps.confirmRegistration model
+
+                UserSettingsRoute ->
+                    Pages.UserSettings.Handler.init flagsWithJWT |> stepThrough steps.userSettings model
+
+                DeletionRoute userIdentifier jwt ->
+                    Pages.Deletion.Handler.init
+                        { configuration = flagsWithJWT.configuration
+                        , userIdentifier = userIdentifier
+                        , deletionJWT = jwt
+                        }
+                        |> stepThrough steps.deletion model
+
+                RequestRecoveryRoute ->
+                    Pages.Recovery.Request.Handler.init { configuration = model.configuration } |> stepThrough steps.requestRecovery model
+
+                ConfirmRecoveryRoute userIdentifier jwt ->
+                    Pages.Recovery.Confirm.Handler.init
+                        { configuration = flagsWithJWT.configuration
+                        , userIdentifier = userIdentifier
+                        , recoveryJwt = jwt
+                        }
+                        |> stepThrough steps.confirmRecovery model
 
 
 fragmentToPath : Url -> Url

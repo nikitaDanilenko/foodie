@@ -3,7 +3,6 @@ module Pages.Overview.View exposing (view)
 import Addresses.Frontend
 import Html exposing (Html, div, text)
 import Pages.Overview.Page as Page
-import Pages.Overview.Status as Status
 import Pages.Util.Links as Links
 import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil
@@ -12,7 +11,7 @@ import Pages.Util.ViewUtil as ViewUtil
 view : Page.Model -> Html Page.Msg
 view model =
     ViewUtil.viewWithErrorHandling
-        { isFinished = Status.isFinished
+        { isFinished = always True
         , initialization = .initialization
         , configuration = .flagsWithJWT >> .configuration
         , jwt = .flagsWithJWT >> .jwt >> Just

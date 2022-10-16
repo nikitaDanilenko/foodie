@@ -16,6 +16,7 @@ const nutrientsKey = 'foodie-nutrients-list';
 
 app.ports.storeToken.subscribe(function(token) {
     localStorage.setItem(tokenKey, token);
+    app.ports.fetchToken.send(token);
 });
 
 app.ports.doFetchToken.subscribe(function() {
