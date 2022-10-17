@@ -15,6 +15,7 @@ import Monocle.Lens exposing (Lens)
 import Pages.Statistics.Page as Page
 import Pages.Statistics.Pagination as Pagination
 import Pages.Util.DateUtil as DateUtil
+import Pages.Util.Links as Links
 import Pages.Util.PaginationSettings as PaginationSettings
 import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil
@@ -69,7 +70,13 @@ view model =
                                     [ Style.classes.button.select, onClick Page.FetchStats ]
                                     [ text "Compute" ]
                                 ]
-                            , td [ Style.classes.controls ] []
+                            , td [ Style.classes.controls ]
+                                (if model.fetching then
+                                    [ Links.loadingSymbol ]
+
+                                 else
+                                    []
+                                )
                             ]
                         ]
                     ]

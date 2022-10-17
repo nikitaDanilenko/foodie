@@ -22,6 +22,7 @@ init flags =
       , stats = defaultStats
       , initialization = Initialization.Loading ()
       , pagination = Pagination.initial
+      , fetching = False
       }
     , Cmd.none
     )
@@ -74,6 +75,7 @@ setToDate model maybeDate =
 fetchStats : Page.Model -> ( Page.Model, Cmd Page.Msg )
 fetchStats model =
     ( model
+        |> Page.lenses.fetching.set True
     , Requests.fetchStats model.authorizedAccess model.requestInterval
     )
 
@@ -87,6 +89,7 @@ gotFetchStatsResponse model result =
                 model
                     |> Page.lenses.stats.set
                         (stats |> Lens.modify StatsLens.nutrients (List.sortBy .name))
+                    |> Page.lenses.fetching.set False
             )
     , Cmd.none
     )

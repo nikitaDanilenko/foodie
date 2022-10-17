@@ -18,6 +18,7 @@ type alias Model =
     , stats : Stats
     , initialization : Initialization ()
     , pagination : Pagination
+    , fetching: Bool
     }
 
 
@@ -28,6 +29,7 @@ lenses :
     , stats : Lens Model Stats
     , initialization : Lens Model (Initialization ())
     , pagination : Lens Model Pagination
+    , fetching : Lens Model Bool
     }
 lenses =
     let
@@ -40,6 +42,7 @@ lenses =
     , stats = Lens .stats (\b a -> { a | stats = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , pagination = Lens .pagination (\b a -> { a | pagination = b })
+    , fetching = Lens .fetching (\b a -> { a | fetching = b })
     }
 
 
