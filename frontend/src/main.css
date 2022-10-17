@@ -265,21 +265,21 @@ th {
 }
 
 .editButton {
-    background-color: #ffb527;
+    background-color: rgb(255, 181, 39);
 }
 
 .editButton:hover:enabled {
-    background-color: rgba(255, 181, 39, 0.85);
+    background-color: rgb(255, 210, 50);
 }
 
 .deleteButton,
 .cancelButton {
-    background-color: #d64546;
+    background-color: rgb(214, 69, 70);
 }
 
 .deleteButton:hover:enabled,
 .cancelButton:hover:enabled {
-    background-color: rgba(214, 69, 70, 0.85);
+    background-color: rgb(250, 100, 100);
 }
 
 .logoutButton {
@@ -291,22 +291,22 @@ th {
 }
 
 .editorButton {
-    background-color: royalblue;
+    background-color: rgba(65, 105, 225);
 }
 
-.editorButton:hover:enabled {
-    background-color: rgba(65, 105, 225, 0.85);
+.editorButton:hover {
+    background-color: rgba(90, 130, 240);
 }
 
 .selectButton,
 .confirmButton {
-    background-color: limegreen;
+    background-color: rgb(54, 217, 54);
 }
 
 .selectButton:hover:enabled,
 .selectButton:hover:not(.disabled),
 .confirmButton:hover:enabled {
-    background-color: #36d936;
+    background-color: rgb(70, 240, 70);
 }
 
 #addRecipeView input,
