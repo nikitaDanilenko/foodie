@@ -2,12 +2,14 @@ module Main exposing (main)
 
 import Addresses.Frontend
 import Api.Auxiliary exposing (JWT, MealId, RecipeId)
+import Api.Types.LoginContent exposing (decoderLoginContent)
 import Api.Types.UserIdentifier exposing (UserIdentifier)
 import Basics.Extra exposing (flip)
 import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav
 import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
+import Jwt
 import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 import Pages.Deletion.Handler
@@ -144,8 +146,18 @@ type Msg
 
 
 titleFor : Model -> String
-titleFor _ =
-    "Foodie"
+titleFor model =
+    let
+        nickname =
+            model.jwt
+                |> Maybe.andThen
+                    (Jwt.decodeToken decoderLoginContent
+                        >> Result.toMaybe
+                    )
+                |> Maybe.Extra.unwrap "" (\u -> String.concat [": ", u.nickname])
+
+    in
+    "Foodie" ++ nickname
 
 
 init : Configuration -> Url -> Nav.Key -> ( Model, Cmd Msg )
