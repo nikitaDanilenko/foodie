@@ -12,7 +12,6 @@ import Monocle.Lens exposing (Lens)
 import Pages.Statistics.Pagination exposing (Pagination)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Initialization exposing (Initialization)
-import Util.LensUtil as LensUtil
 
 
 type alias Model =
@@ -20,13 +19,12 @@ type alias Model =
     , requestInterval : RequestInterval
     , stats : Stats
     , initialization : Initialization ()
-    , pagination: Pagination
+    , pagination : Pagination
     }
 
 
 lenses :
-    { jwt : Lens Model JWT
-    , requestInterval : Lens Model RequestInterval
+    { requestInterval : Lens Model RequestInterval
     , from : Lens Model (Maybe Date)
     , to : Lens Model (Maybe Date)
     , stats : Lens Model Stats
@@ -38,8 +36,7 @@ lenses =
         requestInterval =
             Lens .requestInterval (\b a -> { a | requestInterval = b })
     in
-    { jwt = LensUtil.jwtSubLens
-    , requestInterval = requestInterval
+    { requestInterval = requestInterval
     , from = requestInterval |> Compose.lensWithLens RequestIntervalLens.from
     , to = requestInterval |> Compose.lensWithLens RequestIntervalLens.to
     , stats = Lens .stats (\b a -> { a | stats = b })
@@ -59,5 +56,4 @@ type Msg
     | SetToDate (Maybe Date)
     | FetchStats
     | GotFetchStatsResponse (Result Error Stats)
-    | UpdateJWT JWT
     | SetPagination Pagination

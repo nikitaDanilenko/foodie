@@ -77,9 +77,6 @@ update msg model =
         Page.GotFetchRecipesResponse dataOrError ->
             gotFetchRecipesResponse model dataOrError
 
-        Page.UpdateJWT jwt ->
-            updateJWT model jwt
-
         Page.SetPagination pagination ->
             setPagination model pagination
 
@@ -205,13 +202,6 @@ gotFetchRecipesResponse model dataOrError =
     , Cmd.none
     )
 
-
-updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
-updateJWT model jwt =
-    ( model
-        |> Page.lenses.jwt.set jwt
-    , Cmd.none
-    )
 
 
 setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )

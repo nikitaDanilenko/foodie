@@ -19,7 +19,6 @@ import Pages.Ingredients.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
 import Util.Initialization exposing (Initialization)
-import Util.LensUtil as LensUtil
 
 
 type alias Model =
@@ -57,8 +56,7 @@ type alias IngredientOrUpdateMap =
 
 
 lenses :
-    { jwt : Lens Model JWT
-    , foods : Lens Model FoodMap
+    { foods : Lens Model FoodMap
     , measures : Lens Model MeasureMap
     , ingredients : Lens Model IngredientOrUpdateMap
     , foodsToAdd : Lens Model AddFoodsMap
@@ -68,8 +66,7 @@ lenses :
     , pagination : Lens Model Pagination
     }
 lenses =
-    { jwt = LensUtil.jwtSubLens
-    , foods = Lens .foods (\b a -> { a | foods = b })
+    { foods = Lens .foods (\b a -> { a | foods = b })
     , measures = Lens .measures (\b a -> { a | measures = b })
     , ingredients = Lens .ingredients (\b a -> { a | ingredients = b })
     , foodsToAdd = Lens .foodsToAdd (\b a -> { a | foodsToAdd = b })
@@ -97,7 +94,6 @@ type Msg
     | AddFood FoodId
     | GotAddFoodResponse (Result Error Ingredient)
     | UpdateAddFood IngredientCreationClientInput
-    | UpdateJWT JWT
     | UpdateFoods String
     | UpdateMeasures String
     | SetFoodsSearchString String

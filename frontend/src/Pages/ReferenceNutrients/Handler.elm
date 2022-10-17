@@ -95,9 +95,6 @@ update msg model =
         Page.UpdateAddNutrient referenceNutrientCreationClientInput ->
             updateAddNutrient model referenceNutrientCreationClientInput
 
-        Page.UpdateJWT jwt ->
-            updateJWT model jwt
-
         Page.SetNutrientsSearchString string ->
             setNutrientsSearchString model string
 
@@ -264,14 +261,6 @@ updateAddNutrient model referenceNutrientCreationClientInput =
     ( model
         |> Lens.modify Page.lenses.referenceNutrientsToAdd
             (Dict.update referenceNutrientCreationClientInput.nutrientCode (always referenceNutrientCreationClientInput >> Just))
-    , Cmd.none
-    )
-
-
-updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
-updateJWT model jwt =
-    ( model
-        |> Page.lenses.jwt.set jwt
     , Cmd.none
     )
 

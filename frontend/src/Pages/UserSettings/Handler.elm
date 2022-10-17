@@ -1,7 +1,6 @@
 module Pages.UserSettings.Handler exposing (init, update)
 
 import Addresses.Frontend
-import Api.Auxiliary exposing (JWT, UserId)
 import Api.Types.Mode exposing (Mode)
 import Api.Types.User exposing (User)
 import Basics.Extra exposing (flip)
@@ -48,9 +47,6 @@ init flags =
 update : Page.Msg -> Page.Model -> ( Page.Model, Cmd Page.Msg )
 update msg model =
     case msg of
-        Page.UpdateJWT jwt ->
-            updateJWT model jwt
-
         Page.GotFetchUserResponse result ->
             gotFetchUserResponse model result
 
@@ -80,14 +76,6 @@ update msg model =
 
         Page.GotLogoutResponse result ->
             gotLogoutResponse model result
-
-
-updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
-updateJWT model token =
-    ( model
-        |> Page.lenses.jwt.set token
-    , Cmd.none
-    )
 
 
 gotFetchUserResponse : Page.Model -> Result Error User -> ( Page.Model, Cmd Page.Msg )

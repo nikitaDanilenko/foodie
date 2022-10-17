@@ -19,7 +19,6 @@ import Pages.MealEntries.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
 import Util.Initialization exposing (Initialization)
-import Util.LensUtil as LensUtil
 
 
 type alias Model =
@@ -59,8 +58,7 @@ type alias Flags =
 
 
 lenses :
-    { jwt : Lens Model JWT
-    , mealInfo : Lens Model (Maybe MealInfo)
+    { mealInfo : Lens Model (Maybe MealInfo)
     , mealEntries : Lens Model MealEntryOrUpdateMap
     , mealEntriesToAdd : Lens Model AddMealEntriesMap
     , recipes : Lens Model RecipeMap
@@ -69,8 +67,7 @@ lenses :
     , pagination : Lens Model Pagination
     }
 lenses =
-    { jwt = LensUtil.jwtSubLens
-    , mealInfo = Lens .mealInfo (\b a -> { a | mealInfo = b })
+    { mealInfo = Lens .mealInfo (\b a -> { a | mealInfo = b })
     , mealEntries = Lens .mealEntries (\b a -> { a | mealEntries = b })
     , mealEntriesToAdd = Lens .mealEntriesToAdd (\b a -> { a | mealEntriesToAdd = b })
     , recipes = Lens .recipes (\b a -> { a | recipes = b })
@@ -106,6 +103,5 @@ type Msg
     | AddRecipe RecipeId
     | GotAddMealEntryResponse (Result Error MealEntry)
     | UpdateAddRecipe MealEntryCreationClientInput
-    | UpdateJWT JWT
     | SetRecipesSearchString String
     | SetPagination Pagination

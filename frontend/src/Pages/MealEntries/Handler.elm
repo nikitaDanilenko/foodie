@@ -102,9 +102,6 @@ update msg model =
         UpdateAddRecipe mealEntryCreationClientInput ->
             updateAddRecipe model mealEntryCreationClientInput
 
-        UpdateJWT jwt ->
-            updateJWT model jwt
-
         SetRecipesSearchString string ->
             setRecipesSearchString model string
 
@@ -285,13 +282,6 @@ updateAddRecipe model mealEntryCreationClientInput =
     , Cmd.none
     )
 
-
-updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
-updateJWT model jwt =
-    ( model
-        |> Page.lenses.jwt.set jwt
-    , Cmd.none
-    )
 
 
 setRecipesSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )

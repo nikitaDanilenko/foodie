@@ -1,4 +1,4 @@
-module Pages.Meals.Handler exposing (init, update, updateJWT)
+module Pages.Meals.Handler exposing (init, update)
 
 import Api.Auxiliary exposing (JWT, MealId)
 import Api.Types.Meal exposing (Meal)
@@ -72,8 +72,6 @@ update msg model =
         Page.GotFetchMealsResponse dataOrError ->
             gotFetchMealsResponse model dataOrError
 
-        Page.UpdateJWT jwt ->
-            updateJWT model jwt
 
         Page.SetPagination pagination ->
             setPagination model pagination
@@ -202,13 +200,6 @@ gotFetchMealsResponse model dataOrError =
     , Cmd.none
     )
 
-
-updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
-updateJWT model jwt =
-    ( model
-        |> Page.lenses.jwt.set jwt
-    , Cmd.none
-    )
 
 
 setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )

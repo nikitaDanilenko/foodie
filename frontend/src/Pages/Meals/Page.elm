@@ -14,7 +14,6 @@ import Pages.Meals.Status exposing (Status)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Editing exposing (Editing)
 import Util.Initialization exposing (Initialization)
-import Util.LensUtil as LensUtil
 
 
 type alias Model =
@@ -35,15 +34,13 @@ type alias MealOrUpdateMap =
 
 
 lenses :
-    { jwt : Lens Model JWT
-    , meals : Lens Model MealOrUpdateMap
+    { meals : Lens Model MealOrUpdateMap
     , mealToAdd : Lens Model (Maybe MealCreationClientInput)
     , initialization : Lens Model (Initialization Status)
     , pagination : Lens Model Pagination
     }
 lenses =
-    { jwt = LensUtil.jwtSubLens
-    , meals = Lens .meals (\b a -> { a | meals = b })
+    { meals = Lens .meals (\b a -> { a | meals = b })
     , mealToAdd = Lens .mealToAdd (\b a -> { a | mealToAdd = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , pagination = Lens .pagination (\b a -> { a | pagination = b })
@@ -68,5 +65,4 @@ type Msg
     | DeleteMeal MealId
     | GotDeleteMealResponse MealId (Result Error ())
     | GotFetchMealsResponse (Result Error (List Meal))
-    | UpdateJWT String
     | SetPagination Pagination

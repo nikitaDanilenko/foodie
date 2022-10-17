@@ -5,7 +5,6 @@ import Configuration exposing (Configuration)
 import Monocle.Lens exposing (Lens)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Initialization exposing (Initialization)
-import Util.LensUtil as LensUtil
 
 
 type alias Model =
@@ -15,17 +14,15 @@ type alias Model =
 
 
 lenses :
-    { jwt : Lens Model JWT
-    , initialization : Lens Model (Initialization ())
+    { initialization : Lens Model (Initialization ())
     }
 lenses =
-    { jwt = LensUtil.jwtSubLens
-    , initialization = Lens .initialization (\b a -> { a | initialization = b })
+    { initialization = Lens .initialization (\b a -> { a | initialization = b })
     }
 
 
-type Msg
-    =  UpdateJWT String
+type alias Msg =
+    ()
 
 
 type alias Flags =

@@ -96,9 +96,6 @@ update msg model =
         Page.GotFetchRecipeResponse result ->
             gotFetchRecipeResponse model result
 
-        Page.UpdateJWT token ->
-            updateJWT model token
-
         Page.UpdateFoods string ->
             updateFoods model string
 
@@ -261,15 +258,6 @@ gotFetchRecipeResponse model result =
             )
     , Cmd.none
     )
-
-
-updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
-updateJWT model token =
-    ( model
-        |> Page.lenses.jwt.set token
-    , Cmd.none
-    )
-
 
 updateFoods : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 updateFoods model =

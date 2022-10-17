@@ -10,7 +10,6 @@ import Pages.UserSettings.Status exposing (Status)
 import Pages.Util.ComplementInput exposing (ComplementInput)
 import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Initialization exposing (Initialization)
-import Util.LensUtil as LensUtil
 
 
 type alias Model =
@@ -23,15 +22,13 @@ type alias Model =
 
 
 lenses :
-    { jwt : Lens Model JWT
-    , user : Lens Model User
+    { user : Lens Model User
     , complementInput : Lens Model ComplementInput
     , initialization : Lens Model (Initialization Status)
     , mode : Lens Model Mode
     }
 lenses =
-    { jwt = LensUtil.jwtSubLens
-    , user = Lens .user (\b a -> { a | user = b })
+    { user = Lens .user (\b a -> { a | user = b })
     , complementInput = Lens .complementInput (\b a -> { a | complementInput = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , mode = Lens .mode (\b a -> { a | mode = b })
@@ -50,8 +47,7 @@ type alias Flags =
 
 
 type Msg
-    = UpdateJWT JWT
-    | GotFetchUserResponse (Result Error User)
+    = GotFetchUserResponse (Result Error User)
     | UpdatePassword
     | GotUpdatePasswordResponse (Result Error ())
     | UpdateSettings

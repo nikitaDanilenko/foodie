@@ -1,6 +1,5 @@
 module Pages.Statistics.Handler exposing (init, update)
 
-import Api.Auxiliary exposing (JWT)
 import Api.Lenses.RequestIntervalLens as RequestIntervalLens
 import Api.Lenses.StatsLens as StatsLens
 import Api.Types.Date exposing (Date)
@@ -18,7 +17,6 @@ import Util.Initialization as Initialization
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-
     ( { flagsWithJWT = flags
       , requestInterval = RequestIntervalLens.default
       , stats = defaultStats
@@ -51,9 +49,6 @@ update msg model =
         Page.GotFetchStatsResponse result ->
             gotFetchStatsResponse model result
 
-        Page.UpdateJWT jwt ->
-            updateJWT model jwt
-
         Page.SetPagination pagination ->
             setPagination model pagination
 
@@ -72,14 +67,6 @@ setToDate model maybeDate =
     ( model
         |> Page.lenses.to.set
             maybeDate
-    , Cmd.none
-    )
-
-
-updateJWT : Page.Model -> JWT -> ( Page.Model, Cmd Page.Msg )
-updateJWT model jwt =
-    ( model
-        |> Page.lenses.jwt.set jwt
     , Cmd.none
     )
 
