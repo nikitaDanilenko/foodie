@@ -55,6 +55,7 @@ view model =
                 model.meals
                     |> Dict.values
                     |> List.sortBy (Editing.field .date >> DateUtil.toString)
+                    |> List.reverse
                     |> ViewUtil.paginate
                         { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.meals }
                         model
