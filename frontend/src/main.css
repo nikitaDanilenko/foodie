@@ -246,7 +246,7 @@ th {
     width: 35%;
 }
 
-#statistics .high {
+#statistics .low {
     color: #fa8128; /* tangerine */
 }
 
@@ -254,7 +254,7 @@ th {
     color: black;
 }
 
-#statistics .low {
+#statistics .high {
     color: #0492c2; /* cerulean */
 }
 
