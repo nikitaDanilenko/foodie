@@ -5,7 +5,6 @@ import Api.Types.Nutrient exposing (Nutrient)
 import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
 import Api.Types.ReferenceNutrient exposing (ReferenceNutrient)
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Dict exposing (Dict)
 import Either exposing (Either)
 import Http exposing (Error)
@@ -15,13 +14,13 @@ import Pages.ReferenceNutrients.Pagination exposing (Pagination)
 import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
 import Pages.ReferenceNutrients.Status exposing (Status)
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.Editing exposing (Editing)
 import Util.Initialization exposing (Initialization)
 
 
 type alias Model =
-    { flagsWithJWT : FlagsWithJWT
+    { authorizedAccess : AuthorizedAccess
     , referenceNutrients : ReferenceNutrientOrUpdateMap
     , nutrients : NutrientMap
     , nutrientsSearchString : String
@@ -48,8 +47,7 @@ type alias ReferenceNutrientOrUpdateMap =
 
 
 type alias Flags =
-    { configuration : Configuration
-    , jwt : JWT
+    { authorizedAccess : AuthorizedAccess
     }
 
 

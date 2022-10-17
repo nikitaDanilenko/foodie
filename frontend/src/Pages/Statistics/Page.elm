@@ -1,21 +1,19 @@
 module Pages.Statistics.Page exposing (..)
 
-import Api.Auxiliary exposing (JWT)
 import Api.Lenses.RequestIntervalLens as RequestIntervalLens
 import Api.Types.Date exposing (Date)
 import Api.Types.RequestInterval exposing (RequestInterval)
 import Api.Types.Stats exposing (Stats)
-import Configuration exposing (Configuration)
 import Http exposing (Error)
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Statistics.Pagination exposing (Pagination)
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.Initialization exposing (Initialization)
 
 
 type alias Model =
-    { flagsWithJWT : FlagsWithJWT
+    { authorizedAccess : AuthorizedAccess
     , requestInterval : RequestInterval
     , stats : Stats
     , initialization : Initialization ()
@@ -46,8 +44,7 @@ lenses =
 
 
 type alias Flags =
-    { configuration : Configuration
-    , jwt : JWT
+    { authorizedAccess : AuthorizedAccess
     }
 
 

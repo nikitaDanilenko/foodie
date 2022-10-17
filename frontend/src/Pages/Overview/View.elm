@@ -13,8 +13,8 @@ view model =
     ViewUtil.viewWithErrorHandling
         { isFinished = always True
         , initialization = .initialization
-        , configuration = .flagsWithJWT >> .configuration
-        , jwt = .flagsWithJWT >> .jwt >> Just
+        , configuration = .authorizedAccess >> .configuration
+        , jwt = .authorizedAccess >> .jwt >> Just
         , currentPage = Just ViewUtil.Overview
         , showNavigation = False
         }
@@ -23,35 +23,35 @@ view model =
         div [ Style.ids.overviewMain ]
             [ div []
                 [ Links.linkButton
-                    { url = Links.frontendPage model.flagsWithJWT.configuration <| Addresses.Frontend.recipes.address <| ()
+                    { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.recipes.address <| ()
                     , attributes = [ Style.ids.recipesButton ]
                     , children = [ text "Recipes" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage model.flagsWithJWT.configuration <| Addresses.Frontend.meals.address <| ()
+                    { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.meals.address <| ()
                     , attributes = [ Style.ids.mealsButton ]
                     , children = [ text "Meals" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage model.flagsWithJWT.configuration <| Addresses.Frontend.statistics.address <| ()
+                    { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.statistics.address <| ()
                     , attributes = [ Style.ids.statisticsButton ]
                     , children = [ text "Statistics" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage model.flagsWithJWT.configuration <| Addresses.Frontend.referenceNutrients.address <| ()
+                    { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.referenceNutrients.address <| ()
                     , attributes = [ Style.ids.referenceNutrientsButton ]
                     , children = [ text "Reference nutrients" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage model.flagsWithJWT.configuration <| Addresses.Frontend.userSettings.address <| ()
+                    { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.userSettings.address <| ()
                     , attributes = [ Style.ids.userSettingsButton ]
                     , children = [ text "User settings" ]
                     }

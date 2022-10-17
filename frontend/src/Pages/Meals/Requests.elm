@@ -8,44 +8,44 @@ import Api.Types.MealUpdate exposing (MealUpdate, encoderMealUpdate)
 import Http
 import Json.Decode as Decode
 import Pages.Meals.Page as Page
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.HttpUtil as HttpUtil
 
 
-fetchMeals : FlagsWithJWT -> Cmd Page.Msg
-fetchMeals flags =
+fetchMeals : AuthorizedAccess -> Cmd Page.Msg
+fetchMeals authorizedAccess =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.meals.all
         { body = Http.emptyBody
         , expect = HttpUtil.expectJson Page.GotFetchMealsResponse (Decode.list decoderMeal)
         }
 
 
-createMeal : FlagsWithJWT -> MealCreation -> Cmd Page.Msg
-createMeal flags mealCreation =
+createMeal : AuthorizedAccess -> MealCreation -> Cmd Page.Msg
+createMeal authorizedAccess mealCreation =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.meals.create
         { body = encoderMealCreation mealCreation |> Http.jsonBody
         , expect = HttpUtil.expectJson Page.GotCreateMealResponse decoderMeal
         }
 
 
-saveMeal : FlagsWithJWT -> MealUpdate -> Cmd Page.Msg
-saveMeal flags mealUpdate =
+saveMeal : AuthorizedAccess -> MealUpdate -> Cmd Page.Msg
+saveMeal authorizedAccess mealUpdate =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.meals.update
         { body = encoderMealUpdate mealUpdate |> Http.jsonBody
         , expect = HttpUtil.expectJson Page.GotSaveMealResponse decoderMeal
         }
 
 
-deleteMeal : FlagsWithJWT -> MealId -> Cmd Page.Msg
-deleteMeal flags mealId =
+deleteMeal : AuthorizedAccess -> MealId -> Cmd Page.Msg
+deleteMeal authorizedAccess mealId =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         (Addresses.Backend.meals.delete mealId)
         { body = Http.emptyBody
         , expect = HttpUtil.expectWhatever (Page.GotDeleteMealResponse mealId)

@@ -1,13 +1,12 @@
 module Pages.Overview.Handler exposing (init, update)
 
 import Pages.Overview.Page as Page
-import Pages.Util.FlagsWithJWT as FlagsWithJWT
 import Util.Initialization as Initialization
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    ( { flagsWithJWT = FlagsWithJWT.from flags
+    ( { authorizedAccess = flags.authorizedAccess
       , initialization = Initialization.Loading ()
       }
     , Cmd.none

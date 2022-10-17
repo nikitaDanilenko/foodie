@@ -2,7 +2,6 @@ module Pages.Recipes.Page exposing (..)
 
 import Api.Auxiliary exposing (JWT, RecipeId)
 import Api.Types.Recipe exposing (Recipe)
-import Configuration exposing (Configuration)
 import Dict exposing (Dict)
 import Either exposing (Either)
 import Http exposing (Error)
@@ -11,13 +10,13 @@ import Pages.Recipes.Pagination exposing (Pagination)
 import Pages.Recipes.RecipeCreationClientInput exposing (RecipeCreationClientInput)
 import Pages.Recipes.RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Recipes.Status exposing (Status)
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.Editing exposing (Editing)
 import Util.Initialization exposing (Initialization)
 
 
 type alias Model =
-    { flagsWithJWT : FlagsWithJWT
+    { authorizedAccess : AuthorizedAccess
     , recipes : RecipeOrUpdateMap
     , recipeToAdd : Maybe RecipeCreationClientInput
     , initialization : Initialization Status
@@ -48,8 +47,7 @@ lenses =
 
 
 type alias Flags =
-    { configuration : Configuration
-    , jwt : JWT
+    { authorizedAccess : AuthorizedAccess
     }
 
 

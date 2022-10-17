@@ -386,61 +386,62 @@ followRoute model =
 
         ( Just userJWT, Just entryRoute ) ->
             let
-                flagsWithJWT =
+                authorizedAccess =
                     { configuration = model.configuration, jwt = userJWT }
+
+                flags =
+                    { authorizedAccess = authorizedAccess }
             in
             case entryRoute of
                 LoginRoute ->
                     Pages.Login.Handler.init { configuration = model.configuration } |> stepThrough steps.login model
 
                 OverviewRoute ->
-                    Pages.Overview.Handler.init flagsWithJWT |> stepThrough steps.overview model
+                    Pages.Overview.Handler.init flags |> stepThrough steps.overview model
 
                 RecipesRoute ->
-                    Pages.Recipes.Handler.init flagsWithJWT |> stepThrough steps.recipes model
+                    Pages.Recipes.Handler.init flags |> stepThrough steps.recipes model
 
                 IngredientRoute recipeId ->
                     Pages.Ingredients.Handler.init
-                        { configuration = flagsWithJWT.configuration
-                        , jwt = flagsWithJWT.jwt
+                        { authorizedAccess = authorizedAccess
                         , recipeId = recipeId
                         }
                         |> stepThrough steps.ingredients model
 
                 MealsRoute ->
-                    Pages.Meals.Handler.init flagsWithJWT |> stepThrough steps.meals model
+                    Pages.Meals.Handler.init flags |> stepThrough steps.meals model
 
                 MealEntriesRoute mealId ->
                     Pages.MealEntries.Handler.init
-                        { configuration = flagsWithJWT.configuration
-                        , jwt = flagsWithJWT.jwt
+                        { authorizedAccess = authorizedAccess
                         , mealId = mealId
                         }
                         |> stepThrough steps.mealEntries model
 
                 StatisticsRoute ->
-                    Pages.Statistics.Handler.init flagsWithJWT |> stepThrough steps.statistics model
+                    Pages.Statistics.Handler.init flags |> stepThrough steps.statistics model
 
                 ReferenceNutrientsRoute ->
-                    Pages.ReferenceNutrients.Handler.init flagsWithJWT |> stepThrough steps.referenceNutrients model
+                    Pages.ReferenceNutrients.Handler.init flags |> stepThrough steps.referenceNutrients model
 
                 RequestRegistrationRoute ->
                     Pages.Registration.Request.Handler.init { configuration = model.configuration } |> stepThrough steps.requestRegistration model
 
                 ConfirmRegistrationRoute userIdentifier jwt ->
                     Pages.Registration.Confirm.Handler.init
-                        { configuration = flagsWithJWT.configuration
+                        { configuration = authorizedAccess.configuration
                         , userIdentifier = userIdentifier
                         , registrationJWT = jwt
                         }
                         |> stepThrough steps.confirmRegistration model
 
                 UserSettingsRoute ->
-                    Pages.UserSettings.Handler.init flagsWithJWT |> stepThrough steps.userSettings model
+                    Pages.UserSettings.Handler.init flags |> stepThrough steps.userSettings model
 
                 DeletionRoute userIdentifier jwt ->
                     Pages.Deletion.Handler.init
-                        { configuration = flagsWithJWT.configuration
+                        { configuration = authorizedAccess.configuration
                         , userIdentifier = userIdentifier
                         , deletionJWT = jwt
                         }
@@ -451,7 +452,7 @@ followRoute model =
 
                 ConfirmRecoveryRoute userIdentifier jwt ->
                     Pages.Recovery.Confirm.Handler.init
-                        { configuration = flagsWithJWT.configuration
+                        { configuration = authorizedAccess.configuration
                         , userIdentifier = userIdentifier
                         , recoveryJwt = jwt
                         }

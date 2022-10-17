@@ -18,7 +18,7 @@ import Pages.MealEntries.Page as Page exposing (Msg(..))
 import Pages.MealEntries.Pagination as Pagination exposing (Pagination)
 import Pages.MealEntries.Requests as Requests
 import Pages.MealEntries.Status as Status
-import Pages.Util.FlagsWithJWT as FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Pages.Util.PaginationSettings as PaginationSettings
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil
@@ -28,8 +28,7 @@ import Util.LensUtil as LensUtil
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    ( { flagsWithJWT =
-            FlagsWithJWT.from flags
+    ( { authorizedAccess = flags.authorizedAccess
       , mealId = flags.mealId
       , mealInfo = Nothing
       , mealEntries = Dict.empty
@@ -40,17 +39,17 @@ init flags =
       , pagination = Pagination.initial
       }
     , initialFetch
-        (FlagsWithJWT.from flags)
+        flags.authorizedAccess
         flags.mealId
     )
 
 
-initialFetch : FlagsWithJWT -> MealId -> Cmd Page.Msg
-initialFetch flags mealId =
+initialFetch : AuthorizedAccess -> MealId -> Cmd Page.Msg
+initialFetch authorizedAccess mealId =
     Cmd.batch
-        [ Requests.fetchMeal flags mealId
-        , Requests.fetchRecipes flags
-        , Requests.fetchMealEntries flags mealId
+        [ Requests.fetchMeal authorizedAccess mealId
+        , Requests.fetchRecipes authorizedAccess
+        , Requests.fetchMealEntries authorizedAccess mealId
         ]
 
 
@@ -123,7 +122,7 @@ saveMealEntryEdit model mealEntryUpdateClientInput =
     ( model
     , mealEntryUpdateClientInput
         |> MealEntryUpdateClientInput.to
-        |> Requests.saveMealEntry model.flagsWithJWT
+        |> Requests.saveMealEntry model.authorizedAccess
     )
 
 
@@ -169,7 +168,7 @@ exitEditMealEntryAt model mealEntryId =
 deleteMealEntry : Page.Model -> MealEntryId -> ( Page.Model, Cmd Page.Msg )
 deleteMealEntry model mealEntryId =
     ( model
-    , Requests.deleteMealEntry model.flagsWithJWT mealEntryId
+    , Requests.deleteMealEntry model.authorizedAccess mealEntryId
     )
 
 
@@ -252,7 +251,7 @@ addRecipe model recipeId =
     , Dict.get recipeId model.mealEntriesToAdd
         |> Maybe.map
             (MealEntryCreationClientInput.toCreation
-                >> Requests.AddMealEntryParams model.flagsWithJWT.configuration model.flagsWithJWT.jwt
+                >> Requests.AddMealEntryParams model.authorizedAccess
                 >> Requests.addMealEntry
             )
         |> Maybe.withDefault Cmd.none

@@ -18,7 +18,7 @@ import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput as Referenc
 import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput as ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
 import Pages.ReferenceNutrients.Requests as Requests
 import Pages.ReferenceNutrients.Status as Status
-import Pages.Util.FlagsWithJWT as FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Pages.Util.PaginationSettings as PaginationSettings
 import Ports
 import Util.Editing as Editing exposing (Editing)
@@ -29,7 +29,7 @@ import Util.LensUtil as LensUtil
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    ( { flagsWithJWT = FlagsWithJWT.from flags
+    ( { authorizedAccess = flags.authorizedAccess
       , referenceNutrients = Dict.empty
       , nutrients = Dict.empty
       , nutrientsSearchString = ""
@@ -37,15 +37,14 @@ init flags =
       , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
       }
-    , initialFetch
-        (FlagsWithJWT.from flags)
+    , initialFetch flags.authorizedAccess
     )
 
 
-initialFetch : FlagsWithJWT -> Cmd Page.Msg
-initialFetch flags =
+initialFetch : AuthorizedAccess -> Cmd Page.Msg
+initialFetch authorizedAccess =
     Cmd.batch
-        [ Requests.fetchReferenceNutrients flags
+        [ Requests.fetchReferenceNutrients authorizedAccess
         , Ports.doFetchNutrients ()
         ]
 
@@ -119,7 +118,7 @@ saveReferenceNutrientEdit model referenceNutrientUpdateClientInput =
     ( model
     , referenceNutrientUpdateClientInput
         |> ReferenceNutrientUpdateClientInput.to
-        |> Requests.saveReferenceNutrient model.flagsWithJWT
+        |> Requests.saveReferenceNutrient model.authorizedAccess
     )
 
 
@@ -165,7 +164,7 @@ exitEditReferenceNutrientAt model nutrientCode =
 deleteReferenceNutrient : Page.Model -> NutrientCode -> ( Page.Model, Cmd Page.Msg )
 deleteReferenceNutrient model nutrientCode =
     ( model
-    , Requests.deleteReferenceNutrient model.flagsWithJWT nutrientCode
+    , Requests.deleteReferenceNutrient model.authorizedAccess nutrientCode
     )
 
 
@@ -235,7 +234,7 @@ addNutrient model nutrientCode =
     , Dict.get nutrientCode model.referenceNutrientsToAdd
         |> Maybe.map
             (ReferenceNutrientCreationClientInput.toCreation
-                >> Requests.addReferenceNutrient model.flagsWithJWT
+                >> Requests.addReferenceNutrient model.authorizedAccess
             )
         |> Maybe.withDefault Cmd.none
     )
@@ -279,7 +278,7 @@ updateNutrients model =
                             |> not
                         )
                 , if List.isEmpty nutrients then
-                    Requests.fetchNutrients model.flagsWithJWT
+                    Requests.fetchNutrients model.authorizedAccess
 
                   else
                     Cmd.none

@@ -2,7 +2,6 @@ module Pages.Meals.Page exposing (..)
 
 import Api.Auxiliary exposing (JWT, MealId)
 import Api.Types.Meal exposing (Meal)
-import Configuration exposing (Configuration)
 import Dict exposing (Dict)
 import Either exposing (Either)
 import Http exposing (Error)
@@ -11,13 +10,13 @@ import Pages.Meals.MealCreationClientInput exposing (MealCreationClientInput)
 import Pages.Meals.MealUpdateClientInput exposing (MealUpdateClientInput)
 import Pages.Meals.Pagination exposing (Pagination)
 import Pages.Meals.Status exposing (Status)
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.Editing exposing (Editing)
 import Util.Initialization exposing (Initialization)
 
 
 type alias Model =
-    { flagsWithJWT : FlagsWithJWT
+    { authorizedAccess : AuthorizedAccess
     , meals : MealOrUpdateMap
     , mealToAdd : Maybe MealCreationClientInput
     , initialization : Initialization Status
@@ -48,8 +47,7 @@ lenses =
 
 
 type alias Flags =
-    { configuration : Configuration
-    , jwt : JWT
+    { authorizedAccess : AuthorizedAccess
     }
 
 

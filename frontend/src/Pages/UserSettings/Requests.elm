@@ -8,54 +8,54 @@ import Api.Types.User exposing (decoderUser)
 import Api.Types.UserUpdate exposing (UserUpdate, encoderUserUpdate)
 import Http
 import Pages.UserSettings.Page as Page
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.HttpUtil as HttpUtil
 
 
-fetchUser : FlagsWithJWT -> Cmd Page.Msg
-fetchUser flags =
+fetchUser : AuthorizedAccess -> Cmd Page.Msg
+fetchUser authorizedAccess =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.users.get
         { body = Http.emptyBody
         , expect = HttpUtil.expectJson Page.GotFetchUserResponse decoderUser
         }
 
 
-updatePassword : FlagsWithJWT -> PasswordChangeRequest -> Cmd Page.Msg
-updatePassword flags passwordChangeRequest =
+updatePassword : AuthorizedAccess -> PasswordChangeRequest -> Cmd Page.Msg
+updatePassword authorizedAccess passwordChangeRequest =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.users.updatePassword
         { body = encoderPasswordChangeRequest passwordChangeRequest |> Http.jsonBody
         , expect = HttpUtil.expectWhatever Page.GotUpdatePasswordResponse
         }
 
 
-updateSettings : FlagsWithJWT -> UserUpdate -> Cmd Page.Msg
-updateSettings flags userUpdate =
+updateSettings : AuthorizedAccess -> UserUpdate -> Cmd Page.Msg
+updateSettings authorizedAccess userUpdate =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.users.update
         { body = encoderUserUpdate userUpdate |> Http.jsonBody
         , expect = HttpUtil.expectJson Page.GotUpdateSettingsResponse decoderUser
         }
 
 
-requestDeletion : FlagsWithJWT -> Cmd Page.Msg
-requestDeletion flags =
+requestDeletion : AuthorizedAccess -> Cmd Page.Msg
+requestDeletion authorizedAccess =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.users.deletion.request
         { body = Http.emptyBody
         , expect = HttpUtil.expectWhatever Page.GotRequestDeletionResponse
         }
 
 
-logout : FlagsWithJWT -> Mode -> Cmd Page.Msg
-logout flags mode =
+logout : AuthorizedAccess -> Mode -> Cmd Page.Msg
+logout authorizedAccess mode =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.users.logout
         { body = encoderLogoutRequest { mode = mode } |> Http.jsonBody
         , expect = HttpUtil.expectWhatever Page.GotLogoutResponse

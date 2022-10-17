@@ -1,19 +1,17 @@
 module Pages.UserSettings.Page exposing (..)
 
-import Api.Auxiliary exposing (JWT, UserId)
 import Api.Types.Mode exposing (Mode)
 import Api.Types.User exposing (User)
-import Configuration exposing (Configuration)
 import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
 import Pages.UserSettings.Status exposing (Status)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Pages.Util.ComplementInput exposing (ComplementInput)
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Util.Initialization exposing (Initialization)
 
 
 type alias Model =
-    { flagsWithJWT : FlagsWithJWT
+    { authorizedAccess : AuthorizedAccess
     , user : User
     , complementInput : ComplementInput
     , initialization : Initialization Status
@@ -41,8 +39,7 @@ type Mode
 
 
 type alias Flags =
-    { configuration : Configuration
-    , jwt : JWT
+    { authorizedAccess : AuthorizedAccess
     }
 
 

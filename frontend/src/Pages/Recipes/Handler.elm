@@ -24,20 +24,13 @@ import Util.LensUtil as LensUtil
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    let
-        cmd =
-            Requests.fetchRecipes
-                { configuration = flags.configuration
-                , jwt = flags.jwt
-                }
-    in
-    ( { flagsWithJWT = flags
+    ( { authorizedAccess = flags.authorizedAccess
       , recipes = Dict.empty
       , recipeToAdd = Nothing
       , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
       }
-    , cmd
+    , Requests.fetchRecipes flags.authorizedAccess
     )
 
 
@@ -93,7 +86,7 @@ createRecipe : Page.Model -> ( Page.Model, Cmd Page.Msg )
 createRecipe model =
     ( model
     , model.recipeToAdd
-        |> Maybe.Extra.unwrap Cmd.none (RecipeCreationClientInput.toCreation >> Requests.createRecipe model.flagsWithJWT)
+        |> Maybe.Extra.unwrap Cmd.none (RecipeCreationClientInput.toCreation >> Requests.createRecipe model.authorizedAccess)
     )
 
 
@@ -132,7 +125,7 @@ saveRecipeEdit model recipeId =
             Cmd.none
             (.update
                 >> RecipeUpdateClientInput.to
-                >> Requests.saveRecipe model.flagsWithJWT
+                >> Requests.saveRecipe model.authorizedAccess
             )
     )
 
@@ -170,7 +163,7 @@ exitEditRecipeAt model recipeId =
 deleteRecipe : Page.Model -> RecipeId -> ( Page.Model, Cmd Page.Msg )
 deleteRecipe model recipeId =
     ( model
-    , Requests.deleteRecipe model.flagsWithJWT recipeId
+    , Requests.deleteRecipe model.authorizedAccess recipeId
     )
 
 
@@ -201,7 +194,6 @@ gotFetchRecipesResponse model dataOrError =
             )
     , Cmd.none
     )
-
 
 
 setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )

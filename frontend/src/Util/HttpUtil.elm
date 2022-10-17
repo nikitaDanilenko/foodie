@@ -7,7 +7,7 @@ import Json.Decode as Decode
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Pages.Util.Links as Links
 import Url.Builder exposing (QueryParameter)
 import Util.Initialization as Initialization exposing (ErrorExplanation, Initialization)
@@ -239,17 +239,17 @@ runPattern configuration resourcePattern =
 
 
 runPatternWithJwt :
-    FlagsWithJWT
+    AuthorizedAccess
     -> ResourcePattern
     ->
         { body : Body
         , expect : Expect msg
         }
     -> Cmd msg
-runPatternWithJwt flags pattern ps =
-    runPattern flags.configuration
+runPatternWithJwt authorizedAccess pattern ps =
+    runPattern authorizedAccess.configuration
         pattern
-        { jwt = Just flags.jwt
+        { jwt = Just authorizedAccess.jwt
         , body = ps.body
         , expect = ps.expect
         }

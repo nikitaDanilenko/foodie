@@ -17,7 +17,7 @@ import Util.Initialization as Initialization
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    ( { flagsWithJWT = flags
+    ( { authorizedAccess = flags.authorizedAccess
       , requestInterval = RequestIntervalLens.default
       , stats = defaultStats
       , initialization = Initialization.Loading ()
@@ -74,7 +74,7 @@ setToDate model maybeDate =
 fetchStats : Page.Model -> ( Page.Model, Cmd Page.Msg )
 fetchStats model =
     ( model
-    , Requests.fetchStats model.flagsWithJWT model.requestInterval
+    , Requests.fetchStats model.authorizedAccess model.requestInterval
     )
 
 

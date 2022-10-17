@@ -15,35 +15,34 @@ import Api.Types.MealEntry exposing (MealEntry, decoderMealEntry)
 import Api.Types.MealEntryCreation exposing (MealEntryCreation, encoderMealEntryCreation)
 import Api.Types.MealEntryUpdate exposing (MealEntryUpdate, encoderMealEntryUpdate)
 import Api.Types.Recipe exposing (Recipe, decoderRecipe)
-import Configuration exposing (Configuration)
 import Http
 import Json.Decode as Decode
 import Pages.MealEntries.Page exposing (Msg(..), RecipeMap)
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.HttpUtil as HttpUtil
 
 
-fetchMeal : FlagsWithJWT -> MealId -> Cmd Msg
-fetchMeal flags mealId =
+fetchMeal : AuthorizedAccess -> MealId -> Cmd Msg
+fetchMeal authorizedAccess mealId =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         (Addresses.Backend.meals.single mealId)
         { body = Http.emptyBody
         , expect = HttpUtil.expectJson GotFetchMealResponse decoderMeal
         }
 
 
-fetchMealEntries : FlagsWithJWT -> MealId -> Cmd Msg
-fetchMealEntries flags mealId =
+fetchMealEntries : AuthorizedAccess -> MealId -> Cmd Msg
+fetchMealEntries authorizedAccess mealId =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         (Addresses.Backend.meals.entries.allOf mealId)
         { body = Http.emptyBody
         , expect = HttpUtil.expectJson GotFetchMealEntriesResponse (Decode.list decoderMealEntry)
         }
 
 
-fetchRecipes : FlagsWithJWT -> Cmd Msg
+fetchRecipes : AuthorizedAccess -> Cmd Msg
 fetchRecipes flags =
     HttpUtil.runPatternWithJwt
         flags
@@ -53,20 +52,20 @@ fetchRecipes flags =
         }
 
 
-saveMealEntry : FlagsWithJWT -> MealEntryUpdate -> Cmd Msg
-saveMealEntry flags mealEntryUpdate =
+saveMealEntry : AuthorizedAccess -> MealEntryUpdate -> Cmd Msg
+saveMealEntry authorizedAccess mealEntryUpdate =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.meals.entries.update
         { body = encoderMealEntryUpdate mealEntryUpdate |> Http.jsonBody
         , expect = HttpUtil.expectJson GotSaveMealEntryResponse decoderMealEntry
         }
 
 
-deleteMealEntry : FlagsWithJWT -> MealEntryId -> Cmd Msg
-deleteMealEntry fs mealEntryId =
+deleteMealEntry : AuthorizedAccess -> MealEntryId -> Cmd Msg
+deleteMealEntry authorizedAccess mealEntryId =
     HttpUtil.runPatternWithJwt
-        fs
+        authorizedAccess
         (Addresses.Backend.meals.delete mealEntryId)
         { body = Http.emptyBody
         , expect = HttpUtil.expectWhatever (GotDeleteMealEntryResponse mealEntryId)
@@ -74,8 +73,7 @@ deleteMealEntry fs mealEntryId =
 
 
 type alias AddMealEntryParams =
-    { configuration : Configuration
-    , jwt : JWT
+    { authorizedAccess : AuthorizedAccess
     , mealEntryCreation : MealEntryCreation
     }
 
@@ -83,9 +81,7 @@ type alias AddMealEntryParams =
 addMealEntry : AddMealEntryParams -> Cmd Msg
 addMealEntry ps =
     HttpUtil.runPatternWithJwt
-        { configuration = ps.configuration
-        , jwt = ps.jwt
-        }
+        ps.authorizedAccess
         Addresses.Backend.meals.entries.create
         { body = encoderMealEntryCreation ps.mealEntryCreation |> Http.jsonBody
         , expect = HttpUtil.expectJson GotAddMealEntryResponse decoderMealEntry

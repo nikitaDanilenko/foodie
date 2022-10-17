@@ -21,8 +21,8 @@ view model =
     ViewUtil.viewWithErrorHandling
         { isFinished = Status.isFinished
         , initialization = Page.lenses.initialization.get
-        , configuration = .flagsWithJWT >> .configuration
-        , jwt = .flagsWithJWT >> .jwt >> Just
+        , configuration = .authorizedAccess >> .configuration
+        , jwt = .authorizedAccess >> .jwt >> Just
         , currentPage = Just (UserSettings model.user.nickname)
         , showNavigation = True
         }

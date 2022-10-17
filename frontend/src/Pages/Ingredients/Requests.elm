@@ -20,11 +20,11 @@ import Configuration exposing (Configuration)
 import Http exposing (Error)
 import Json.Decode as Decode
 import Pages.Ingredients.Page as Page
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.HttpUtil as HttpUtil
 
 
-fetchIngredients : FlagsWithJWT -> RecipeId -> Cmd Page.Msg
+fetchIngredients : AuthorizedAccess -> RecipeId -> Cmd Page.Msg
 fetchIngredients flags recipeId =
     HttpUtil.runPatternWithJwt
         flags
@@ -34,17 +34,17 @@ fetchIngredients flags recipeId =
         }
 
 
-fetchRecipe : FlagsWithJWT -> RecipeId -> Cmd Page.Msg
-fetchRecipe flags recipeId =
+fetchRecipe : AuthorizedAccess -> RecipeId -> Cmd Page.Msg
+fetchRecipe authorizedAccess recipeId =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         (Addresses.Backend.recipes.single recipeId)
         { body = Http.emptyBody
         , expect = HttpUtil.expectJson Page.GotFetchRecipeResponse decoderRecipe
         }
 
 
-fetchFoods : FlagsWithJWT -> Cmd Page.Msg
+fetchFoods : AuthorizedAccess -> Cmd Page.Msg
 fetchFoods flags =
     HttpUtil.runPatternWithJwt
         flags
@@ -54,7 +54,7 @@ fetchFoods flags =
         }
 
 
-fetchMeasures : FlagsWithJWT -> Cmd Page.Msg
+fetchMeasures : AuthorizedAccess -> Cmd Page.Msg
 fetchMeasures flags =
     HttpUtil.runPatternWithJwt
         flags
@@ -81,7 +81,7 @@ addFood ps =
         }
 
 
-saveIngredient : FlagsWithJWT -> IngredientUpdate -> Cmd Page.Msg
+saveIngredient : AuthorizedAccess -> IngredientUpdate -> Cmd Page.Msg
 saveIngredient flags ingredientUpdate =
     HttpUtil.runPatternWithJwt
         flags
@@ -91,7 +91,7 @@ saveIngredient flags ingredientUpdate =
         }
 
 
-deleteIngredient : FlagsWithJWT -> IngredientId -> Cmd Page.Msg
+deleteIngredient : AuthorizedAccess -> IngredientId -> Cmd Page.Msg
 deleteIngredient flags ingredientId =
     HttpUtil.runPatternWithJwt
         flags

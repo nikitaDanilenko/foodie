@@ -38,8 +38,8 @@ view model =
     ViewUtil.viewWithErrorHandling
         { isFinished = Status.isFinished
         , initialization = .initialization
-        , configuration = .flagsWithJWT >> .configuration
-        , jwt = .flagsWithJWT >> .jwt >> Just
+        , configuration = .authorizedAccess >> .configuration
+        , jwt = .authorizedAccess >> .jwt >> Just
         , currentPage = Just ViewUtil.Meals
         , showNavigation = True
         }
@@ -48,7 +48,7 @@ view model =
         let
             viewEditMeal =
                 Either.unpack
-                    (editOrDeleteMealLine model.flagsWithJWT.configuration)
+                    (editOrDeleteMealLine model.authorizedAccess.configuration)
                     (\e -> e.update |> editMealLine)
 
             viewEditMeals =

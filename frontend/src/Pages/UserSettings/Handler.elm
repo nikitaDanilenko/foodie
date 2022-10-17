@@ -12,8 +12,8 @@ import Monocle.Lens as Lens
 import Pages.UserSettings.Page as Page
 import Pages.UserSettings.Requests as Requests
 import Pages.UserSettings.Status as Status
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Pages.Util.ComplementInput as ComplementInput exposing (ComplementInput)
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
 import Pages.Util.Links as Links
 import Pages.Util.PasswordInput as PasswordInput
 import Ports
@@ -22,14 +22,14 @@ import Util.Initialization exposing (Initialization(..))
 import Util.LensUtil as LensUtil
 
 
-initialFetch : FlagsWithJWT -> Cmd Page.Msg
+initialFetch : AuthorizedAccess -> Cmd Page.Msg
 initialFetch =
     Requests.fetchUser
 
 
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
-    ( { flagsWithJWT = flags
+    ( { authorizedAccess = flags.authorizedAccess
       , user =
             { id = ""
             , nickname = ""
@@ -40,7 +40,7 @@ init flags =
       , initialization = Loading Status.initial
       , mode = Page.Regular
       }
-    , initialFetch flags
+    , initialFetch flags.authorizedAccess
     )
 
 
@@ -97,7 +97,7 @@ updatePassword : Page.Model -> ( Page.Model, Cmd Page.Msg )
 updatePassword model =
     ( model
     , Requests.updatePassword
-        model.flagsWithJWT
+        model.authorizedAccess
         { password = model.complementInput.passwordInput.password1 }
     )
 
@@ -120,7 +120,7 @@ updateSettings : Page.Model -> ( Page.Model, Cmd Page.Msg )
 updateSettings model =
     ( model
     , Requests.updateSettings
-        model.flagsWithJWT
+        model.authorizedAccess
         { displayName = model.complementInput.displayName }
     )
 
@@ -138,7 +138,7 @@ gotUpdateSettingsResponse model result =
 requestDeletion : Page.Model -> ( Page.Model, Cmd Page.Msg )
 requestDeletion model =
     ( model
-    , Requests.requestDeletion model.flagsWithJWT
+    , Requests.requestDeletion model.authorizedAccess
     )
 
 
@@ -162,7 +162,7 @@ setComplementInput model complementInput =
 logout : Page.Model -> Api.Types.Mode.Mode -> ( Page.Model, Cmd Page.Msg )
 logout model mode =
     ( model
-    , Requests.logout model.flagsWithJWT mode
+    , Requests.logout model.authorizedAccess mode
     )
 
 
@@ -175,7 +175,7 @@ gotLogoutResponse model result =
                 ( model
                 , Cmd.batch
                     [ Ports.doDeleteToken ()
-                    , () |> Addresses.Frontend.login.address |> Links.frontendPage model.flagsWithJWT.configuration |> Browser.Navigation.load
+                    , () |> Addresses.Frontend.login.address |> Links.frontendPage model.authorizedAccess.configuration |> Browser.Navigation.load
                     ]
                 )
             )

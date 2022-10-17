@@ -8,44 +8,44 @@ import Api.Types.RecipeUpdate exposing (RecipeUpdate, encoderRecipeUpdate)
 import Http
 import Json.Decode as Decode
 import Pages.Recipes.Page as Page
-import Pages.Util.FlagsWithJWT exposing (FlagsWithJWT)
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.HttpUtil as HttpUtil
 
 
-fetchRecipes : FlagsWithJWT -> Cmd Page.Msg
-fetchRecipes flags =
+fetchRecipes : AuthorizedAccess -> Cmd Page.Msg
+fetchRecipes authorizedAccess =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.recipes.all
         { body = Http.emptyBody
         , expect = HttpUtil.expectJson Page.GotFetchRecipesResponse (Decode.list decoderRecipe)
         }
 
 
-createRecipe : FlagsWithJWT -> RecipeCreation -> Cmd Page.Msg
-createRecipe flags recipeCreation =
+createRecipe : AuthorizedAccess -> RecipeCreation -> Cmd Page.Msg
+createRecipe authorizedAccess recipeCreation =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.recipes.create
         { body = encoderRecipeCreation recipeCreation |> Http.jsonBody
         , expect = HttpUtil.expectJson Page.GotCreateRecipeResponse decoderRecipe
         }
 
 
-saveRecipe : FlagsWithJWT -> RecipeUpdate -> Cmd Page.Msg
-saveRecipe flags recipeUpdate =
+saveRecipe : AuthorizedAccess -> RecipeUpdate -> Cmd Page.Msg
+saveRecipe authorizedAccess recipeUpdate =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         Addresses.Backend.recipes.update
         { body = encoderRecipeUpdate recipeUpdate |> Http.jsonBody
         , expect = HttpUtil.expectJson Page.GotSaveRecipeResponse decoderRecipe
         }
 
 
-deleteRecipe : FlagsWithJWT -> RecipeId -> Cmd Page.Msg
-deleteRecipe flags recipeId =
+deleteRecipe : AuthorizedAccess -> RecipeId -> Cmd Page.Msg
+deleteRecipe authorizedAccess recipeId =
     HttpUtil.runPatternWithJwt
-        flags
+        authorizedAccess
         (Addresses.Backend.recipes.delete recipeId)
         { body = Http.emptyBody
         , expect = HttpUtil.expectWhatever (Page.GotDeleteRecipeResponse recipeId)

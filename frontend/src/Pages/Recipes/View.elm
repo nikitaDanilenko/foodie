@@ -34,8 +34,8 @@ view model =
     ViewUtil.viewWithErrorHandling
         { isFinished = Status.isFinished
         , initialization = Page.lenses.initialization.get
-        , configuration = .flagsWithJWT >> .configuration
-        , jwt = .flagsWithJWT >> .jwt >> Just
+        , configuration = .authorizedAccess >> .configuration
+        , jwt = .authorizedAccess >> .jwt >> Just
         , currentPage = Just ViewUtil.Recipes
         , showNavigation = True
         }
@@ -44,7 +44,7 @@ view model =
         let
             viewEditRecipe =
                 Either.unpack
-                    (editOrDeleteRecipeLine model.flagsWithJWT.configuration)
+                    (editOrDeleteRecipeLine model.authorizedAccess.configuration)
                     (\e -> e.update |> editRecipeLine)
 
             viewEditRecipes =

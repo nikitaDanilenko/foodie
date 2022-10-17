@@ -34,8 +34,8 @@ view model =
     ViewUtil.viewWithErrorHandling
         { isFinished = Status.isFinished
         , initialization = .initialization
-        , configuration = .flagsWithJWT >> .configuration
-        , jwt = .flagsWithJWT >> .jwt >> Just
+        , configuration = .authorizedAccess >> .configuration
+        , jwt = .authorizedAccess >> .jwt >> Just
         , currentPage = Nothing
         , showNavigation = True
         }
