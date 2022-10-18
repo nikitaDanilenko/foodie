@@ -112,24 +112,40 @@ object ErrorContext {
 
   }
 
-  object ReferenceNutrient {
+  object ReferenceMap {
 
-    case object NotFound extends ServerErrorInstance("No reference nutrient with the given nutrient code found")
+    case object NotFound extends ServerErrorInstance("No reference map with the given id found")
 
     case class Creation(dbMessage: String)
         extends ServerErrorInstance(
-          s"ReferenceNutrient creation failed due to: $dbMessage"
+          s"Reference map creation failed due to: $dbMessage"
         )
 
     case class Update(dbMessage: String)
         extends ServerErrorInstance(
-          s"ReferenceNutrient update failed due to: $dbMessage"
+          s"Reference map update failed due to: $dbMessage"
         )
 
     case class General(dbMessage: String)
         extends ServerErrorInstance(
           s"A database operation failed with the message: $dbMessage"
         )
+
+    object Entry {
+
+      case class Creation(dbMessage: String)
+          extends ServerErrorInstance(
+            s"Reference map entry creation failed due to: $dbMessage"
+          )
+
+      case class Update(dbMessage: String)
+          extends ServerErrorInstance(
+            s"Reference map entry update failed due to: $dbMessage"
+          )
+
+      case object NotFound extends ServerErrorInstance("No reference map entry with the given id found")
+
+    }
 
   }
 

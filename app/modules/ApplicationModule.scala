@@ -1,10 +1,11 @@
 package modules
 
-import play.api.{ Configuration, Environment }
 import play.api.inject.Binding
+import play.api.{Configuration, Environment}
 import services.meal.MealService
 import services.nutrient.NutrientService
 import services.recipe.RecipeService
+import services.reference.ReferenceService
 import services.stats.StatsService
 import services.user.UserService
 
@@ -21,7 +22,9 @@ class ApplicationModule extends play.api.inject.Module {
       bind[StatsService.Companion].toInstance(StatsService.Live),
       bind[StatsService].to[StatsService.Live],
       bind[NutrientService.Companion].toInstance(NutrientService.Live),
-      bind[NutrientService].to[NutrientService.Live]
+      bind[NutrientService].to[NutrientService.Live],
+      bind[ReferenceService.Companion].toInstance(ReferenceService.Live),
+      bind[ReferenceService].to[ReferenceService.Live]
     )
     settings
   }

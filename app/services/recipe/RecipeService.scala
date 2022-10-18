@@ -147,7 +147,6 @@ object RecipeService {
 
     override def getIngredients(userId: UserId, recipeId: RecipeId): Future[List[Ingredient]] =
       db.run(companion.getIngredients(userId, recipeId))
-        .map(_.transformInto[List[Ingredient]])
 
     override def addIngredient(
         userId: UserId,
@@ -258,11 +257,7 @@ object RecipeService {
         ec: ExecutionContext
     ): DBIO[List[Ingredient]] =
       for {
-        exists <-
-          Tables.Recipe
-            .filter(r => r.id === recipeId.transformInto[UUID] && r.userId === userId.transformInto[UUID])
-            .exists
-            .result
+        exists <- recipeQuery(userId, recipeId).exists.result
         ingredients <-
           if (exists)
             Tables.RecipeIngredient

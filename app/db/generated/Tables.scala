@@ -14,7 +14,7 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Array(ConversionFactor.schema, FoodGroup.schema, FoodName.schema, FoodSource.schema, Meal.schema, MealEntry.schema, MeasureName.schema, NutrientAmount.schema, NutrientName.schema, NutrientSource.schema, Recipe.schema, RecipeIngredient.schema, ReferenceNutrient.schema, RefuseAmount.schema, RefuseName.schema, Session.schema, User.schema, YieldAmount.schema, YieldName.schema).reduceLeft(_ ++ _)
+  lazy val schema: profile.SchemaDescription = Array(ConversionFactor.schema, FoodGroup.schema, FoodName.schema, FoodSource.schema, Meal.schema, MealEntry.schema, MeasureName.schema, NutrientAmount.schema, NutrientName.schema, NutrientSource.schema, Recipe.schema, RecipeIngredient.schema, ReferenceEntry.schema, ReferenceMap.schema, RefuseAmount.schema, RefuseName.schema, Session.schema, User.schema, YieldAmount.schema, YieldName.schema).reduceLeft(_ ++ _)
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
 
@@ -449,37 +449,68 @@ trait Tables {
   /** Collection-like TableQuery object for table RecipeIngredient */
   lazy val RecipeIngredient = new TableQuery(tag => new RecipeIngredient(tag))
 
-  /** Entity class storing rows of table ReferenceNutrient
-   *  @param userId Database column user_id SqlType(uuid)
+  /** Entity class storing rows of table ReferenceEntry
+   *  @param referenceMapId Database column reference_map_id SqlType(uuid)
    *  @param nutrientCode Database column nutrient_code SqlType(int4)
    *  @param amount Database column amount SqlType(numeric) */
-  case class ReferenceNutrientRow(userId: java.util.UUID, nutrientCode: Int, amount: scala.math.BigDecimal)
-  /** GetResult implicit for fetching ReferenceNutrientRow objects using plain SQL queries */
-  implicit def GetResultReferenceNutrientRow(implicit e0: GR[java.util.UUID], e1: GR[Int], e2: GR[scala.math.BigDecimal]): GR[ReferenceNutrientRow] = GR{
+  case class ReferenceEntryRow(referenceMapId: java.util.UUID, nutrientCode: Int, amount: scala.math.BigDecimal)
+  /** GetResult implicit for fetching ReferenceEntryRow objects using plain SQL queries */
+  implicit def GetResultReferenceEntryRow(implicit e0: GR[java.util.UUID], e1: GR[Int], e2: GR[scala.math.BigDecimal]): GR[ReferenceEntryRow] = GR{
     prs => import prs._
-    ReferenceNutrientRow.tupled((<<[java.util.UUID], <<[Int], <<[scala.math.BigDecimal]))
+    ReferenceEntryRow.tupled((<<[java.util.UUID], <<[Int], <<[scala.math.BigDecimal]))
   }
-  /** Table description of table reference_nutrient. Objects of this class serve as prototypes for rows in queries. */
-  class ReferenceNutrient(_tableTag: Tag) extends profile.api.Table[ReferenceNutrientRow](_tableTag, "reference_nutrient") {
-    def * = (userId, nutrientCode, amount) <> (ReferenceNutrientRow.tupled, ReferenceNutrientRow.unapply)
+  /** Table description of table reference_entry. Objects of this class serve as prototypes for rows in queries. */
+  class ReferenceEntry(_tableTag: Tag) extends profile.api.Table[ReferenceEntryRow](_tableTag, "reference_entry") {
+    def * = (referenceMapId, nutrientCode, amount) <> (ReferenceEntryRow.tupled, ReferenceEntryRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(userId), Rep.Some(nutrientCode), Rep.Some(amount))).shaped.<>({r=>import r._; _1.map(_=> ReferenceNutrientRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(referenceMapId), Rep.Some(nutrientCode), Rep.Some(amount))).shaped.<>({r=>import r._; _1.map(_=> ReferenceEntryRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
-    /** Database column user_id SqlType(uuid) */
-    val userId: Rep[java.util.UUID] = column[java.util.UUID]("user_id")
+    /** Database column reference_map_id SqlType(uuid) */
+    val referenceMapId: Rep[java.util.UUID] = column[java.util.UUID]("reference_map_id")
     /** Database column nutrient_code SqlType(int4) */
     val nutrientCode: Rep[Int] = column[Int]("nutrient_code")
     /** Database column amount SqlType(numeric) */
     val amount: Rep[scala.math.BigDecimal] = column[scala.math.BigDecimal]("amount")
 
-    /** Primary key of ReferenceNutrient (database name reference_nutrient_pk) */
-    val pk = primaryKey("reference_nutrient_pk", (userId, nutrientCode))
+    /** Primary key of ReferenceEntry (database name reference_entry_pk) */
+    val pk = primaryKey("reference_entry_pk", (referenceMapId, nutrientCode))
 
-    /** Foreign key referencing NutrientName (database name reference_nutrient_nutrient_code_fk) */
-    lazy val nutrientNameFk = foreignKey("reference_nutrient_nutrient_code_fk", nutrientCode, NutrientName)(r => r.nutrientCode, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    /** Foreign key referencing NutrientName (database name reference_entry_nutrient_code_fk) */
+    lazy val nutrientNameFk = foreignKey("reference_entry_nutrient_code_fk", nutrientCode, NutrientName)(r => r.nutrientCode, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
+    /** Foreign key referencing ReferenceMap (database name reference_entry_reference_map_id_fk) */
+    lazy val referenceMapFk = foreignKey("reference_entry_reference_map_id_fk", referenceMapId, ReferenceMap)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
   }
-  /** Collection-like TableQuery object for table ReferenceNutrient */
-  lazy val ReferenceNutrient = new TableQuery(tag => new ReferenceNutrient(tag))
+  /** Collection-like TableQuery object for table ReferenceEntry */
+  lazy val ReferenceEntry = new TableQuery(tag => new ReferenceEntry(tag))
+
+  /** Entity class storing rows of table ReferenceMap
+   *  @param id Database column id SqlType(uuid), PrimaryKey
+   *  @param name Database column name SqlType(text)
+   *  @param userId Database column user_id SqlType(uuid) */
+  case class ReferenceMapRow(id: java.util.UUID, name: String, userId: java.util.UUID)
+  /** GetResult implicit for fetching ReferenceMapRow objects using plain SQL queries */
+  implicit def GetResultReferenceMapRow(implicit e0: GR[java.util.UUID], e1: GR[String]): GR[ReferenceMapRow] = GR{
+    prs => import prs._
+    ReferenceMapRow.tupled((<<[java.util.UUID], <<[String], <<[java.util.UUID]))
+  }
+  /** Table description of table reference_map. Objects of this class serve as prototypes for rows in queries. */
+  class ReferenceMap(_tableTag: Tag) extends profile.api.Table[ReferenceMapRow](_tableTag, "reference_map") {
+    def * = (id, name, userId) <> (ReferenceMapRow.tupled, ReferenceMapRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = ((Rep.Some(id), Rep.Some(name), Rep.Some(userId))).shaped.<>({r=>import r._; _1.map(_=> ReferenceMapRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column id SqlType(uuid), PrimaryKey */
+    val id: Rep[java.util.UUID] = column[java.util.UUID]("id", O.PrimaryKey)
+    /** Database column name SqlType(text) */
+    val name: Rep[String] = column[String]("name")
+    /** Database column user_id SqlType(uuid) */
+    val userId: Rep[java.util.UUID] = column[java.util.UUID]("user_id")
+
+    /** Foreign key referencing User (database name reference_map_user_id_fk) */
+    lazy val userFk = foreignKey("reference_map_user_id_fk", userId, User)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
+  }
+  /** Collection-like TableQuery object for table ReferenceMap */
+  lazy val ReferenceMap = new TableQuery(tag => new ReferenceMap(tag))
 
   /** Entity class storing rows of table RefuseAmount
    *  @param foodId Database column food_id SqlType(int4)

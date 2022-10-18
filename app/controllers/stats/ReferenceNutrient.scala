@@ -2,6 +2,7 @@ package controllers.stats
 
 import io.circe.generic.JsonCodec
 import io.scalaland.chimney.Transformer
+import services.reference.ReferenceEntry
 
 @JsonCodec
 case class ReferenceNutrient(
@@ -11,9 +12,9 @@ case class ReferenceNutrient(
 
 object ReferenceNutrient {
 
-  implicit val fromInternal: Transformer[services.stats.ReferenceNutrient, ReferenceNutrient] =
+  implicit val fromInternal: Transformer[ReferenceEntry, ReferenceNutrient] =
     Transformer
-      .define[services.stats.ReferenceNutrient, ReferenceNutrient]
+      .define[ReferenceEntry, ReferenceNutrient]
       .buildTransformer
 
 }

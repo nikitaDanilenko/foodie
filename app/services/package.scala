@@ -43,4 +43,8 @@ package object services {
 
   type SessionId = UUID @@ SessionTag
 
+  sealed trait ReferenceMapTag
+
+  type ReferenceMapId = UUID @@ ReferenceMapTag
+
 }
