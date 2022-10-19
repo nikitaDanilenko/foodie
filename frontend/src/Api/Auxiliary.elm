@@ -37,3 +37,7 @@ type alias UserId =
 
 type alias JWT =
     String
+
+
+type alias ReferenceMapId =
+    UUID

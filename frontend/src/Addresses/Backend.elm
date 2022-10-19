@@ -1,6 +1,6 @@
 module Addresses.Backend exposing (..)
 
-import Api.Auxiliary exposing (IngredientId, MealEntryId, MealId, NutrientCode, RecipeId)
+import Api.Auxiliary exposing (IngredientId, MealEntryId, MealId, NutrientCode, RecipeId, ReferenceMapId)
 import Maybe.Extra
 import Url.Builder exposing (QueryParameter)
 import Util.HttpUtil as HttpUtil exposing (ResourcePattern)
@@ -93,29 +93,14 @@ stats :
         }
         -> ResourcePattern
     , nutrients : ResourcePattern
-    , references :
-        { all : ResourcePattern
-        , create : ResourcePattern
-        , update : ResourcePattern
-        , delete : NutrientCode -> ResourcePattern
-        }
     }
 stats =
     let
         base =
             (::) "stats"
-
-        references =
-            (::) "references" >> base
     in
     { all = \interval -> getQ (base []) (Maybe.Extra.values [ interval.from, interval.to ])
     , nutrients = get <| base <| [ "nutrients" ]
-    , references =
-        { all = get <| references <| []
-        , create = post <| references <| []
-        , update = patch <| references <| []
-        , delete = \nutrientCode -> delete <| references <| [ nutrientCode |> String.fromInt ]
-        }
     }
 
 
@@ -170,6 +155,55 @@ users =
     , deletion =
         { request = post <| deletion <| [ "request" ]
         , confirm = post <| deletion <| [ "confirm" ]
+        }
+    }
+
+
+references :
+    { all : ResourcePattern
+    , allTrees : ResourcePattern
+    , single : ReferenceMapId -> ResourcePattern
+    , create : ResourcePattern
+    , update : ResourcePattern
+    , delete : ReferenceMapId -> ResourcePattern
+    , entries :
+        { allOf : ReferenceMapId -> ResourcePattern
+        , create : ResourcePattern
+        , update : ResourcePattern
+        , delete : ReferenceMapId -> NutrientCode -> ResourcePattern
+        }
+    }
+references =
+    let
+        base =
+            (::) "references"
+
+        entriesWord =
+            "entries"
+
+        treesWord =
+            "trees"
+
+        entries =
+            (::) entriesWord >> base
+    in
+    { all = get <| base <| []
+    , allTrees = get <| base <| (::) treesWord <| []
+    , single = \referenceMapId -> get <| base <| [ referenceMapId ]
+    , create = post <| base []
+    , update = patch <| base []
+    , delete = \referenceMapId -> delete <| base <| [ referenceMapId ]
+    , entries =
+        { allOf = \referenceMapId -> get <| base <| [ referenceMapId, entriesWord ]
+        , create = post <| entries []
+        , update = patch <| entries []
+        , delete =
+            \referenceMapId nutrientCode ->
+                delete <|
+                    base <|
+                        (::) referenceMapId <|
+                            (::) entriesWord <|
+                                [ String.fromInt nutrientCode ]
         }
     }
 

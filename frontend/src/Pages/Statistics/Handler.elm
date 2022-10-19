@@ -3,6 +3,7 @@ module Pages.Statistics.Handler exposing (init, update)
 import Api.Lenses.RequestIntervalLens as RequestIntervalLens
 import Api.Lenses.StatsLens as StatsLens
 import Api.Types.Date exposing (Date)
+import Api.Types.ReferenceTree exposing (ReferenceTree)
 import Api.Types.Stats exposing (Stats)
 import Basics.Extra exposing (flip)
 import Either
@@ -11,6 +12,8 @@ import Monocle.Lens as Lens
 import Pages.Statistics.Page as Page
 import Pages.Statistics.Pagination as Pagination exposing (Pagination)
 import Pages.Statistics.Requests as Requests
+import Pages.Statistics.Status as Status
+import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.HttpUtil as HttpUtil
 import Util.Initialization as Initialization
 
@@ -20,12 +23,18 @@ init flags =
     ( { authorizedAccess = flags.authorizedAccess
       , requestInterval = RequestIntervalLens.default
       , stats = defaultStats
-      , initialization = Initialization.Loading ()
+      , referenceTrees = []
+      , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
       , fetching = False
       }
-    , Cmd.none
+    , initialFetch flags.authorizedAccess
     )
+
+
+initialFetch : AuthorizedAccess -> Cmd Page.Msg
+initialFetch =
+    Requests.fetchReferenceTrees
 
 
 defaultStats : Stats
@@ -49,6 +58,9 @@ update msg model =
 
         Page.GotFetchStatsResponse result ->
             gotFetchStatsResponse model result
+
+        Page.GotFetchReferenceTreesResponse result ->
+            gotFetchReferenceTreesResponse model result
 
         Page.SetPagination pagination ->
             setPagination model pagination
@@ -90,6 +102,20 @@ gotFetchStatsResponse model result =
                     |> Page.lenses.stats.set
                         (stats |> Lens.modify StatsLens.nutrients (List.sortBy .name))
                     |> Page.lenses.fetching.set False
+            )
+    , Cmd.none
+    )
+
+
+gotFetchReferenceTreesResponse : Page.Model -> Result Error (List ReferenceTree) -> ( Page.Model, Cmd Page.Msg )
+gotFetchReferenceTreesResponse model result =
+    ( result
+        |> Either.fromResult
+        |> Either.unpack (flip setError model)
+            (\referenceTrees ->
+                model
+                    |> Page.lenses.referenceTrees.set
+                        (referenceTrees |> List.sortBy (.referenceMap >> .name))
             )
     , Cmd.none
     )
