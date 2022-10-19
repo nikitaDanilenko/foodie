@@ -25,6 +25,7 @@ DELETE /meals/entries/:id                                controllers.meal.MealCo
 
 GET    /reference-maps                                   controllers.reference.ReferenceController.all
 GET    /reference-maps/:id                               controllers.reference.ReferenceController.get(id: java.util.UUID)
+GET    /reference-maps/:id/tree                          controllers.reference.ReferenceController.getTree(id: java.util.UUID)
 POST   /reference-maps                                   controllers.reference.ReferenceController.create
 PATCH  /reference-maps                                   controllers.reference.ReferenceController.update
 DELETE /reference-maps/:id                               controllers.reference.ReferenceController.delete(id: java.util.UUID)
