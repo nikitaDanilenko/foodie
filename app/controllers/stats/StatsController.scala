@@ -1,29 +1,29 @@
 package controllers.stats
 
 import action.UserAction
-import cats.data.EitherT
-import errors.{ErrorContext, ServerError}
+import controllers.reference.ReferenceEntry
 import io.circe.syntax._
 import io.scalaland.chimney.dsl.TransformerOps
-
-import javax.inject.Inject
 import play.api.libs.circe.Circe
 import play.api.mvc._
-import services.NutrientCode
+import services.ReferenceMapId
 import services.nutrient.NutrientService
-import services.reference.{ReferenceEntryCreation, ReferenceEntryUpdate}
-import services.stats.{DBError, StatsService}
-import utils.date.Date
+import services.reference.ReferenceService
+import services.stats.StatsService
 import utils.TransformerUtils.Implicits._
+import utils.date.Date
 
+import java.util.UUID
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.util.chaining.scalaUtilChainingOps
 
 class StatsController @Inject() (
-                                  controllerComponents: ControllerComponents,
-                                  userAction: UserAction,
-                                  statsService: StatsService,
-                                  nutrientService: NutrientService
+    controllerComponents: ControllerComponents,
+    userAction: UserAction,
+    statsService: StatsService,
+    nutrientService: NutrientService,
+    referenceService: ReferenceService
 )(implicit ec: ExecutionContext)
     extends AbstractController(controllerComponents)
     with Circe {
@@ -45,16 +45,16 @@ class StatsController @Inject() (
         )
     }
 
-  def referenceNutrients: Action[AnyContent] =
+  def referenceNutrients(referenceMapId: UUID): Action[AnyContent] =
     userAction.async { request =>
-      statsService
-        .referenceNutrientMap(request.user.id)
+      referenceService
+        .getReferenceNutrientsMap(request.user.id, referenceMapId.transformInto[ReferenceMapId])
         .map { nutrientMap =>
           nutrientMap
             .map {
               _.map {
                 case (nutrient, amount) =>
-                  ReferenceNutrient(
+                  ReferenceEntry(
                     nutrientCode = nutrient.code,
                     amount = amount
                   )
@@ -78,66 +78,5 @@ class StatsController @Inject() (
           .pipe(Ok(_))
       )
     }
-
-  def createReferenceNutrient: Action[ReferenceNutrientCreation] =
-    userAction.async(circe.tolerantJson[ReferenceNutrientCreation]) { request =>
-      EitherT(
-        statsService
-          .createReferenceNutrient(
-            request.user.id,
-            request.body.transformInto[ReferenceEntryCreation]
-          )
-      )
-        .map(
-          _.pipe(_.transformInto[ReferenceNutrient])
-            .pipe(_.asJson)
-            .pipe(Ok(_))
-        )
-        .leftMap(badRequest)
-        .merge
-        .recover(referenceNutrientErrorHandler)
-    }
-
-  def updateReferenceNutrient: Action[ReferenceNutrientUpdate] =
-    userAction.async(circe.tolerantJson[ReferenceNutrientUpdate]) { request =>
-      EitherT(
-        statsService
-          .updateReferenceEntry(request.user.id, request.body.transformInto[ReferenceEntryUpdate])
-      )
-        .map(
-          _.pipe(_.transformInto[ReferenceNutrient])
-            .pipe(_.asJson)
-            .pipe(Ok(_))
-        )
-        .leftMap(badRequest)
-        .merge
-        .recover(referenceNutrientErrorHandler)
-    }
-
-  def deleteReferenceNutrient(nutrientCode: Int): Action[AnyContent] =
-    userAction.async { request =>
-      statsService
-        .deleteReferenceEntry(request.user.id, nutrientCode.transformInto[NutrientCode])
-        .map(
-          _.pipe(_.asJson)
-            .pipe(Ok(_))
-        )
-    }
-
-  private def badRequest(serverError: ServerError): Result =
-    BadRequest(serverError.asJson)
-
-  // TODO: Consider handling errors on service level
-  private def referenceNutrientErrorHandler: PartialFunction[Throwable, Result] = {
-    case error =>
-      val context = error match {
-        case DBError.ReferenceNutrientNotFound =>
-          ErrorContext.ReferenceMap.NotFound
-        case _ =>
-          ErrorContext.ReferenceMap.General(error.getMessage)
-      }
-
-      BadRequest(context.asServerError.asJson)
-  }
 
 }

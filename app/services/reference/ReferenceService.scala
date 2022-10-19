@@ -2,10 +2,12 @@ package services.reference
 
 import cats.Applicative
 import cats.data.OptionT
+import cats.syntax.traverse._
 import db.generated.Tables
 import errors.{ ErrorContext, ServerError }
 import io.scalaland.chimney.dsl._
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
+import services.nutrient.{ Nutrient, NutrientMap }
 import services.{ NutrientCode, ReferenceMapId, UserId }
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
@@ -19,6 +21,11 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 trait ReferenceService {
   def allReferenceMaps(userId: UserId): Future[Seq[ReferenceMap]]
+
+  def getReferenceNutrientsMap(
+      userId: UserId,
+      referenceMapId: ReferenceMapId
+  ): Future[Option[NutrientMap]]
 
   def getReferenceMap(userId: UserId, referenceMapId: ReferenceMapId): Future[Option[ReferenceMap]]
 
@@ -69,6 +76,9 @@ object ReferenceService {
 
     override def allReferenceMaps(userId: UserId): Future[Seq[ReferenceMap]] =
       db.run(companion.allReferenceMaps(userId))
+
+    override def getReferenceNutrientsMap(userId: UserId, referenceMapId: ReferenceMapId): Future[Option[NutrientMap]] =
+      db.run(companion.getReferenceNutrientsMap(userId, referenceMapId))
 
     override def getReferenceMap(userId: UserId, referenceMapId: ReferenceMapId): Future[Option[ReferenceMap]] =
       db.run(companion.getReferenceMap(userId, referenceMapId))
@@ -136,6 +146,11 @@ object ReferenceService {
   trait Companion {
     def allReferenceMaps(userId: UserId)(implicit ec: ExecutionContext): DBIO[Seq[ReferenceMap]]
 
+    def getReferenceNutrientsMap(
+        userId: UserId,
+        referenceMapId: ReferenceMapId
+    )(implicit ec: ExecutionContext): DBIO[Option[NutrientMap]]
+
     def getReferenceMap(userId: UserId, referenceMapId: ReferenceMapId)(implicit
         ec: ExecutionContext
     ): DBIO[Option[ReferenceMap]]
@@ -188,6 +203,24 @@ object ReferenceService {
         .map(
           _.map(_.transformInto[ReferenceMap])
         )
+
+    override def getReferenceNutrientsMap(
+        userId: UserId,
+        referenceMapId: ReferenceMapId
+    )(implicit ec: ExecutionContext): DBIO[Option[NutrientMap]] = {
+      val transformer = for {
+        referenceEntries <- OptionT.liftF(allReferenceEntries(userId, referenceMapId))
+        referenceEntriesAmounts <-
+          referenceEntries
+            .traverse { referenceEntry =>
+              OptionT(
+                nutrientNameByCode(referenceEntry.nutrientCode)
+              ).map(nutrientNameRow => nutrientNameRow.transformInto[Nutrient] -> referenceEntry.amount)
+            }
+      } yield referenceEntriesAmounts.toMap
+
+      transformer.value
+    }
 
     override def getReferenceMap(userId: UserId, referenceMapId: ReferenceMapId)(implicit
         ec: ExecutionContext
@@ -300,7 +333,7 @@ object ReferenceService {
     override def deleteReferenceEntry(userId: UserId, referenceMapId: ReferenceMapId, nutrientCode: NutrientCode)(
         implicit ec: ExecutionContext
     ): DBIO[Boolean] =
-      ifReferenceMapExists(userId, referenceMapId.transformInto[ReferenceMapId]) {
+      ifReferenceMapExists(userId, referenceMapId) {
         referenceEntryQuery(referenceMapId, nutrientCode).delete
           .map(_ > 0)
       }
@@ -323,6 +356,12 @@ object ReferenceService {
           r.referenceMapId === referenceMapId.transformInto[UUID] &&
             r.nutrientCode === nutrientCode.transformInto[Int]
         )
+
+    private def nutrientNameByCode(nutrientCode: Int): DBIO[Option[Tables.NutrientNameRow]] =
+      Tables.NutrientName
+        .filter(_.nutrientCode === nutrientCode)
+        .result
+        .headOption
 
     private def ifReferenceMapExists[A](
         userId: UserId,

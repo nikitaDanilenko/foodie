@@ -5,27 +5,11 @@ import bridges.core.Type.Ref
 import bridges.core._
 import bridges.core.syntax._
 import bridges.elm._
-import controllers.user.{
-  CreationComplement,
-  Credentials,
-  LogoutRequest,
-  PasswordChangeRequest,
-  RecoveryRequest,
-  User,
-  UserIdentifier,
-  UserUpdate
-}
 import controllers.meal._
 import controllers.recipe._
-import controllers.stats.{
-  Amounts,
-  Nutrient,
-  NutrientInformation,
-  ReferenceNutrient,
-  ReferenceNutrientCreation,
-  ReferenceNutrientUpdate,
-  Stats
-}
+import controllers.reference._
+import controllers.stats.{ Amounts, Nutrient, NutrientInformation, Stats }
+import controllers.user._
 import security.jwt.LoginContent
 import shapeless.Lazy
 import utils.date.{ Date, SimpleDate, Time }
@@ -116,9 +100,12 @@ object Bridge {
     mkAndWrite[Amounts]
     mkAndWrite[NutrientInformation]
     mkAndWrite[Stats]
-    mkAndWrite[ReferenceNutrient]
-    mkAndWrite[ReferenceNutrientCreation]
-    mkAndWrite[ReferenceNutrientUpdate]
+    mkAndWrite[ReferenceMap]
+    mkAndWrite[ReferenceMapCreation]
+    mkAndWrite[ReferenceMapUpdate]
+    mkAndWrite[ReferenceEntry]
+    mkAndWrite[ReferenceEntryCreation]
+    mkAndWrite[ReferenceEntryUpdate]
     mkAndWrite[Nutrient]
     mkAndWrite[UserIdentifier]
     mkAndWrite[CreationComplement]
