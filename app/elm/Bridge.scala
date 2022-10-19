@@ -101,6 +101,8 @@ object Bridge {
     mkAndWrite[NutrientInformation]
     mkAndWrite[Stats]
     mkAndWrite[ReferenceMap]
+    mkAndWrite[ReferenceTree]
+    mkAndWrite[ReferenceValue]
     mkAndWrite[ReferenceMapCreation]
     mkAndWrite[ReferenceMapUpdate]
     mkAndWrite[ReferenceEntry]
