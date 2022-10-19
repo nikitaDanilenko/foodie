@@ -5,12 +5,12 @@ import Json.Decode.Pipeline exposing (..)
 import Json.Encode as Encode
 
 
-type alias Amounts = { total: Float, dailyAverage: Float, referenceDailyAverage: (Maybe Float) }
+type alias Amounts = { total: Float, dailyAverage: Float }
 
 
 decoderAmounts : Decode.Decoder Amounts
-decoderAmounts = Decode.succeed Amounts |> required "total" Decode.float |> required "dailyAverage" Decode.float |> optional "referenceDailyAverage" (Decode.maybe Decode.float) Nothing
+decoderAmounts = Decode.succeed Amounts |> required "total" Decode.float |> required "dailyAverage" Decode.float
 
 
 encoderAmounts : Amounts -> Encode.Value
-encoderAmounts obj = Encode.object [ ("total", Encode.float obj.total), ("dailyAverage", Encode.float obj.dailyAverage), ("referenceDailyAverage", Maybe.withDefault Encode.null (Maybe.map Encode.float obj.referenceDailyAverage)) ]
+encoderAmounts obj = Encode.object [ ("total", Encode.float obj.total), ("dailyAverage", Encode.float obj.dailyAverage) ]
