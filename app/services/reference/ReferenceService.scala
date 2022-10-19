@@ -29,6 +29,8 @@ trait ReferenceService {
 
   def getReferenceMap(userId: UserId, referenceMapId: ReferenceMapId): Future[Option[ReferenceMap]]
 
+  def allReferenceTrees(userId: UserId): Future[List[ReferenceTree]]
+
   def getReferenceTree(userId: UserId, referenceMapId: ReferenceMapId): Future[Option[ReferenceTree]]
 
   def createReferenceMap(
@@ -84,6 +86,22 @@ object ReferenceService {
 
     override def getReferenceMap(userId: UserId, referenceMapId: ReferenceMapId): Future[Option[ReferenceMap]] =
       db.run(companion.getReferenceMap(userId, referenceMapId))
+
+    override def allReferenceTrees(userId: UserId): Future[List[ReferenceTree]] = {
+      val action = for {
+        referenceMaps <- companion.allReferenceMaps(userId)
+        referenceTrees <- referenceMaps.traverse(referenceMap =>
+          OptionT(
+            companion
+              .getReferenceNutrientsMap(userId, referenceMap.id)
+          )
+            .map(ReferenceTree(referenceMap, _))
+            .value
+        )
+      } yield referenceTrees.flatten.toList
+
+      db.run(action.transactionally)
+    }
 
     override def getReferenceTree(userId: UserId, referenceMapId: ReferenceMapId): Future[Option[ReferenceTree]] = {
       val transformer = for {

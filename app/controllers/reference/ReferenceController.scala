@@ -39,6 +39,21 @@ class ReferenceController @Inject() (
         )
     }
 
+  def allTrees: Action[AnyContent] =
+    userAction.async { request =>
+      referenceService
+        .allReferenceTrees(
+          userId = request.user.id
+        )
+        .map(
+          _.pipe(
+            _.map(_.transformInto[ReferenceTree])
+          )
+            .pipe(_.asJson)
+            .pipe(Ok(_))
+        )
+    }
+
   def get(id: UUID): Action[AnyContent] =
     userAction.async { request =>
       OptionT(referenceService.getReferenceMap(request.user.id, id.transformInto[ReferenceMapId])).fold(
