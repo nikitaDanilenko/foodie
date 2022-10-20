@@ -44,9 +44,9 @@ view model =
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.referenceNutrients.address <| ()
+                    { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.referenceMaps.address <| ()
                     , attributes = [ Style.ids.referenceNutrientsButton ]
-                    , children = [ text "Reference nutrients" ]
+                    , children = [ text "Reference maps" ]
                     }
                 ]
             , div []
