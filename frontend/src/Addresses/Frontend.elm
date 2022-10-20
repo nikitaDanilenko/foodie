@@ -1,6 +1,6 @@
-module Addresses.Frontend exposing (confirmRecovery, confirmRegistration, deleteAccount, ingredientEditor, login, mealEntryEditor, meals, overview, recipes, referenceNutrients, requestRecovery, requestRegistration, statistics, userSettings)
+module Addresses.Frontend exposing (confirmRecovery, confirmRegistration, deleteAccount, ingredientEditor, login, mealEntryEditor, meals, overview, recipes, referenceEntries, referenceMaps, requestRecovery, requestRegistration, statistics, userSettings)
 
-import Api.Auxiliary exposing (JWT, MealId, RecipeId)
+import Api.Auxiliary exposing (JWT, MealId, RecipeId, ReferenceMapId)
 import Api.Types.UserIdentifier exposing (UserIdentifier)
 import Pages.Util.ParserUtil as ParserUtil exposing (AddressWithParser, with1, with2)
 import Url.Parser as Parser exposing ((</>), Parser, s)
@@ -45,9 +45,18 @@ statistics =
     plain "statistics"
 
 
-referenceNutrients : AddressWithParser () a a
-referenceNutrients =
-    plain "reference-nutrients"
+referenceMaps : AddressWithParser () a a
+referenceMaps =
+    plain "reference-maps"
+
+
+referenceEntries : AddressWithParser ReferenceMapId (ReferenceMapId -> a) a
+referenceEntries =
+    with1
+        { step1 = "reference-nutrients"
+        , toString = List.singleton
+        , paramParser = ParserUtil.uuidParser
+        }
 
 
 userSettings : AddressWithParser () a a
