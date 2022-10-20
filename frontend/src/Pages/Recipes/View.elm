@@ -187,9 +187,7 @@ editRecipeLineWith handling editedValue =
     let
         validInput =
             handling.nameLens.get editedValue
-                |> .value
-                |> String.isEmpty
-                |> not
+                |> ValidatedInput.isValid
 
         validatedSaveAction =
             if validInput then

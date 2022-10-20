@@ -89,6 +89,7 @@ body, button, input {
 
 #addRecipeView thead th,
 #addMealView thead th,
+#addReferenceMapView thead th,
 #ingredientEditor thead th,
 #mealEntryEditor thead th,
 #referenceEntryEditor thead th,
@@ -100,6 +101,7 @@ body, button, input {
 
 #addRecipeView thead th:not(.numberLabel),
 #addMealView thead th:not(.numberLabel),
+#addReferenceMapView thead th:not(.numberLabel),
 #ingredientEditor thead th:not(.numberLabel),
 #mealEntryEditor thead th:not(.numberLabel),
 #referenceEntryEditor thead th:not(.numberLabel),
@@ -150,6 +152,7 @@ select {
 
 #addRecipeView .editable,
 #addMealView .editable:not(.date, .time),
+#addReferenceMapView .editable,
 #ingredientEditor .editable,
 #mealEntryEditor .editable,
 #referenceEntryEditor .editable,
@@ -169,6 +172,7 @@ th {
 /*todo: Group column sizes by page*/
 #addRecipeView th:first-child,
 #addMealView th:nth-child(3),
+#addReferenceMapView th:first-child,
 #mealEntryEditor th:first-child,
 #mealEntryEditor th:nth-child(2),
 #referenceEntryEditor th:first-child {
@@ -184,6 +188,7 @@ th {
 }
 
 #addRecipeView th:nth-child(3),
+#addReferenceMapView th:nth-child(2),
 #mealEntryEditor th:nth-child(3) {
     width: 10%;
 }
@@ -312,6 +317,7 @@ th {
 
 #addRecipeView input,
 #addMealView input,
+#addReferenceMapView input,
 #ingredientEditor input:not(.searchField),
 #mealEntryEditor input:not(.searchField),
 #referenceEntryEditor input:not(.searchField),

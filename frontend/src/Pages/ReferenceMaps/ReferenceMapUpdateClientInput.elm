@@ -24,7 +24,10 @@ lenses =
 from : ReferenceMap -> ReferenceMapUpdateClientInput
 from referenceMap =
     { id = referenceMap.id
-    , name = ValidatedInput.nonEmptyString |> ValidatedInput.lenses.value.set referenceMap.name
+    , name =
+        ValidatedInput.nonEmptyString
+            |> ValidatedInput.lenses.value.set referenceMap.name
+            |> ValidatedInput.lenses.text.set referenceMap.name
     }
 
 
