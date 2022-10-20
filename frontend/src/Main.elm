@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Addresses.Frontend
-import Api.Auxiliary exposing (JWT, MealId, RecipeId)
+import Api.Auxiliary exposing (JWT, MealId, RecipeId, ReferenceMapId)
 import Api.Types.LoginContent exposing (decoderLoginContent)
 import Api.Types.UserIdentifier exposing (UserIdentifier)
 import Basics.Extra exposing (flip)
@@ -39,6 +39,9 @@ import Pages.Recovery.Confirm.View
 import Pages.Recovery.Request.Handler
 import Pages.Recovery.Request.Page
 import Pages.Recovery.Request.View
+import Pages.ReferenceEntries.Handler
+import Pages.ReferenceEntries.Page
+import Pages.ReferenceEntries.View
 import Pages.ReferenceMaps.Handler
 import Pages.ReferenceMaps.Page
 import Pages.ReferenceMaps.View
@@ -112,6 +115,7 @@ type Page
     | MealEntries Pages.MealEntries.Page.Model
     | Statistics Pages.Statistics.Page.Model
     | ReferenceMaps Pages.ReferenceMaps.Page.Model
+    | ReferenceEntries Pages.ReferenceEntries.Page.Model
     | RequestRegistration Pages.Registration.Request.Page.Model
     | ConfirmRegistration Pages.Registration.Confirm.Page.Model
     | UserSettings Pages.UserSettings.Page.Model
@@ -137,6 +141,7 @@ type Msg
     | MealEntriesMsg Pages.MealEntries.Page.Msg
     | StatisticsMsg Pages.Statistics.Page.Msg
     | ReferenceMapsMsg Pages.ReferenceMaps.Page.Msg
+    | ReferenceEntriesMsg Pages.ReferenceEntries.Page.Msg
     | RequestRegistrationMsg Pages.Registration.Request.Page.Msg
     | ConfirmRegistrationMsg Pages.Registration.Confirm.Page.Msg
     | UserSettingsMsg Pages.UserSettings.Page.Msg
@@ -154,8 +159,7 @@ titleFor model =
                     (Jwt.decodeToken decoderLoginContent
                         >> Result.toMaybe
                     )
-                |> Maybe.Extra.unwrap "" (\u -> String.concat [": ", u.nickname])
-
+                |> Maybe.Extra.unwrap "" (\u -> String.concat [ ": ", u.nickname ])
     in
     "Foodie" ++ nickname
 
@@ -198,6 +202,9 @@ view model =
 
         ReferenceMaps referenceMaps ->
             Html.map ReferenceMapsMsg (Pages.ReferenceMaps.View.view referenceMaps)
+
+        ReferenceEntries referenceEntries ->
+            Html.map ReferenceEntriesMsg (Pages.ReferenceEntries.View.view referenceEntries)
 
         RequestRegistration requestRegistration ->
             Html.map RequestRegistrationMsg (Pages.Registration.Request.View.view requestRegistration)
@@ -254,9 +261,8 @@ update msg model =
         ( FetchMeasures measures, Ingredients ingredients ) ->
             stepThrough steps.ingredients model (Pages.Ingredients.Handler.update (Pages.Ingredients.Page.UpdateMeasures measures) ingredients)
 
---todo: Restore for entries!
-        --( FetchNutrients nutrients, ReferenceMaps referenceMaps ) ->
-        --    stepThrough steps.referenceMaps model (Pages.ReferenceMaps.Handler.update (Pages.ReferenceMaps.Page.UpdateReferenceMap nutrients) referenceMaps)
+        ( FetchNutrients nutrients, ReferenceEntries referenceEntries ) ->
+            stepThrough steps.referenceEntries model (Pages.ReferenceEntries.Handler.update (Pages.ReferenceEntries.Page.UpdateNutrients nutrients) referenceEntries)
 
         ( OverviewMsg overviewMsg, Overview overview ) ->
             stepThrough steps.overview model (Pages.Overview.Handler.update overviewMsg overview)
@@ -278,6 +284,9 @@ update msg model =
 
         ( ReferenceMapsMsg referenceMapsMsg, ReferenceMaps referenceMaps ) ->
             stepThrough steps.referenceMaps model (Pages.ReferenceMaps.Handler.update referenceMapsMsg referenceMaps)
+
+        ( ReferenceEntriesMsg referenceEntriesMsg, ReferenceEntries referenceEntries ) ->
+            stepThrough steps.referenceEntries model (Pages.ReferenceEntries.Handler.update referenceEntriesMsg referenceEntries)
 
         ( RequestRegistrationMsg requestRegistrationMsg, RequestRegistration requestRegistration ) ->
             stepThrough steps.requestRegistration model (Pages.Registration.Request.Handler.update requestRegistrationMsg requestRegistration)
@@ -316,6 +325,7 @@ steps :
     , meals : StepParameters Pages.Meals.Page.Model Pages.Meals.Page.Msg
     , statistics : StepParameters Pages.Statistics.Page.Model Pages.Statistics.Page.Msg
     , referenceMaps : StepParameters Pages.ReferenceMaps.Page.Model Pages.ReferenceMaps.Page.Msg
+    , referenceEntries : StepParameters Pages.ReferenceEntries.Page.Model Pages.ReferenceEntries.Page.Msg
     , requestRegistration : StepParameters Pages.Registration.Request.Page.Model Pages.Registration.Request.Page.Msg
     , confirmRegistration : StepParameters Pages.Registration.Confirm.Page.Model Pages.Registration.Confirm.Page.Msg
     , userSettings : StepParameters Pages.UserSettings.Page.Model Pages.UserSettings.Page.Msg
@@ -332,6 +342,7 @@ steps =
     , meals = StepParameters Meals MealsMsg
     , statistics = StepParameters Statistics StatisticsMsg
     , referenceMaps = StepParameters ReferenceMaps ReferenceMapsMsg
+    , referenceEntries = StepParameters ReferenceEntries ReferenceEntriesMsg
     , requestRegistration = StepParameters RequestRegistration RequestRegistrationMsg
     , confirmRegistration = StepParameters ConfirmRegistration ConfirmRegistrationMsg
     , userSettings = StepParameters UserSettings UserSettingsMsg
@@ -355,6 +366,7 @@ type Route
     | MealEntriesRoute MealId
     | StatisticsRoute
     | ReferenceMapsRoute
+    | ReferenceEntriesRoute ReferenceMapId
     | RequestRegistrationRoute
     | ConfirmRegistrationRoute UserIdentifier JWT
     | UserSettingsRoute
@@ -374,6 +386,7 @@ plainRouteParser =
         , route Addresses.Frontend.mealEntryEditor.parser MealEntriesRoute
         , route Addresses.Frontend.statistics.parser StatisticsRoute
         , route Addresses.Frontend.referenceMaps.parser ReferenceMapsRoute
+        , route Addresses.Frontend.referenceEntries.parser ReferenceEntriesRoute
         , route Addresses.Frontend.requestRegistration.parser RequestRegistrationRoute
         , route Addresses.Frontend.confirmRegistration.parser ConfirmRegistrationRoute
         , route Addresses.Frontend.userSettings.parser UserSettingsRoute
@@ -437,6 +450,13 @@ followRoute model =
 
                 ReferenceMapsRoute ->
                     Pages.ReferenceMaps.Handler.init flags |> stepThrough steps.referenceMaps model
+
+                ReferenceEntriesRoute referenceMapId ->
+                    Pages.ReferenceEntries.Handler.init
+                        { authorizedAccess = authorizedAccess
+                        , referenceMapId = referenceMapId
+                        }
+                        |> stepThrough steps.referenceEntries model
 
                 RequestRegistrationRoute ->
                     Pages.Registration.Request.Handler.init { configuration = model.configuration } |> stepThrough steps.requestRegistration model
