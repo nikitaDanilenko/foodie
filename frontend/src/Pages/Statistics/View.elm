@@ -1,9 +1,11 @@
 module Pages.Statistics.View exposing (view)
 
+import Api.Auxiliary exposing (NutrientCode)
 import Api.Types.Date exposing (Date)
 import Api.Types.Meal exposing (Meal)
 import Api.Types.NutrientInformation exposing (NutrientInformation)
 import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
+import Dict exposing (Dict)
 import FormatNumber
 import FormatNumber.Locales
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
@@ -94,7 +96,7 @@ view model =
                             , th [ Style.classes.numberLabel ] [ label [] [ text "Percentage" ] ]
                             ]
                         ]
-                    , tbody [] (List.map nutrientInformationLine model.stats.nutrients)
+                    , tbody [] (List.map (model.referenceTree |> Maybe.Extra.unwrap Dict.empty .values |> nutrientInformationLine) model.stats.nutrients)
                     ]
                 ]
             , div [ Style.classes.elements ] [ text "Meals" ]
@@ -130,13 +132,16 @@ view model =
             ]
 
 
-nutrientInformationLine : NutrientInformation -> Html Page.Msg
-nutrientInformationLine nutrientInformation =
+nutrientInformationLine : Dict NutrientCode Float -> NutrientInformation -> Html Page.Msg
+nutrientInformationLine referenceValues nutrientInformation =
     let
+        referenceValue =
+            Dict.get nutrientInformation.nutrientCode referenceValues
+
         factor =
             referenceFactor
                 { actualValue = nutrientInformation.amounts.dailyAverage
-                , referenceValue = nutrientInformation.amounts.referenceDailyAverage
+                , referenceValue = referenceValue
                 }
 
         factorStyle =
@@ -158,7 +163,7 @@ nutrientInformationLine nutrientInformation =
         [ td [] [ label [] [ text <| nutrientInformation.name ] ]
         , td [ Style.classes.numberCell ] [ label [] [ text <| displayFloat <| nutrientInformation.amounts.total ] ]
         , td [ Style.classes.numberCell ] [ label [] [ text <| displayFloat <| nutrientInformation.amounts.dailyAverage ] ]
-        , td [ Style.classes.numberCell ] [ label [] [ text <| Maybe.Extra.unwrap "" displayFloat <| nutrientInformation.amounts.referenceDailyAverage ] ]
+        , td [ Style.classes.numberCell ] [ label [] [ text <| Maybe.Extra.unwrap "" displayFloat <| referenceValue ] ]
         , td [ Style.classes.numberCell ] [ label [] [ text <| NutrientUnit.toString <| nutrientInformation.unit ] ]
         , td [ Style.classes.numberCell ]
             [ label factorStyle

@@ -1,10 +1,13 @@
 module Pages.Statistics.Page exposing (..)
 
+import Api.Auxiliary exposing (NutrientCode)
 import Api.Lenses.RequestIntervalLens as RequestIntervalLens
 import Api.Types.Date exposing (Date)
+import Api.Types.ReferenceMap exposing (ReferenceMap)
 import Api.Types.ReferenceTree exposing (ReferenceTree)
 import Api.Types.RequestInterval exposing (RequestInterval)
 import Api.Types.Stats exposing (Stats)
+import Dict exposing (Dict)
 import Http exposing (Error)
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
@@ -18,10 +21,11 @@ type alias Model =
     { authorizedAccess : AuthorizedAccess
     , requestInterval : RequestInterval
     , stats : Stats
-    , referenceTrees : List ReferenceTree
+    , referenceTrees : List ReferenceNutrientTree
+    , referenceTree : Maybe ReferenceNutrientTree
     , initialization : Initialization Status
     , pagination : Pagination
-    , fetching: Bool
+    , fetching : Bool
     }
 
 
@@ -30,7 +34,8 @@ lenses :
     , from : Lens Model (Maybe Date)
     , to : Lens Model (Maybe Date)
     , stats : Lens Model Stats
-    , referenceTrees : Lens Model (List ReferenceTree)
+    , referenceTrees : Lens Model (List ReferenceNutrientTree)
+    , referenceTree : Lens Model (Maybe ReferenceNutrientTree)
     , initialization : Lens Model (Initialization Status)
     , pagination : Lens Model Pagination
     , fetching : Lens Model Bool
@@ -45,6 +50,7 @@ lenses =
     , to = requestInterval |> Compose.lensWithLens RequestIntervalLens.to
     , stats = Lens .stats (\b a -> { a | stats = b })
     , referenceTrees = Lens .referenceTrees (\b a -> { a | referenceTrees = b })
+    , referenceTree = Lens .referenceTree (\b a -> { a | referenceTree = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , pagination = Lens .pagination (\b a -> { a | pagination = b })
     , fetching = Lens .fetching (\b a -> { a | fetching = b })
@@ -53,6 +59,12 @@ lenses =
 
 type alias Flags =
     { authorizedAccess : AuthorizedAccess
+    }
+
+
+type alias ReferenceNutrientTree =
+    { map : ReferenceMap
+    , values : Dict NutrientCode Float
     }
 
 

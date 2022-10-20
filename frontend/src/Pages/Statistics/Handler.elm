@@ -6,6 +6,7 @@ import Api.Types.Date exposing (Date)
 import Api.Types.ReferenceTree exposing (ReferenceTree)
 import Api.Types.Stats exposing (Stats)
 import Basics.Extra exposing (flip)
+import Dict
 import Either
 import Http exposing (Error)
 import Monocle.Lens as Lens
@@ -24,6 +25,7 @@ init flags =
       , requestInterval = RequestIntervalLens.default
       , stats = defaultStats
       , referenceTrees = []
+      , referenceTree = Nothing
       , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
       , fetching = False
@@ -113,9 +115,26 @@ gotFetchReferenceTreesResponse model result =
         |> Either.fromResult
         |> Either.unpack (flip setError model)
             (\referenceTrees ->
+                let
+                    referenceNutrientTrees =
+                        referenceTrees
+                            |> List.map
+                                (\referenceTree ->
+                                    { map = referenceTree.referenceMap
+                                    , values =
+                                        referenceTree.nutrients
+                                            |> List.map
+                                                (\referenceValue ->
+                                                    ( referenceValue.nutrientCode, referenceValue.referenceAmount )
+                                                )
+                                            |> Dict.fromList
+                                    }
+                                )
+                            |> List.sortBy (.map >> .name)
+                in
                 model
                     |> Page.lenses.referenceTrees.set
-                        (referenceTrees |> List.sortBy (.referenceMap >> .name))
+                        referenceNutrientTrees
             )
     , Cmd.none
     )
