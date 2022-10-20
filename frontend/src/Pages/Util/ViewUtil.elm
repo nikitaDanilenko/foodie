@@ -109,7 +109,7 @@ type Page
     = Recipes
     | Meals
     | Statistics
-    | ReferenceNutrients
+    | ReferenceMaps
     | UserSettings String
     | Login
     | Overview
@@ -117,7 +117,7 @@ type Page
 
 navigationPages : String -> List Page
 navigationPages nickname =
-    [ Recipes, Meals, Statistics, ReferenceNutrients, UserSettings nickname ]
+    [ Recipes, Meals, Statistics, ReferenceMaps, UserSettings nickname ]
 
 
 addressSuffix : Page -> String
@@ -132,8 +132,8 @@ addressSuffix page =
         Statistics ->
             "statistics"
 
-        ReferenceNutrients ->
-            "reference-nutrients"
+        ReferenceMaps ->
+            "reference-maps"
 
         UserSettings _ ->
             "user-settings"
@@ -157,8 +157,8 @@ nameOf page =
         Statistics ->
             "Statistics"
 
-        ReferenceNutrients ->
-            "Reference nutrients"
+        ReferenceMaps ->
+            "Reference maps"
 
         UserSettings nickname ->
             nickname

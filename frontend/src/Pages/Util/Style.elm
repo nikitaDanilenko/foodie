@@ -106,6 +106,7 @@ ids :
     { add : Attribute msg
     , addMealView : Attribute msg
     , addRecipeView : Attribute msg
+    , addReferenceMapView : Attribute msg
     , error : Attribute msg
     , ingredientEditor : Attribute msg
     , mealEntryEditor : Attribute msg
@@ -123,6 +124,7 @@ ids =
     { add = id "add"
     , addMealView = id "addMealView"
     , addRecipeView = id "addRecipeView"
+    , addReferenceMapView = id "addReferenceMapView"
     , error = id "error"
     , ingredientEditor = id "ingredientEditor"
     , mealEntryEditor = id "mealEntryEditor"
