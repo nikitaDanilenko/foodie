@@ -3,6 +3,7 @@ module Pages.ReferenceEntries.Requests exposing
     , deleteReferenceEntry
     , fetchNutrients
     , fetchReferenceEntries
+    , fetchReferenceMap
     , saveReferenceEntry
     )
 
@@ -12,6 +13,7 @@ import Api.Types.Nutrient exposing (decoderNutrient)
 import Api.Types.ReferenceEntry exposing (ReferenceEntry, decoderReferenceEntry)
 import Api.Types.ReferenceEntryCreation exposing (ReferenceEntryCreation, encoderReferenceEntryCreation)
 import Api.Types.ReferenceEntryUpdate exposing (ReferenceEntryUpdate, encoderReferenceEntryUpdate)
+import Api.Types.ReferenceMap exposing (decoderReferenceMap)
 import Http
 import Json.Decode as Decode
 import Pages.ReferenceEntries.Page as Page exposing (Msg(..))
@@ -19,11 +21,11 @@ import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.HttpUtil as HttpUtil
 
 
-fetchReferenceEntries : AuthorizedAccess -> Cmd Page.Msg
-fetchReferenceEntries authorizedAccess =
+fetchReferenceEntries : AuthorizedAccess -> ReferenceMapId -> Cmd Page.Msg
+fetchReferenceEntries authorizedAccess referenceMapId =
     HttpUtil.runPatternWithJwt
         authorizedAccess
-        Addresses.Backend.references.all
+        (Addresses.Backend.references.entries.allOf referenceMapId)
         { body = Http.emptyBody
         , expect = HttpUtil.expectJson GotFetchReferenceEntriesResponse (Decode.list decoderReferenceEntry)
         }
@@ -39,11 +41,21 @@ fetchNutrients authorizedAccess =
         }
 
 
+fetchReferenceMap : AuthorizedAccess -> ReferenceMapId -> Cmd Page.Msg
+fetchReferenceMap authorizedAccess referenceMapId =
+    HttpUtil.runPatternWithJwt
+        authorizedAccess
+        (Addresses.Backend.references.single referenceMapId)
+        { body = Http.emptyBody
+        , expect = HttpUtil.expectJson GotFetchReferenceMapResponse decoderReferenceMap
+        }
+
+
 saveReferenceEntry : AuthorizedAccess -> ReferenceEntryUpdate -> Cmd Page.Msg
 saveReferenceEntry authorizedAccess referenceEntryUpdate =
     HttpUtil.runPatternWithJwt
         authorizedAccess
-        Addresses.Backend.references.update
+        Addresses.Backend.references.entries.update
         { body = encoderReferenceEntryUpdate referenceEntryUpdate |> Http.jsonBody
         , expect = HttpUtil.expectJson GotSaveReferenceEntryResponse decoderReferenceEntry
         }

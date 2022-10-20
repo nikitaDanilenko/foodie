@@ -34,7 +34,7 @@ view model =
         , initialization = .initialization
         , configuration = .authorizedAccess >> .configuration
         , jwt = .authorizedAccess >> .jwt >> Just
-        , currentPage = Just ViewUtil.ReferenceMaps
+        , currentPage = Nothing
         , showNavigation = True
         }
         model

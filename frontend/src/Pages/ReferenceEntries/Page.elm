@@ -56,7 +56,8 @@ type alias Flags =
 
 
 lenses :
-    { referenceEntries : Lens Model ReferenceEntryOrUpdateMap
+    { referenceMap : Lens Model (Maybe ReferenceMap)
+    , referenceEntries : Lens Model ReferenceEntryOrUpdateMap
     , referenceEntriesToAdd : Lens Model AddNutrientMap
     , nutrients : Lens Model NutrientMap
     , nutrientsSearchString : Lens Model String
@@ -64,7 +65,8 @@ lenses :
     , pagination : Lens Model Pagination
     }
 lenses =
-    { referenceEntries = Lens .referenceEntries (\b a -> { a | referenceEntries = b })
+    { referenceMap = Lens .referenceMap (\b a -> { a | referenceMap = b })
+    , referenceEntries = Lens .referenceEntries (\b a -> { a | referenceEntries = b })
     , referenceEntriesToAdd = Lens .referenceEntriesToAdd (\b a -> { a | referenceEntriesToAdd = b })
     , nutrients = Lens .nutrients (\b a -> { a | nutrients = b })
     , nutrientsSearchString = Lens .nutrientsSearchString (\b a -> { a | nutrientsSearchString = b })
@@ -92,6 +94,7 @@ type Msg
     | DeleteReferenceEntry NutrientCode
     | GotDeleteReferenceEntryResponse NutrientCode (Result Error ())
     | GotFetchReferenceEntriesResponse (Result Error (List ReferenceEntry))
+    | GotFetchReferenceMapResponse (Result Error ReferenceMap)
     | GotFetchNutrientsResponse (Result Error (List Nutrient))
     | SelectNutrient NutrientCode
     | DeselectNutrient NutrientCode

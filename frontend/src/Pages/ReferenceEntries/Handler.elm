@@ -1,8 +1,9 @@
 module Pages.ReferenceEntries.Handler exposing (init, update)
 
-import Api.Auxiliary exposing (JWT, NutrientCode)
+import Api.Auxiliary exposing (JWT, NutrientCode, ReferenceMapId)
 import Api.Types.Nutrient exposing (Nutrient, decoderNutrient, encoderNutrient)
 import Api.Types.ReferenceEntry exposing (ReferenceEntry)
+import Api.Types.ReferenceMap exposing (ReferenceMap)
 import Basics.Extra exposing (flip)
 import Dict
 import Either exposing (Either(..))
@@ -18,7 +19,6 @@ import Pages.ReferenceEntries.ReferenceEntryCreationClientInput as ReferenceEntr
 import Pages.ReferenceEntries.ReferenceEntryUpdateClientInput as ReferenceEntryUpdateClientInput exposing (ReferenceEntryUpdateClientInput)
 import Pages.ReferenceEntries.Requests as Requests
 import Pages.ReferenceEntries.Status as Status
-import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Pages.Util.PaginationSettings as PaginationSettings
 import Ports
 import Util.Editing as Editing exposing (Editing)
@@ -39,14 +39,15 @@ init flags =
       , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
       }
-    , initialFetch flags.authorizedAccess
+    , initialFetch flags
     )
 
 
-initialFetch : AuthorizedAccess -> Cmd Page.Msg
-initialFetch authorizedAccess =
+initialFetch : Page.Flags -> Cmd Page.Msg
+initialFetch flags =
     Cmd.batch
-        [ Requests.fetchReferenceEntries authorizedAccess
+        [ Requests.fetchReferenceEntries flags.authorizedAccess flags.referenceMapId
+        , Requests.fetchReferenceMap flags.authorizedAccess flags.referenceMapId
         , Ports.doFetchNutrients ()
         ]
 
@@ -77,6 +78,9 @@ update msg model =
 
         Page.GotFetchReferenceEntriesResponse result ->
             gotFetchReferenceEntrysResponse model result
+
+        Page.GotFetchReferenceMapResponse result ->
+            gotFetchReferenceMapResponse model result
 
         Page.GotFetchNutrientsResponse result ->
             gotFetchNutrientsResponse model result
@@ -191,6 +195,20 @@ gotFetchReferenceEntrysResponse model result =
                 model
                     |> Page.lenses.referenceEntries.set (referenceEntries |> List.map (\r -> ( r.nutrientCode, Left r )) |> Dict.fromList)
                     |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.referenceEntries).set True
+            )
+    , Cmd.none
+    )
+
+
+gotFetchReferenceMapResponse : Page.Model -> Result Error ReferenceMap -> ( Page.Model, Cmd Page.Msg )
+gotFetchReferenceMapResponse model result =
+    ( result
+        |> Either.fromResult
+        |> Either.unpack (flip setError model)
+            (\referenceMap ->
+                model
+                    |> Page.lenses.referenceMap.set (Just referenceMap)
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.referenceMap).set True
             )
     , Cmd.none
     )
