@@ -114,8 +114,8 @@ ids :
     , navigation : Attribute msg
     , overviewMain : Attribute msg
     , recipesButton : Attribute msg
-    , referenceNutrientEditor : Attribute msg
-    , referenceNutrientsButton : Attribute msg
+    , referenceEntryEditor : Attribute msg
+    , referenceMapsButton : Attribute msg
     , statistics : Attribute msg
     , statisticsButton : Attribute msg
     , userSettingsButton : Attribute msg
@@ -132,8 +132,8 @@ ids =
     , navigation = id "navigation"
     , overviewMain = id "overviewMain"
     , recipesButton = id "recipesButton"
-    , referenceNutrientEditor = id "referenceNutrientEditor"
-    , referenceNutrientsButton = id "referenceNutrientsButton"
+    , referenceEntryEditor = id "referenceEntryEditor"
+    , referenceMapsButton = id "referenceMapsButton"
     , statistics = id "statistics"
     , statisticsButton = id "statisticsButton"
     , userSettingsButton = id "userSettingsButton"

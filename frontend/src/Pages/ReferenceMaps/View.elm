@@ -63,15 +63,11 @@ view model =
                 ++ [ table []
                         [ colgroup []
                             [ col [] []
-                            , col [] []
-                            , col [] []
                             , col [ stringProperty "span" "3" ] []
                             ]
                         , thead []
                             [ tr [ Style.classes.tableHeader ]
                                 [ th [ scope "col" ] [ label [] [ text "Name" ] ]
-                                , th [ scope "col" ] [ label [] [ text "Description" ] ]
-                                , th [ scope "col", Style.classes.numberLabel ] [ label [] [ text "Servings" ] ]
                                 , th [ colspan 3, scope "colgroup", Style.classes.controlsGroup ] []
                                 ]
                             ]
@@ -105,7 +101,7 @@ createReferenceMap maybeCreation =
                     [ Style.classes.button.add
                     , onClick <| Page.UpdateReferenceMapCreation <| Just <| ReferenceMapCreationClientInput.default
                     ]
-                    [ text "New referenceMap" ]
+                    [ text "New reference map" ]
                 ]
                 |> Left
 
@@ -130,9 +126,9 @@ editOrDeleteReferenceMapLine configuration referenceMap =
             ]
         , td [ Style.classes.controls ]
             [ Links.linkButton
-                { url = Links.frontendPage configuration <| Addresses.Frontend.ingredientEditor.address <| referenceMap.id
+                { url = Links.frontendPage configuration <| Addresses.Frontend.referenceEntries.address <| referenceMap.id
                 , attributes = [ Style.classes.button.editor ]
-                , children = [ text "Ingredients" ]
+                , children = [ text "Entries" ]
                 }
             ]
         ]

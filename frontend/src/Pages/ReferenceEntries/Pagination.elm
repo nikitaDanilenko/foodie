@@ -1,28 +1,28 @@
-module Pages.ReferenceNutrients.Pagination exposing (..)
+module Pages.ReferenceEntries.Pagination exposing (..)
 
 import Monocle.Lens exposing (Lens)
 import Pages.Util.PaginationSettings as PaginationSettings exposing (PaginationSettings)
 
 
 type alias Pagination =
-    { referenceNutrients : PaginationSettings
+    { referenceEntries : PaginationSettings
     , nutrients : PaginationSettings
     }
 
 
 initial : Pagination
 initial =
-    { referenceNutrients = PaginationSettings.initial
+    { referenceEntries = PaginationSettings.initial
     , nutrients = PaginationSettings.initial
     }
 
 
 lenses :
-    { referenceNutrients : Lens Pagination PaginationSettings
+    { referenceEntries : Lens Pagination PaginationSettings
     , nutrients : Lens Pagination PaginationSettings
     }
 lenses =
-    { referenceNutrients = Lens .referenceNutrients (\b a -> { a | referenceNutrients = b })
+    { referenceEntries = Lens .referenceEntries (\b a -> { a | referenceEntries = b })
     , nutrients = Lens .nutrients (\b a -> { a | nutrients = b })
     }
 

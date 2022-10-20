@@ -1,19 +1,20 @@
-module Pages.ReferenceNutrients.Page exposing (..)
+module Pages.ReferenceEntries.Page exposing (..)
 
-import Api.Auxiliary exposing (JWT, NutrientCode)
+import Api.Auxiliary exposing (JWT, NutrientCode, ReferenceMapId)
 import Api.Types.Nutrient exposing (Nutrient)
 import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
-import Api.Types.ReferenceNutrient exposing (ReferenceNutrient)
+import Api.Types.ReferenceEntry exposing (ReferenceEntry)
+import Api.Types.ReferenceMap exposing (ReferenceMap)
 import Basics.Extra exposing (flip)
 import Dict exposing (Dict)
 import Either exposing (Either)
 import Http exposing (Error)
 import Maybe.Extra
 import Monocle.Lens exposing (Lens)
-import Pages.ReferenceNutrients.Pagination exposing (Pagination)
-import Pages.ReferenceNutrients.ReferenceNutrientCreationClientInput exposing (ReferenceNutrientCreationClientInput)
-import Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput exposing (ReferenceNutrientUpdateClientInput)
-import Pages.ReferenceNutrients.Status exposing (Status)
+import Pages.ReferenceEntries.Pagination exposing (Pagination)
+import Pages.ReferenceEntries.ReferenceEntryCreationClientInput exposing (ReferenceEntryCreationClientInput)
+import Pages.ReferenceEntries.ReferenceEntryUpdateClientInput exposing (ReferenceEntryUpdateClientInput)
+import Pages.ReferenceEntries.Status exposing (Status)
 import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.Editing exposing (Editing)
 import Util.Initialization exposing (Initialization)
@@ -21,17 +22,19 @@ import Util.Initialization exposing (Initialization)
 
 type alias Model =
     { authorizedAccess : AuthorizedAccess
-    , referenceNutrients : ReferenceNutrientOrUpdateMap
+    , referenceMapId : ReferenceMapId
+    , referenceMap : Maybe ReferenceMap
+    , referenceEntries : ReferenceEntryOrUpdateMap
     , nutrients : NutrientMap
     , nutrientsSearchString : String
-    , referenceNutrientsToAdd : AddNutrientMap
+    , referenceEntriesToAdd : AddNutrientMap
     , initialization : Initialization Status
     , pagination : Pagination
     }
 
 
-type alias ReferenceNutrientOrUpdate =
-    Either ReferenceNutrient (Editing ReferenceNutrient ReferenceNutrientUpdateClientInput)
+type alias ReferenceEntryOrUpdate =
+    Either ReferenceEntry (Editing ReferenceEntry ReferenceEntryUpdateClientInput)
 
 
 type alias NutrientMap =
@@ -39,29 +42,30 @@ type alias NutrientMap =
 
 
 type alias AddNutrientMap =
-    Dict NutrientCode ReferenceNutrientCreationClientInput
+    Dict NutrientCode ReferenceEntryCreationClientInput
 
 
-type alias ReferenceNutrientOrUpdateMap =
-    Dict NutrientCode ReferenceNutrientOrUpdate
+type alias ReferenceEntryOrUpdateMap =
+    Dict NutrientCode ReferenceEntryOrUpdate
 
 
 type alias Flags =
     { authorizedAccess : AuthorizedAccess
+    , referenceMapId : ReferenceMapId
     }
 
 
 lenses :
-    { referenceNutrients : Lens Model ReferenceNutrientOrUpdateMap
-    , referenceNutrientsToAdd : Lens Model AddNutrientMap
+    { referenceEntries : Lens Model ReferenceEntryOrUpdateMap
+    , referenceEntriesToAdd : Lens Model AddNutrientMap
     , nutrients : Lens Model NutrientMap
     , nutrientsSearchString : Lens Model String
     , initialization : Lens Model (Initialization Status)
     , pagination : Lens Model Pagination
     }
 lenses =
-    { referenceNutrients = Lens .referenceNutrients (\b a -> { a | referenceNutrients = b })
-    , referenceNutrientsToAdd = Lens .referenceNutrientsToAdd (\b a -> { a | referenceNutrientsToAdd = b })
+    { referenceEntries = Lens .referenceEntries (\b a -> { a | referenceEntries = b })
+    , referenceEntriesToAdd = Lens .referenceEntriesToAdd (\b a -> { a | referenceEntriesToAdd = b })
     , nutrients = Lens .nutrients (\b a -> { a | nutrients = b })
     , nutrientsSearchString = Lens .nutrientsSearchString (\b a -> { a | nutrientsSearchString = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
@@ -80,20 +84,20 @@ nutrientUnitOrEmpty nutrientMap =
 
 
 type Msg
-    = UpdateReferenceNutrient ReferenceNutrientUpdateClientInput
-    | SaveReferenceNutrientEdit ReferenceNutrientUpdateClientInput
-    | GotSaveReferenceNutrientResponse (Result Error ReferenceNutrient)
-    | EnterEditReferenceNutrient NutrientCode
-    | ExitEditReferenceNutrientAt NutrientCode
-    | DeleteReferenceNutrient NutrientCode
-    | GotDeleteReferenceNutrientResponse NutrientCode (Result Error ())
-    | GotFetchReferenceNutrientsResponse (Result Error (List ReferenceNutrient))
+    = UpdateReferenceEntry ReferenceEntryUpdateClientInput
+    | SaveReferenceEntryEdit ReferenceEntryUpdateClientInput
+    | GotSaveReferenceEntryResponse (Result Error ReferenceEntry)
+    | EnterEditReferenceEntry NutrientCode
+    | ExitEditReferenceEntryAt NutrientCode
+    | DeleteReferenceEntry NutrientCode
+    | GotDeleteReferenceEntryResponse NutrientCode (Result Error ())
+    | GotFetchReferenceEntriesResponse (Result Error (List ReferenceEntry))
     | GotFetchNutrientsResponse (Result Error (List Nutrient))
     | SelectNutrient NutrientCode
     | DeselectNutrient NutrientCode
     | AddNutrient NutrientCode
-    | GotAddReferenceNutrientResponse (Result Error ReferenceNutrient)
-    | UpdateAddNutrient ReferenceNutrientCreationClientInput
+    | GotAddReferenceEntryResponse (Result Error ReferenceEntry)
+    | UpdateAddNutrient ReferenceEntryCreationClientInput
     | UpdateNutrients String
     | SetNutrientsSearchString String
     | SetPagination Pagination

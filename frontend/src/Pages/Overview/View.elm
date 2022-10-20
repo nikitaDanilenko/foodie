@@ -45,7 +45,7 @@ view model =
             , div []
                 [ Links.linkButton
                     { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.referenceMaps.address <| ()
-                    , attributes = [ Style.ids.referenceNutrientsButton ]
+                    , attributes = [ Style.ids.referenceMapsButton ]
                     , children = [ text "Reference maps" ]
                     }
                 ]

@@ -1,25 +1,25 @@
-module Pages.ReferenceNutrients.ReferenceNutrientUpdateClientInput exposing (..)
+module Pages.ReferenceEntries.ReferenceEntryUpdateClientInput exposing (..)
 
-import Api.Auxiliary exposing (NutrientCode, RecipeId)
+import Api.Auxiliary exposing (NutrientCode, RecipeId, ReferenceMapId)
+import Api.Types.ReferenceEntryUpdate exposing (ReferenceEntryUpdate)
 import Api.Types.ReferenceNutrient exposing (ReferenceNutrient)
-import Api.Types.ReferenceNutrientUpdate exposing (ReferenceNutrientUpdate)
 import Monocle.Lens exposing (Lens)
 import Pages.Util.ValidatedInput as ValidatedInput exposing (ValidatedInput)
 
 
-type alias ReferenceNutrientUpdateClientInput =
+type alias ReferenceEntryUpdateClientInput =
     { nutrientCode : NutrientCode
     , amount : ValidatedInput Float
     }
 
 
-lenses : { amount : Lens ReferenceNutrientUpdateClientInput (ValidatedInput Float) }
+lenses : { amount : Lens ReferenceEntryUpdateClientInput (ValidatedInput Float) }
 lenses =
     { amount = Lens .amount (\b a -> { a | amount = b })
     }
 
 
-from : ReferenceNutrient -> ReferenceNutrientUpdateClientInput
+from : ReferenceNutrient -> ReferenceEntryUpdateClientInput
 from referenceNutrient =
     { nutrientCode = referenceNutrient.nutrientCode
     , amount =
@@ -29,8 +29,9 @@ from referenceNutrient =
     }
 
 
-to : ReferenceNutrientUpdateClientInput -> ReferenceNutrientUpdate
-to input =
-    { nutrientCode = input.nutrientCode
+to : ReferenceMapId -> ReferenceEntryUpdateClientInput -> ReferenceEntryUpdate
+to referenceMapId input =
+    { referenceMapId = referenceMapId
+    , nutrientCode = input.nutrientCode
     , amount = input.amount.value
     }
