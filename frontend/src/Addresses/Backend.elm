@@ -176,7 +176,7 @@ references :
 references =
     let
         base =
-            (::) "references"
+            (::) "reference-maps"
 
         entriesWord =
             "entries"
