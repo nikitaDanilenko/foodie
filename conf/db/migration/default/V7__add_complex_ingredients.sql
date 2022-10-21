@@ -1,7 +1,7 @@
 create table complex_ingredient
 (
     recipe_id uuid    not null,
-    factor    decimal not null,
+    amount    decimal not null,
     unit      text    not null
 );
 

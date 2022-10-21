@@ -20,9 +20,9 @@ trait Tables {
 
   /** Entity class storing rows of table ComplexIngredient
    *  @param recipeId Database column recipe_id SqlType(uuid), PrimaryKey
-   *  @param factor Database column factor SqlType(numeric)
+   *  @param amount Database column amount SqlType(numeric)
    *  @param unit Database column unit SqlType(text) */
-  case class ComplexIngredientRow(recipeId: java.util.UUID, factor: scala.math.BigDecimal, unit: String)
+  case class ComplexIngredientRow(recipeId: java.util.UUID, amount: scala.math.BigDecimal, unit: String)
   /** GetResult implicit for fetching ComplexIngredientRow objects using plain SQL queries */
   implicit def GetResultComplexIngredientRow(implicit e0: GR[java.util.UUID], e1: GR[scala.math.BigDecimal], e2: GR[String]): GR[ComplexIngredientRow] = GR{
     prs => import prs._
@@ -30,14 +30,14 @@ trait Tables {
   }
   /** Table description of table complex_ingredient. Objects of this class serve as prototypes for rows in queries. */
   class ComplexIngredient(_tableTag: Tag) extends profile.api.Table[ComplexIngredientRow](_tableTag, "complex_ingredient") {
-    def * = (recipeId, factor, unit) <> (ComplexIngredientRow.tupled, ComplexIngredientRow.unapply)
+    def * = (recipeId, amount, unit) <> (ComplexIngredientRow.tupled, ComplexIngredientRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(recipeId), Rep.Some(factor), Rep.Some(unit))).shaped.<>({r=>import r._; _1.map(_=> ComplexIngredientRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(recipeId), Rep.Some(amount), Rep.Some(unit))).shaped.<>({r=>import r._; _1.map(_=> ComplexIngredientRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column recipe_id SqlType(uuid), PrimaryKey */
     val recipeId: Rep[java.util.UUID] = column[java.util.UUID]("recipe_id", O.PrimaryKey)
-    /** Database column factor SqlType(numeric) */
-    val factor: Rep[scala.math.BigDecimal] = column[scala.math.BigDecimal]("factor")
+    /** Database column amount SqlType(numeric) */
+    val amount: Rep[scala.math.BigDecimal] = column[scala.math.BigDecimal]("amount")
     /** Database column unit SqlType(text) */
     val unit: Rep[String] = column[String]("unit")
 
