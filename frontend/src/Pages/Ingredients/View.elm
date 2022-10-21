@@ -323,10 +323,10 @@ viewFoodLine foodMap ingredientsToAdd ingredients food =
                         validInput =
                             ingredientToAdd.amountUnit.factor |> ValidatedInput.isValid
 
-                        ( confirmName, confirmMsg ) =
+                        ( confirmName, confirmMsg, confirmStyle ) =
                             case DictUtil.firstSuch (\ingredient -> Editing.field .foodId ingredient == ingredientToAdd.foodId) ingredients of
                                 Nothing ->
-                                    ( "Add", addMsg )
+                                    ( "Add", addMsg, Style.classes.button.confirm )
 
                                 Just ingredientOrUpdate ->
                                     ( "Update"
@@ -335,6 +335,7 @@ viewFoodLine foodMap ingredientsToAdd ingredients food =
                                         |> IngredientUpdateClientInput.from
                                         |> IngredientUpdateClientInput.lenses.amountUnit.set ingredientToAdd.amountUnit
                                         |> Page.SaveIngredientEdit
+                                    , Style.classes.button.edit
                                     )
                     in
                     [ td [ Style.classes.numberCell ]
@@ -381,7 +382,7 @@ viewFoodLine foodMap ingredientsToAdd ingredients food =
                         ]
                     , td [ Style.classes.controls ]
                         [ button
-                            [ Style.classes.button.confirm
+                            [ confirmStyle
                             , disabled <| not <| validInput
                             , onClick confirmMsg
                             ]

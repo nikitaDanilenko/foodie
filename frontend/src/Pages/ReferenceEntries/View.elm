@@ -250,10 +250,10 @@ viewNutrientLine nutrientMap referenceEntries referenceEntriesToAdd nutrient =
 
                 Just referenceNutrientToAdd ->
                     let
-                        ( confirmName, confirmMsg ) =
+                        ( confirmName, confirmMsg, confirmStyle ) =
                             case Dict.get referenceNutrientToAdd.nutrientCode referenceEntries of
                                 Nothing ->
-                                    ( "Add", addMsg )
+                                    ( "Add", addMsg, Style.classes.button.confirm )
 
                                 Just referenceNutrient ->
                                     ( "Update"
@@ -262,6 +262,7 @@ viewNutrientLine nutrientMap referenceEntries referenceEntriesToAdd nutrient =
                                         |> ReferenceEntryUpdateClientInput.from
                                         |> ReferenceEntryUpdateClientInput.lenses.amount.set referenceNutrientToAdd.amount
                                         |> Page.SaveReferenceEntryEdit
+                                    , Style.classes.button.edit
                                     )
                     in
                     [ td [ Style.classes.numberCell ]
@@ -284,7 +285,7 @@ viewNutrientLine nutrientMap referenceEntries referenceEntriesToAdd nutrient =
                     , td [ Style.classes.numberCell ] [ label [] [ text (referenceNutrientToAdd.nutrientCode |> Page.nutrientUnitOrEmpty nutrientMap) ] ]
                     , td [ Style.classes.controls ]
                         [ button
-                            [ Style.classes.button.confirm
+                            [ confirmStyle
                             , disabled (referenceNutrientToAdd.amount |> ValidatedInput.isValid |> not)
                             , onClick confirmMsg
                             ]

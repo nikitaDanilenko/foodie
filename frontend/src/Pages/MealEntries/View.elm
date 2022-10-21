@@ -259,10 +259,10 @@ viewRecipeLine mealEntriesToAdd mealEntries recipe =
                         validInput =
                             mealEntryToAdd.numberOfServings |> ValidatedInput.isValid
 
-                        ( confirmName, confirmMsg ) =
+                        ( confirmName, confirmMsg, confirmStyle ) =
                             case DictUtil.firstSuch (\mealEntry -> Editing.field .recipeId mealEntry == mealEntryToAdd.recipeId) mealEntries of
                                 Nothing ->
-                                    ( "Add", addMsg )
+                                    ( "Add", addMsg, Style.classes.button.confirm )
 
                                 Just mealEntryOrUpdate ->
                                     let
@@ -274,6 +274,7 @@ viewRecipeLine mealEntriesToAdd mealEntries recipe =
                                         |> MealEntryUpdateClientInput.from
                                         |> MealEntryUpdateClientInput.lenses.numberOfServings.set mealEntryToAdd.numberOfServings
                                         |> Page.SaveMealEntryEdit
+                                    , Style.classes.button.edit
                                     )
                     in
                     [ td [ Style.classes.numberCell ]
@@ -300,7 +301,7 @@ viewRecipeLine mealEntriesToAdd mealEntries recipe =
                         ]
                     , td [ Style.classes.controls ]
                         [ button
-                            [ Style.classes.button.confirm
+                            [ confirmStyle
                             , disabled <|
                                 not <|
                                     validInput
