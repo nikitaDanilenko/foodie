@@ -24,7 +24,7 @@ init flags =
     ( { authorizedAccess = flags.authorizedAccess
       , requestInterval = RequestIntervalLens.default
       , stats = defaultStats
-      , referenceTrees = []
+      , referenceTrees = Dict.empty
       , referenceTree = Nothing
       , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
@@ -120,17 +120,19 @@ gotFetchReferenceTreesResponse model result =
                         referenceTrees
                             |> List.map
                                 (\referenceTree ->
-                                    { map = referenceTree.referenceMap
-                                    , values =
-                                        referenceTree.nutrients
-                                            |> List.map
-                                                (\referenceValue ->
-                                                    ( referenceValue.nutrientCode, referenceValue.referenceAmount )
-                                                )
-                                            |> Dict.fromList
-                                    }
+                                    ( referenceTree.referenceMap.id
+                                    , { map = referenceTree.referenceMap
+                                      , values =
+                                            referenceTree.nutrients
+                                                |> List.map
+                                                    (\referenceValue ->
+                                                        ( referenceValue.nutrientCode, referenceValue.referenceAmount )
+                                                    )
+                                                |> Dict.fromList
+                                      }
+                                    )
                                 )
-                            |> List.sortBy (.map >> .name)
+                            |> Dict.fromList
                 in
                 model
                     |> Page.lenses.referenceTrees.set
