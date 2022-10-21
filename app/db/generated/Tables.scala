@@ -14,9 +14,38 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Array(ConversionFactor.schema, FoodGroup.schema, FoodName.schema, FoodSource.schema, Meal.schema, MealEntry.schema, MeasureName.schema, NutrientAmount.schema, NutrientName.schema, NutrientSource.schema, Recipe.schema, RecipeIngredient.schema, ReferenceEntry.schema, ReferenceMap.schema, RefuseAmount.schema, RefuseName.schema, Session.schema, User.schema, YieldAmount.schema, YieldName.schema).reduceLeft(_ ++ _)
+  lazy val schema: profile.SchemaDescription = Array(ComplexIngredient.schema, ConversionFactor.schema, FoodGroup.schema, FoodName.schema, FoodSource.schema, Meal.schema, MealEntry.schema, MeasureName.schema, NutrientAmount.schema, NutrientName.schema, NutrientSource.schema, Recipe.schema, RecipeIngredient.schema, ReferenceEntry.schema, ReferenceMap.schema, RefuseAmount.schema, RefuseName.schema, Session.schema, User.schema, YieldAmount.schema, YieldName.schema).reduceLeft(_ ++ _)
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
+
+  /** Entity class storing rows of table ComplexIngredient
+   *  @param recipeId Database column recipe_id SqlType(uuid), PrimaryKey
+   *  @param factor Database column factor SqlType(numeric)
+   *  @param unit Database column unit SqlType(text) */
+  case class ComplexIngredientRow(recipeId: java.util.UUID, factor: scala.math.BigDecimal, unit: String)
+  /** GetResult implicit for fetching ComplexIngredientRow objects using plain SQL queries */
+  implicit def GetResultComplexIngredientRow(implicit e0: GR[java.util.UUID], e1: GR[scala.math.BigDecimal], e2: GR[String]): GR[ComplexIngredientRow] = GR{
+    prs => import prs._
+    ComplexIngredientRow.tupled((<<[java.util.UUID], <<[scala.math.BigDecimal], <<[String]))
+  }
+  /** Table description of table complex_ingredient. Objects of this class serve as prototypes for rows in queries. */
+  class ComplexIngredient(_tableTag: Tag) extends profile.api.Table[ComplexIngredientRow](_tableTag, "complex_ingredient") {
+    def * = (recipeId, factor, unit) <> (ComplexIngredientRow.tupled, ComplexIngredientRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = ((Rep.Some(recipeId), Rep.Some(factor), Rep.Some(unit))).shaped.<>({r=>import r._; _1.map(_=> ComplexIngredientRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column recipe_id SqlType(uuid), PrimaryKey */
+    val recipeId: Rep[java.util.UUID] = column[java.util.UUID]("recipe_id", O.PrimaryKey)
+    /** Database column factor SqlType(numeric) */
+    val factor: Rep[scala.math.BigDecimal] = column[scala.math.BigDecimal]("factor")
+    /** Database column unit SqlType(text) */
+    val unit: Rep[String] = column[String]("unit")
+
+    /** Foreign key referencing Recipe (database name complex_ingredient_recipe_id) */
+    lazy val recipeFk = foreignKey("complex_ingredient_recipe_id", recipeId, Recipe)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+  }
+  /** Collection-like TableQuery object for table ComplexIngredient */
+  lazy val ComplexIngredient = new TableQuery(tag => new ComplexIngredient(tag))
 
   /** Entity class storing rows of table ConversionFactor
    *  @param foodId Database column food_id SqlType(int4)
