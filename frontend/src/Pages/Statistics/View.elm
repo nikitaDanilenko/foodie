@@ -6,6 +6,7 @@ import Api.Types.Meal exposing (Meal)
 import Api.Types.NutrientInformation exposing (NutrientInformation)
 import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
 import Dict exposing (Dict)
+import Dropdown exposing (dropdown)
 import FormatNumber
 import FormatNumber.Locales
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
@@ -82,6 +83,31 @@ view model =
                             ]
                         ]
                     ]
+                ]
+            , div [ Style.classes.elements ] [ text "Reference map" ]
+            , div [ Style.classes.info ]
+                [ dropdown
+                    { items =
+                        model.referenceTrees
+                            |> Dict.toList
+                            |> List.sortBy (Tuple.second >> .map >> .name)
+                            |> List.map
+                                (\( referenceMapId, referenceTree ) ->
+                                    { value = referenceMapId
+                                    , text = referenceTree.map.name
+                                    , enabled = True
+                                    }
+                                )
+                    , emptyItem =
+                        Just
+                            { value = ""
+                            , text = ""
+                            , enabled = True
+                            }
+                    , onChange = Page.SelectReferenceMap
+                    }
+                    []
+                    (model.referenceTree |> Maybe.map (.map >> .id))
                 ]
             , div [ Style.classes.elements ] [ text "Nutrients" ]
             , div [ Style.classes.info, Style.classes.nutrients ]

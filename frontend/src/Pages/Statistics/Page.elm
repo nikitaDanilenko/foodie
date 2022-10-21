@@ -75,3 +75,4 @@ type Msg
     | GotFetchStatsResponse (Result Error Stats)
     | GotFetchReferenceTreesResponse (Result Error (List ReferenceTree))
     | SetPagination Pagination
+    | SelectReferenceMap (Maybe ReferenceMapId)

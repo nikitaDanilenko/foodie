@@ -1,5 +1,6 @@
 module Pages.Statistics.Handler exposing (init, update)
 
+import Api.Auxiliary exposing (ReferenceMapId)
 import Api.Lenses.RequestIntervalLens as RequestIntervalLens
 import Api.Lenses.StatsLens as StatsLens
 import Api.Types.Date exposing (Date)
@@ -66,6 +67,9 @@ update msg model =
 
         Page.SetPagination pagination ->
             setPagination model pagination
+
+        Page.SelectReferenceMap referenceMapId ->
+            selectReferenceMap model referenceMapId
 
 
 setFromDate : Page.Model -> Maybe Date -> ( Page.Model, Cmd Page.Msg )
@@ -135,8 +139,7 @@ gotFetchReferenceTreesResponse model result =
                             |> Dict.fromList
                 in
                 model
-                    |> Page.lenses.referenceTrees.set
-                        referenceNutrientTrees
+                    |> Page.lenses.referenceTrees.set referenceNutrientTrees
             )
     , Cmd.none
     )
@@ -145,6 +148,15 @@ gotFetchReferenceTreesResponse model result =
 setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
 setPagination model pagination =
     ( model |> Page.lenses.pagination.set pagination
+    , Cmd.none
+    )
+
+
+selectReferenceMap : Page.Model -> Maybe ReferenceMapId -> ( Page.Model, Cmd Page.Msg )
+selectReferenceMap model referenceMapId =
+    ( referenceMapId
+        |> Maybe.andThen (flip Dict.get model.referenceTrees)
+        |> flip Page.lenses.referenceTree.set model
     , Cmd.none
     )
 
