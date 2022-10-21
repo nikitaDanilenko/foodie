@@ -157,7 +157,7 @@ view model =
                         , tbody []
                             (viewFoods
                                 |> Paginate.page
-                                |> List.map (viewFoodLine model.foods model.measures model.foodsToAdd model.ingredients)
+                                |> List.map (viewFoodLine model.foods model.foodsToAdd model.ingredients)
                             )
                         ]
                     , div [ Style.classes.pagination ]
@@ -287,8 +287,8 @@ onChangeDropdown ps =
         >> ps.mkMsg
 
 
-viewFoodLine : Page.FoodMap -> Page.MeasureMap -> Page.AddFoodsMap -> Page.IngredientOrUpdateMap -> Food -> Html Page.Msg
-viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
+viewFoodLine : Page.FoodMap -> Page.AddFoodsMap -> Page.IngredientOrUpdateMap -> Food -> Html Page.Msg
+viewFoodLine foodMap ingredientsToAdd ingredients food =
     let
         addMsg =
             Page.AddFood food.id
@@ -365,8 +365,7 @@ viewFoodLine foodMap measureMap ingredientsToAdd ingredients food =
                     , td [ Style.classes.numberCell ]
                         [ dropdown
                             { items = unitDropdown foodMap food.id
-                            , emptyItem =
-                                Just <| startingDropdownUnit measureMap ingredientToAdd.amountUnit.measureId
+                            , emptyItem = Nothing
                             , onChange =
                                 onChangeDropdown
                                     { amountUnitLens = IngredientCreationClientInput.amountUnit
