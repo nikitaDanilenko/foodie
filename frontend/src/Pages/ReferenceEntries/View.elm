@@ -45,7 +45,7 @@ view model =
                     (editOrDeleteReferenceEntryLine model.nutrients)
                     (\e -> e.update |> editReferenceEntryLine model.nutrients e.original)
 
-            viewEditReferenceEntrys =
+            viewEditReferenceEntries =
                 model.referenceEntries
                     |> Dict.toList
                     |> List.sortBy (\( k, _ ) -> Page.nutrientNameOrEmpty model.nutrients k |> String.toLower)
@@ -95,7 +95,7 @@ view model =
                             ]
                         ]
                     , tbody []
-                        (viewEditReferenceEntrys
+                        (viewEditReferenceEntries
                             |> Paginate.page
                             |> List.map viewEditReferenceEntry
                         )
@@ -110,7 +110,7 @@ view model =
                             }
                             model
                             >> Page.SetPagination
-                    , elements = viewEditReferenceEntrys
+                    , elements = viewEditReferenceEntries
                     }
                 ]
             , div [ Style.classes.addView ]
