@@ -8,4 +8,5 @@ create table complex_ingredient
 alter table complex_ingredient
     add constraint complex_ingredient_pk primary key (recipe_id),
     add constraint complex_ingredient_recipe_id foreign key (recipe_id) references recipe (id),
+    add constraint amount_positive check (amount > 0),
     add constraint unit_enumeration check ( unit = 'G' or unit = 'ML' );
