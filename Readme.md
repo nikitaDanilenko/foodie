@@ -1,3 +1,8 @@
+### Caveats
+
+1. There are no values for iodine in the database.
+2. Several values may be incomplete. For instance, biotin is only listed for a handful of foods.
+
 ### Database
 1. Create a database, a corresponding user, and connect the two:
    ```
