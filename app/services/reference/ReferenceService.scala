@@ -8,7 +8,7 @@ import errors.{ ErrorContext, ServerError }
 import io.scalaland.chimney.dsl._
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
 import services.nutrient.{ Nutrient, NutrientMap }
-import services.{ NutrientCode, ReferenceMapId, UserId }
+import services.{ DBError, NutrientCode, ReferenceMapId, UserId }
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
@@ -264,7 +264,7 @@ object ReferenceService {
         ec: ExecutionContext
     ): DBIO[ReferenceMap] = {
       val findAction =
-        OptionT(getReferenceMap(userId, referenceMapUpdate.id)).getOrElseF(DBIO.failed(DBError.ReferenceMapNotFound))
+        OptionT(getReferenceMap(userId, referenceMapUpdate.id)).getOrElseF(notFound)
       for {
         referenceMap <- findAction
         _ <- referenceMapQuery(userId, referenceMapUpdate.id).update(
@@ -333,7 +333,7 @@ object ReferenceService {
             Option[Tables.ReferenceEntryRow]
           ]
         )
-          .getOrElseF(DBIO.failed(DBError.ReferenceEntryNotFound))
+          .getOrElseF(DBIO.failed(DBError.Reference.EntryNotFound))
       for {
         referenceEntryRow <- findAction
         _ <- referenceEntryQuery(referenceEntryUpdate.referenceMapId, referenceEntryUpdate.nutrientCode).update(
@@ -387,7 +387,7 @@ object ReferenceService {
     )(action: => DBIO[A])(implicit ec: ExecutionContext): DBIO[A] =
       referenceMapQuery(userId, id).exists.result.flatMap(exists => if (exists) action else notFound)
 
-    private def notFound[A]: DBIO[A] = DBIO.failed(DBError.ReferenceMapNotFound)
+    private def notFound[A]: DBIO[A] = DBIO.failed(DBError.Reference.MapNotFound)
   }
 
 }

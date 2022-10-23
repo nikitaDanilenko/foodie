@@ -2,10 +2,10 @@ package services.meal
 
 import cats.data.OptionT
 import db.generated.Tables
-import errors.{ ErrorContext, ServerError }
+import errors.{ErrorContext, ServerError}
 import io.scalaland.chimney.dsl.TransformerOps
-import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
-import services.{ MealEntryId, MealId, UserId }
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import services.{DBError, MealEntryId, MealId, UserId}
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
@@ -15,7 +15,7 @@ import utils.TransformerUtils.Implicits._
 
 import java.util.UUID
 import javax.inject.Inject
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 trait MealService {
   def allMeals(userId: UserId, interval: RequestInterval): Future[Seq[Meal]]
@@ -164,7 +164,7 @@ object MealService {
         mealUpdate: MealUpdate
     )(implicit ec: ExecutionContext): DBIO[Meal] = {
       val findAction = OptionT(getMeal(userId, mealUpdate.id))
-        .getOrElseF(DBIO.failed(DBError.MealNotFound))
+        .getOrElseF(notFound)
 
       for {
         meal <- findAction
@@ -224,7 +224,7 @@ object MealService {
         ec: ExecutionContext
     ): DBIO[MealEntry] = {
       val findAction = OptionT(mealEntryQuery(mealEntryUpdate.id).result.headOption: DBIO[Option[Tables.MealEntryRow]])
-        .getOrElseF(DBIO.failed(DBError.MealEntryNotFound))
+        .getOrElseF(DBIO.failed(DBError.Meal.EntryNotFound))
       for {
         mealEntryRow <- findAction
         _ <- mealEntryQuery(mealEntryUpdate.id).update(
@@ -281,7 +281,7 @@ object MealService {
     )(action: => DBIO[A])(implicit ec: ExecutionContext): DBIO[A] =
       mealQuery(userId, id).exists.result.flatMap(exists => if (exists) action else notFound)
 
-    private def notFound[A]: DBIO[A] = DBIO.failed(DBError.MealNotFound)
+    private def notFound[A]: DBIO[A] = DBIO.failed(DBError.Meal.NotFound)
 
   }
 

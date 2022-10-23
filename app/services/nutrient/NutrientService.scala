@@ -6,9 +6,9 @@ import cats.syntax.contravariantSemigroupal._
 import cats.syntax.traverse._
 import db.generated.Tables
 import io.scalaland.chimney.dsl.TransformerOps
-import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import services.recipe.Ingredient
-import services.{ FoodId, MeasureId }
+import services.{DBError, FoodId, MeasureId}
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
@@ -17,7 +17,7 @@ import utils.DBIOUtil.instances._
 import utils.TransformerUtils.Implicits._
 
 import javax.inject.Inject
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 trait NutrientService {
 
@@ -102,7 +102,7 @@ object NutrientService {
           .result
           .headOption: DBIO[Option[Tables.ConversionFactorRow]]
       )
-        .getOrElseF(DBIO.failed(DBError.ConversionFactorNotFound))
+        .getOrElseF(DBIO.failed(DBError.Nutrient.ConversionFactorNotFound))
 
     override def nutrientOfFood(
         foodId: FoodId,

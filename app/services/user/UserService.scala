@@ -1,12 +1,11 @@
 package services.user
 
 import cats.data.OptionT
-import cats.instances.future._
 import db.generated.Tables
 import io.scalaland.chimney.dsl._
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
 import security.Hash
-import services.{ SessionId, UserId }
+import services.{ DBError, SessionId, UserId }
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
@@ -121,7 +120,7 @@ object UserService {
         executionContext: ExecutionContext
     ): DBIO[User] = {
       val findAction = OptionT(get(userId))
-        .getOrElseF(DBIO.failed(DBError.UserNotFound))
+        .getOrElseF(DBIO.failed(DBError.User.NotFound))
 
       for {
         user <- findAction
@@ -152,7 +151,7 @@ object UserService {
         )
       } yield result
 
-      transformer.getOrElseF(DBIO.failed(DBError.UserNotFound))
+      transformer.getOrElseF(DBIO.failed(DBError.User.NotFound))
     }
 
     override def delete(userId: UserId)(implicit executionContext: ExecutionContext): DBIO[Boolean] =

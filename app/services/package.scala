@@ -31,6 +31,8 @@ package object services {
 
   type FoodId = Int @@ FoodTag
 
+  type ComplexFoodId = RecipeId
+
   sealed trait MeasureTag
 
   type MeasureId = Int @@ MeasureTag

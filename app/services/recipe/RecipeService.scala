@@ -6,17 +6,17 @@ import db.generated.Tables
 import errors.{ ErrorContext, ServerError }
 import io.scalaland.chimney.dsl.TransformerOps
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
-import services.{ IngredientId, RecipeId, UserId }
+import services.{ DBError, IngredientId, RecipeId, UserId }
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import utils.DBIOUtil.instances._
 import utils.TransformerUtils.Implicits._
+
 import java.util.UUID
-
 import cats.Applicative
-import javax.inject.Inject
 
+import javax.inject.Inject
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait RecipeService {
@@ -229,7 +229,7 @@ object RecipeService {
     )(implicit
         ec: ExecutionContext
     ): DBIO[Recipe] = {
-      val findAction = OptionT(getRecipe(userId, recipeUpdate.id)).getOrElseF(DBIO.failed(DBError.RecipeNotFound))
+      val findAction = OptionT(getRecipe(userId, recipeUpdate.id)).getOrElseF(notFound)
       for {
         recipe <- findAction
         _ <- recipeQuery(userId, recipeUpdate.id).update(
@@ -299,7 +299,7 @@ object RecipeService {
     ): DBIO[Ingredient] = {
       val findAction =
         OptionT(ingredientQuery(ingredientUpdate.id).result.headOption: DBIO[Option[Tables.RecipeIngredientRow]])
-          .getOrElseF(DBIO.failed(DBError.RecipeIngredientNotFound))
+          .getOrElseF(DBIO.failed(DBError.Recipe.IngredientNotFound))
       for {
         ingredientRow <- findAction
         _ <- ingredientQuery(ingredientUpdate.id).update(
@@ -355,7 +355,7 @@ object RecipeService {
     )(action: => DBIO[A])(implicit ec: ExecutionContext): DBIO[A] =
       recipeQuery(userId, id).exists.result.flatMap(exists => if (exists) action else notFound)
 
-    private def notFound[A]: DBIO[A] = DBIO.failed(DBError.RecipeNotFound)
+    private def notFound[A]: DBIO[A] = DBIO.failed(DBError.Recipe.NotFound)
   }
 
 }
