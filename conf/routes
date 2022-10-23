@@ -12,6 +12,15 @@ GET    /recipes/:id/ingredients                          controllers.recipe.Reci
 POST   /recipes/ingredients                              controllers.recipe.RecipeController.addIngredient
 PATCH  /recipes/ingredients                              controllers.recipe.RecipeController.updateIngredient
 DELETE /recipes/ingredients/:id                          controllers.recipe.RecipeController.removeIngredient(id: java.util.UUID)
+GET    /recipes/:id/complex-ingredients                  controllers.recipe.RecipeController.getComplexIngredients(id: java.util.UUID)
+POST   /recipes/:id/complex-ingredients                  controllers.recipe.RecipeController.addComplexIngredient(id: java.util.UUID)
+PATCH  /recipes/:id/complex-ingredients                  controllers.recipe.RecipeController.updateComplexIngredient(id: java.util.UUID)
+DELETE /recipes/:recipeId/complex-ingredients/:id        controllers.recipe.RecipeController.removeComplexIngredient(recipeId: java.util.UUID, id: java.util.UUID)
+
+GET    /complex-foods                                    controllers.complex.ComplexFoodController.all
+POST   /complex-foods                                    controllers.complex.ComplexFoodController.create
+PATCH  /complex-foods                                    controllers.complex.ComplexFoodController.update
+DELETE /complex-foods/:recipeId                          controllers.complex.ComplexFoodController.delete(recipeId: java.util.UUID)
 
 GET    /meals                                            controllers.meal.MealController.all
 GET    /meals/:id                                        controllers.meal.MealController.get(id: java.util.UUID)
