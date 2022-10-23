@@ -7,8 +7,8 @@ import io.circe.syntax._
 import io.scalaland.chimney.dsl.TransformerOps
 import play.api.libs.circe.Circe
 import play.api.mvc._
-import services.{ NutrientCode, ReferenceMapId }
-import services.reference.{ DBError, ReferenceService }
+import services.reference.ReferenceService
+import services.{ DBError, NutrientCode, ReferenceMapId }
 import utils.TransformerUtils.Implicits._
 
 import java.util.UUID
@@ -173,9 +173,9 @@ class ReferenceController @Inject() (
   private def referenceMapErrorHandler: PartialFunction[Throwable, Result] = {
     case error =>
       val context = error match {
-        case DBError.ReferenceMapNotFound =>
+        case DBError.Reference.MapNotFound =>
           ErrorContext.ReferenceMap.NotFound
-        case DBError.ReferenceEntryNotFound =>
+        case DBError.Reference.EntryNotFound =>
           ErrorContext.ReferenceMap.Entry.NotFound
         case _ =>
           ErrorContext.ReferenceMap.General(error.getMessage)

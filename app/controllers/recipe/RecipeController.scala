@@ -7,8 +7,8 @@ import io.circe.syntax._
 import io.scalaland.chimney.dsl.TransformerOps
 import play.api.libs.circe.Circe
 import play.api.mvc._
-import services.recipe.{ DBError, RecipeService }
-import services.{ IngredientId, RecipeId }
+import services.recipe.RecipeService
+import services.{ DBError, IngredientId, RecipeId }
 import utils.TransformerUtils.Implicits._
 
 import java.util.UUID
@@ -170,9 +170,9 @@ class RecipeController @Inject() (
   private def recipeErrorHandler: PartialFunction[Throwable, Result] = {
     case error =>
       val context = error match {
-        case DBError.RecipeNotFound =>
+        case DBError.Recipe.NotFound =>
           ErrorContext.Recipe.NotFound
-        case DBError.RecipeIngredientNotFound =>
+        case DBError.Recipe.IngredientNotFound =>
           ErrorContext.Recipe.Ingredient.NotFound
         case _ =>
           ErrorContext.Recipe.General(error.getMessage)

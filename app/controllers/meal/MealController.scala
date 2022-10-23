@@ -7,8 +7,8 @@ import io.circe.syntax._
 import io.scalaland.chimney.dsl.TransformerOps
 import play.api.libs.circe.Circe
 import play.api.mvc._
-import services.meal.{ DBError, MealService }
-import services.{ MealEntryId, MealId }
+import services.meal.MealService
+import services.{ DBError, MealEntryId, MealId }
 import utils.TransformerUtils.Implicits._
 
 import java.util.UUID
@@ -155,9 +155,9 @@ class MealController @Inject() (
   private def mealErrorHandler: PartialFunction[Throwable, Result] = {
     case error =>
       val context = error match {
-        case DBError.MealNotFound =>
+        case DBError.Meal.NotFound =>
           ErrorContext.Meal.NotFound
-        case DBError.MealEntryNotFound =>
+        case DBError.Meal.EntryNotFound =>
           ErrorContext.Meal.Entry.NotFound
         case _ =>
           ErrorContext.Meal.General(error.getMessage)
