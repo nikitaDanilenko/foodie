@@ -6,7 +6,7 @@ import errors.{ ErrorContext, ServerError }
 import io.scalaland.chimney.dsl._
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
 import services.recipe.RecipeService
-import services.{ RecipeId, UserId }
+import services.{ DBError, RecipeId, UserId }
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
@@ -136,7 +136,7 @@ object ComplexFoodService {
     ): DBIO[ComplexFood] = {
       val findAction =
         OptionT(get(userId, complexFood.recipeId))
-          .getOrElseF(DBIO.failed(DBError.ComplexFoodNotFound))
+          .getOrElseF(DBIO.failed(DBError.Complex.Food.NotFound))
       for {
         complexFood <- findAction
         _ <- complexFoodQuery(userId, complexFood.recipeId)
@@ -156,7 +156,7 @@ object ComplexFoodService {
       RecipeService.Live
         .getRecipe(userId, id)
         .map(_.isDefined)
-        .flatMap(exists => if (exists) action else DBIO.failed(DBError.RecipeNotFound))
+        .flatMap(exists => if (exists) action else DBIO.failed(DBError.Complex.Food.RecipeNotFound))
 
     private def complexFoodQuery(
         userId: UserId,

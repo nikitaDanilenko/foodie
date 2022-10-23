@@ -12,6 +12,12 @@ object DBError {
       case object RecipeNotFound extends DBError("No recipe with the given id found")
     }
 
+    object Ingredient {
+      case object NotFound extends DBError("No complex ingredient with the given id found")
+
+      case object RecipeNotFound extends DBError("No recipe with the given id found")
+    }
+
   }
 
   object Meal {
