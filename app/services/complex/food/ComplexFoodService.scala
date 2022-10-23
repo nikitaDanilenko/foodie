@@ -21,7 +21,7 @@ trait ComplexFoodService {
 
   def all(userId: UserId): Future[Seq[ComplexFood]]
 
-  def get(userId: UserId, id: RecipeId): Future[Option[ComplexFood]]
+  def get(userId: UserId, recipeId: RecipeId): Future[Option[ComplexFood]]
 
   def create(
       userId: UserId,
@@ -33,7 +33,7 @@ trait ComplexFoodService {
       complexFood: ComplexFood
   ): Future[ServerError.Or[ComplexFood]]
 
-  def delete(userId: UserId, id: RecipeId): Future[Boolean]
+  def delete(userId: UserId, recipeId: RecipeId): Future[Boolean]
 
 }
 
@@ -42,7 +42,7 @@ object ComplexFoodService {
   trait Companion {
     def all(userId: UserId)(implicit ec: ExecutionContext): DBIO[Seq[ComplexFood]]
 
-    def get(userId: UserId, id: RecipeId)(implicit ec: ExecutionContext): DBIO[Option[ComplexFood]]
+    def get(userId: UserId, recipeId: RecipeId)(implicit ec: ExecutionContext): DBIO[Option[ComplexFood]]
 
     def create(
         userId: UserId,
@@ -54,7 +54,7 @@ object ComplexFoodService {
         complexFood: ComplexFood
     )(implicit ec: ExecutionContext): DBIO[ComplexFood]
 
-    def delete(userId: UserId, id: RecipeId)(implicit ec: ExecutionContext): DBIO[Boolean]
+    def delete(userId: UserId, recipeId: RecipeId)(implicit ec: ExecutionContext): DBIO[Boolean]
   }
 
   class Live @Inject() (
@@ -67,8 +67,8 @@ object ComplexFoodService {
     override def all(userId: UserId): Future[Seq[ComplexFood]] =
       db.run(companion.all(userId))
 
-    override def get(userId: UserId, id: RecipeId): Future[Option[ComplexFood]] =
-      db.run(companion.get(userId, id))
+    override def get(userId: UserId, recipeId: RecipeId): Future[Option[ComplexFood]] =
+      db.run(companion.get(userId, recipeId))
 
     override def create(
         userId: UserId,
@@ -92,8 +92,8 @@ object ComplexFoodService {
             Left(ErrorContext.Recipe.ComplexFood.Update(error.getMessage).asServerError)
         }
 
-    override def delete(userId: UserId, id: RecipeId): Future[Boolean] =
-      db.run(companion.delete(userId, id))
+    override def delete(userId: UserId, recipeId: RecipeId): Future[Boolean] =
+      db.run(companion.delete(userId, recipeId))
 
   }
 
@@ -105,11 +105,11 @@ object ComplexFoodService {
         complex   <- Tables.ComplexFood.filter(_.recipeId.inSetBind(recipeIds)).result
       } yield complex.map(_.transformInto[ComplexFood])
 
-    override def get(userId: UserId, id: RecipeId)(implicit ec: ExecutionContext): DBIO[Option[ComplexFood]] =
+    override def get(userId: UserId, recipeId: RecipeId)(implicit ec: ExecutionContext): DBIO[Option[ComplexFood]] =
       for {
-        exists <- RecipeService.Live.getRecipe(userId, id).map(_.isDefined)
+        exists <- RecipeService.Live.getRecipe(userId, recipeId).map(_.isDefined)
         result <-
-          if (exists) Tables.ComplexFood.filter(_.recipeId === id.transformInto[UUID]).result.headOption
+          if (exists) Tables.ComplexFood.filter(_.recipeId === recipeId.transformInto[UUID]).result.headOption
           else DBIO.successful(None)
       } yield result.map(_.transformInto[ComplexFood])
 
@@ -145,22 +145,22 @@ object ComplexFoodService {
       } yield updatedFood
     }
 
-    override def delete(userId: UserId, id: RecipeId)(implicit ec: ExecutionContext): DBIO[Boolean] =
-      complexFoodQuery(userId, id).delete
+    override def delete(userId: UserId, recipeId: RecipeId)(implicit ec: ExecutionContext): DBIO[Boolean] =
+      complexFoodQuery(userId, recipeId).delete
         .map(_ > 0)
 
     private def ifRecipeExists[A](
         userId: UserId,
-        id: RecipeId
+        recipeId: RecipeId
     )(action: => DBIO[A])(implicit ec: ExecutionContext): DBIO[A] =
       RecipeService.Live
-        .getRecipe(userId, id)
+        .getRecipe(userId, recipeId)
         .map(_.isDefined)
         .flatMap(exists => if (exists) action else DBIO.failed(DBError.Complex.Food.RecipeNotFound))
 
     private def complexFoodQuery(
         userId: UserId,
-        id: RecipeId
+        recipeId: RecipeId
     ): Query[Tables.ComplexFood, Tables.ComplexFoodRow, Seq] =
       for {
         // Guard: If the query is empty, the second filter is not applied
@@ -168,9 +168,9 @@ object ComplexFoodService {
           Tables.Recipe
             .filter(recipe =>
               recipe.userId === userId.transformInto[UUID] &&
-                recipe.id === id.transformInto[UUID]
+                recipe.id === recipeId.transformInto[UUID]
             )
-        complexFoods <- Tables.ComplexFood.filter(_.recipeId === id.transformInto[UUID])
+        complexFoods <- Tables.ComplexFood.filter(_.recipeId === recipeId.transformInto[UUID])
       } yield complexFoods
 
   }
