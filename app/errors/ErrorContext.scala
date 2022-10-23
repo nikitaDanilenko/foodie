@@ -74,6 +74,21 @@ object ErrorContext {
 
     }
 
+    object ComplexIngredient {
+
+      case class Creation(dbMessage: String)
+          extends ServerErrorInstance(
+            s"Complex ingredient creation failed due to: $dbMessage"
+          )
+
+      case class Update(dbMessage: String)
+          extends ServerErrorInstance(
+            s"Complex ingredient update failed due to: $dbMessage"
+          )
+
+      case object NotFound extends ServerErrorInstance("No complex ingredient with the given id found")
+    }
+
   }
 
   object Meal {
