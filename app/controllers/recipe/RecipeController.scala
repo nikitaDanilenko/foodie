@@ -2,11 +2,12 @@ package controllers.recipe
 
 import action.UserAction
 import cats.data.{ EitherT, OptionT }
-import errors.{ ErrorContext, ServerError }
+import errors.ErrorContext
 import io.circe.syntax._
 import io.scalaland.chimney.dsl.TransformerOps
 import play.api.libs.circe.Circe
 import play.api.mvc._
+import services.complex.ingredient.ComplexIngredientService
 import services.recipe.RecipeService
 import services.{ DBError, IngredientId, RecipeId }
 import utils.TransformerUtils.Implicits._
@@ -19,6 +20,7 @@ import scala.util.chaining._
 class RecipeController @Inject() (
     controllerComponents: ControllerComponents,
     recipeService: RecipeService,
+    complexIngredientService: ComplexIngredientService,
     userAction: UserAction
 )(implicit ec: ExecutionContext)
     extends AbstractController(controllerComponents)
@@ -77,8 +79,8 @@ class RecipeController @Inject() (
             .pipe(_.asJson)
             .pipe(Ok(_))
         )
-        .fold(badRequest, identity)
-        .recover(recipeErrorHandler)
+        .fold(controllers.badRequest, identity)
+        .recover(errorHandler)
     }
 
   def update: Action[RecipeUpdate] =
@@ -92,8 +94,8 @@ class RecipeController @Inject() (
             .pipe(_.asJson)
             .pipe(Ok(_))
         )
-        .fold(badRequest, identity)
-        .recover(recipeErrorHandler)
+        .fold(controllers.badRequest, identity)
+        .recover(errorHandler)
     }
 
   def delete(id: UUID): Action[AnyContent] =
@@ -117,7 +119,7 @@ class RecipeController @Inject() (
           _.pipe(_.map(_.transformInto[Ingredient]).asJson)
             .pipe(Ok(_))
         )
-        .recover(recipeErrorHandler)
+        .recover(errorHandler)
     }
 
   def addIngredient: Action[IngredientCreation] =
@@ -129,12 +131,12 @@ class RecipeController @Inject() (
         )
       )
         .fold(
-          badRequest,
+          controllers.badRequest,
           _.pipe(_.transformInto[Ingredient])
             .pipe(_.asJson)
             .pipe(Ok(_))
         )
-        .recover(recipeErrorHandler)
+        .recover(errorHandler)
     }
 
   def removeIngredient(id: UUID): Action[AnyContent] =
@@ -156,24 +158,81 @@ class RecipeController @Inject() (
         )
       )
         .fold(
-          badRequest,
+          controllers.badRequest,
           _.pipe(_.transformInto[Ingredient])
             .pipe(_.asJson)
             .pipe(Ok(_))
         )
-        .recover(recipeErrorHandler)
+        .recover(errorHandler)
     }
 
-  private def badRequest(serverError: ServerError): Result =
-    BadRequest(serverError.asJson)
+  def getComplexIngredients(id: UUID): Action[AnyContent] =
+    userAction.async { request =>
+      complexIngredientService
+        .all(
+          request.user.id,
+          id.transformInto[RecipeId]
+        )
+        .map(
+          _.pipe(_.map(_.transformInto[ComplexIngredient]).asJson)
+            .pipe(Ok(_))
+        )
+        .recover(errorHandler)
+    }
 
-  private def recipeErrorHandler: PartialFunction[Throwable, Result] = {
+  def addComplexIngredient(recipeId: UUID): Action[ComplexIngredient] =
+    userAction.async(circe.tolerantJson[ComplexIngredient]) { request =>
+      EitherT(
+        complexIngredientService.create(
+          userId = request.user.id,
+          complexIngredient = (request.body, recipeId).transformInto[services.complex.ingredient.ComplexIngredient]
+        )
+      )
+        .fold(
+          controllers.badRequest,
+          _.pipe(_.transformInto[ComplexIngredient])
+            .pipe(_.asJson)
+            .pipe(Ok(_))
+        )
+        .recover(errorHandler)
+    }
+
+  def removeComplexIngredient(recipeId: UUID, id: UUID): Action[AnyContent] =
+    userAction.async { request =>
+      complexIngredientService
+        .delete(request.user.id, recipeId.transformInto[RecipeId], id.transformInto[RecipeId])
+        .map(
+          _.pipe(_.asJson)
+            .pipe(Ok(_))
+        )
+    }
+
+  def updateComplexIngredient(recipeId: UUID): Action[ComplexIngredient] =
+    userAction.async(circe.tolerantJson[ComplexIngredient]) { request =>
+      EitherT(
+        complexIngredientService.update(
+          userId = request.user.id,
+          complexIngredient = (request.body, recipeId).transformInto[services.complex.ingredient.ComplexIngredient]
+        )
+      )
+        .fold(
+          controllers.badRequest,
+          _.pipe(_.transformInto[ComplexIngredient])
+            .pipe(_.asJson)
+            .pipe(Ok(_))
+        )
+        .recover(errorHandler)
+    }
+
+  private def errorHandler: PartialFunction[Throwable, Result] = {
     case error =>
       val context = error match {
         case DBError.Recipe.NotFound =>
           ErrorContext.Recipe.NotFound
         case DBError.Recipe.IngredientNotFound =>
           ErrorContext.Recipe.Ingredient.NotFound
+        case DBError.Complex.Ingredient.NotFound =>
+          ErrorContext.Recipe.ComplexIngredient.NotFound
         case _ =>
           ErrorContext.Recipe.General(error.getMessage)
       }

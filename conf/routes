@@ -12,9 +12,9 @@ GET    /recipes/:id/ingredients                          controllers.recipe.Reci
 POST   /recipes/ingredients                              controllers.recipe.RecipeController.addIngredient
 PATCH  /recipes/ingredients                              controllers.recipe.RecipeController.updateIngredient
 DELETE /recipes/ingredients/:id                          controllers.recipe.RecipeController.removeIngredient(id: java.util.UUID)
-GET    /recipes/:id/complex-ingredients                  controllers.recipe.RecipeController.getComplexIngredients(id: java.util.UUID)
-POST   /recipes/:id/complex-ingredients                  controllers.recipe.RecipeController.addComplexIngredient(id: java.util.UUID)
-PATCH  /recipes/:id/complex-ingredients                  controllers.recipe.RecipeController.updateComplexIngredient(id: java.util.UUID)
+GET    /recipes/:recipeId/complex-ingredients            controllers.recipe.RecipeController.getComplexIngredients(recipeId: java.util.UUID)
+POST   /recipes/:recipeId/complex-ingredients            controllers.recipe.RecipeController.addComplexIngredient(recipeId: java.util.UUID)
+PATCH  /recipes/:recipeId/complex-ingredients            controllers.recipe.RecipeController.updateComplexIngredient(recipeId: java.util.UUID)
 DELETE /recipes/:recipeId/complex-ingredients/:id        controllers.recipe.RecipeController.removeComplexIngredient(recipeId: java.util.UUID, id: java.util.UUID)
 
 GET    /complex-foods                                    controllers.complex.ComplexFoodController.all
@@ -45,7 +45,6 @@ DELETE /reference-maps/:mapId/entries/:nutrientCode      controllers.reference.R
 
 GET    /stats                                            controllers.stats.StatsController.get(from: Option[String], to: Option[String])
 GET    /stats/nutrients                                  controllers.stats.StatsController.allNutrients
-GET    /stats/reference-nutrients/:mapId                 controllers.stats.StatsController.referenceNutrients(mapId: java.util.UUID)
 
 GET    /                                                 controllers.home.HomeController.home
 POST   /users/login                                      controllers.user.UserController.login
