@@ -78,7 +78,7 @@ object ComplexFoodService {
         .map(Right(_))
         .recover {
           case error =>
-            Left(ErrorContext.Recipe.ComplexFood.Creation(error.getMessage).asServerError)
+            Left(ErrorContext.ComplexFood.Creation(error.getMessage).asServerError)
         }
 
     override def update(
@@ -89,7 +89,7 @@ object ComplexFoodService {
         .map(Right(_))
         .recover {
           case error =>
-            Left(ErrorContext.Recipe.ComplexFood.Update(error.getMessage).asServerError)
+            Left(ErrorContext.ComplexFood.Update(error.getMessage).asServerError)
         }
 
     override def delete(userId: UserId, recipeId: RecipeId): Future[Boolean] =

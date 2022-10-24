@@ -89,21 +89,31 @@ object ErrorContext {
       case object NotFound extends ServerErrorInstance("No complex ingredient with the given id found")
     }
 
-    object ComplexFood {
+  }
 
-      case class Creation(dbMessage: String)
-          extends ServerErrorInstance(
-            s"Complex food creation failed due to: $dbMessage"
-          )
+  object ComplexFood {
 
-      case class Update(dbMessage: String)
-          extends ServerErrorInstance(
-            s"Complex food update failed due to: $dbMessage"
-          )
+    case class Creation(dbMessage: String)
+        extends ServerErrorInstance(
+          s"Complex food creation failed due to: $dbMessage"
+        )
 
-      case object NotFound extends ServerErrorInstance("No complex food with the given id found")
-    }
+    case class Update(dbMessage: String)
+        extends ServerErrorInstance(
+          s"Complex food update failed due to: $dbMessage"
+        )
 
+    case object Reference
+        extends ServerErrorInstance(
+          s"Referenced recipe not found."
+        )
+
+    case class General(dbMessage: String)
+        extends ServerErrorInstance(
+          s"Request failed due to: $dbMessage"
+        )
+
+    case object NotFound extends ServerErrorInstance("No complex food with the given id found")
   }
 
   object Meal {
