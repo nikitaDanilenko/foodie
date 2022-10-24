@@ -11,6 +11,8 @@ import services.{ ComplexFoodId, DBError, RecipeId, UserId }
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
+import utils.CycleCheck
+import utils.CycleCheck.Arc
 import utils.DBIOUtil.instances._
 import utils.TransformerUtils.Implicits._
 
@@ -118,7 +120,9 @@ object ComplexIngredientService {
       val complexIngredientRow = complexIngredient.transformInto[Tables.ComplexIngredientRow]
       ifRecipeExists(userId, complexIngredient.recipeId) {
         for {
-          exists <- query.exists.result
+          createsCycle <- cycleCheck(complexIngredient.recipeId, complexIngredient.complexFoodId)
+          _            <- if (!createsCycle) DBIO.successful(()) else DBIO.failed(DBError.Complex.Ingredient.Cycle)
+          exists       <- query.exists.result
           row <-
             if (exists)
               query
@@ -184,6 +188,31 @@ object ComplexIngredientService {
             ingredient.complexFoodId === complexFoodId.transformInto[UUID]
         )
       } yield complexIngredients
+
+    private def cycleCheck(recipeId: RecipeId, newReferenceRecipeId: RecipeId)(implicit
+        ec: ExecutionContext
+    ): DBIO[Boolean] = {
+      val action =
+        sql"""with recursive transitive_references as (
+                select *
+                from #complex_ingredient
+                where recipe_id = ${recipeId.toString} :: uuid
+                  union
+                    select *
+                      from #complex_ingredient ci
+                      inner join transitive_references r on r.recipe_id = ci.complex_food_id
+              )
+                select * from transitive_references;"""
+          .as[(String, String, BigDecimal)]
+
+      action.map { rows =>
+        val graph = CycleCheck.fromArcs(Arc(recipeId.toString, newReferenceRecipeId.toString) +: rows.map {
+          case (s1, s2, _) => Arc(s1, s2)
+        })
+        CycleCheck.onCycle(recipeId.toString, graph)
+      }
+
+    }
 
   }
 

@@ -16,6 +16,7 @@ object DBError {
       case object NotFound extends DBError("No complex ingredient with the given id found")
 
       case object RecipeNotFound extends DBError("No recipe with the given id found")
+      case object Cycle          extends DBError("Adding this ingredient introduces a cycle")
     }
 
   }
