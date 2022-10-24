@@ -5,10 +5,11 @@ import cats.syntax.traverse._
 import db.generated.Tables
 import io.scalaland.chimney.dsl.TransformerOps
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
+import services.complex.ingredient.ComplexIngredientService
 import services.meal.{ MealEntry, MealService }
 import services.nutrient.{ NutrientMap, NutrientService }
 import services.recipe.{ Recipe, RecipeService }
-import services.{ MealId, UserId }
+import services.{ MealId, RecipeId, UserId }
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
@@ -78,15 +79,9 @@ object StatsService {
             .flatMap(mealEntries(_).map(_.recipeId))
             .distinct
             .traverse { recipeId =>
-              val transformer = for {
-                recipe      <- OptionT(RecipeService.Live.getRecipe(userId, recipeId))
-                ingredients <- OptionT.liftF(RecipeService.Live.getIngredients(userId, recipeId))
-                nutrients   <- OptionT.liftF(NutrientService.Live.nutrientsOfIngredients(ingredients))
-              } yield recipeId -> RecipeNutrientMap(
-                recipe = recipe,
-                nutrientMap = nutrients
-              )
-              transformer.value
+              nutrientsOfRecipe(userId, recipeId)
+                .map(recipeId -> _)
+                .value
             }
             .map(_.flatten.toMap)
         allNutrients <- NutrientService.Live.all
@@ -104,6 +99,29 @@ object StatsService {
         )
       }
     }
+
+    private def nutrientsOfRecipe(
+        userId: UserId,
+        recipeId: RecipeId
+    )(implicit
+        ec: ExecutionContext
+    ): OptionT[DBIO, RecipeNutrientMap] =
+      for {
+        recipe             <- OptionT(RecipeService.Live.getRecipe(userId, recipeId))
+        ingredients        <- OptionT.liftF(RecipeService.Live.getIngredients(userId, recipeId))
+        complexIngredients <- OptionT.liftF(ComplexIngredientService.Live.all(userId, recipeId))
+        nutrients          <- OptionT.liftF(NutrientService.Live.nutrientsOfIngredients(ingredients))
+        nutrientsOfComplexIngredients <-
+          complexIngredients
+            .traverse { complexIngredient =>
+              nutrientsOfRecipe(userId, complexIngredient.complexFoodId)
+                .map(recipeNutrientMap => complexIngredient.factor *: recipeNutrientMap.nutrientMap)
+            }
+            .map(_.qsum)
+      } yield RecipeNutrientMap(
+        recipe = recipe,
+        nutrientMap = nutrients + nutrientsOfComplexIngredients
+      )
 
   }
 
