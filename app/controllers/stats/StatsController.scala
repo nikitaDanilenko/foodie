@@ -45,31 +45,6 @@ class StatsController @Inject() (
         )
     }
 
-  def referenceNutrients(referenceMapId: UUID): Action[AnyContent] =
-    userAction.async { request =>
-      referenceService
-        .getReferenceNutrientsMap(request.user.id, referenceMapId.transformInto[ReferenceMapId])
-        .map { nutrientMap =>
-          nutrientMap
-            .map {
-              _.map {
-                case (nutrient, amount) =>
-                  ReferenceEntry(
-                    nutrientCode = nutrient.code,
-                    amount = amount
-                  )
-              }
-            }
-            .getOrElse(List.empty)
-            .pipe(_.asJson)
-            .pipe(Ok(_))
-        }
-        .recover {
-          case error =>
-            BadRequest(error.getMessage)
-        }
-    }
-
   def allNutrients: Action[AnyContent] =
     userAction.async {
       nutrientService.all.map(
