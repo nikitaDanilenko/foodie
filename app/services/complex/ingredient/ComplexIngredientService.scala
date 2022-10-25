@@ -206,7 +206,6 @@ object ComplexIngredientService {
           .as[(String, String)]
 
       action.map { rows =>
-        println(rows)
         val graph = CycleCheck.fromArcs(Arc(recipeId.toString, newReferenceRecipeId.toString) +: rows.map {
           case (s1, s2) => Arc(s1, s2)
         })
