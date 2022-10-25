@@ -10,6 +10,10 @@ type alias Editing a b =
     }
 
 
+
+-- todo: Wrap into lenses object
+
+
 updateLens : Lens (Editing a b) b
 updateLens =
     Lens .update (\b a -> { a | update = b })

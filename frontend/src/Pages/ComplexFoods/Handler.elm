@@ -29,7 +29,7 @@ import Util.LensUtil as LensUtil
 init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     ( { authorizedAccess = flags.authorizedAccess
-      , recipes = []
+      , recipes = Dict.empty
       , complexFoods = Dict.empty
       , complexFoodsToCreate = Dict.empty
       , recipesSearchString = ""
@@ -63,8 +63,8 @@ update msg model =
         Page.UpdateComplexFood complexFoodClientInput ->
             updateComplexFood model complexFoodClientInput
 
-        Page.SaveComplexFoodEdit complexFoodId ->
-            saveComplexFoodEdit model complexFoodId
+        Page.SaveComplexFoodEdit complexFoodClientInput ->
+            saveComplexFoodEdit model complexFoodClientInput
 
         Page.GotSaveComplexFoodResponse result ->
             gotSaveComplexFoodResponse model result
@@ -100,10 +100,11 @@ update msg model =
             setPagination model pagination
 
 
-updateComplexFoodCreation : Page.Model -> Page.CreateComplexFoodsMap -> ( Page.Model, Cmd Page.Msg )
-updateComplexFoodCreation model createComplexFoodsMap =
+updateComplexFoodCreation : Page.Model -> ComplexFoodClientInput -> ( Page.Model, Cmd Page.Msg )
+updateComplexFoodCreation model complexFoodClientInput =
     ( model
-        |> Page.lenses.complexFoodsToCreate.set createComplexFoodsMap
+        |> mapComplexFoodOrUpdateByRecipeId complexFoodClientInput.recipeId
+            (Either.map (Editing.updateLens.set complexFoodClientInput))
     , Cmd.none
     )
 
@@ -147,19 +148,12 @@ updateComplexFood model complexFoodClientInput =
     )
 
 
-saveComplexFoodEdit : Page.Model -> ComplexFoodId -> ( Page.Model, Cmd Page.Msg )
-saveComplexFoodEdit model complexFoodId =
+saveComplexFoodEdit : Page.Model -> ComplexFoodClientInput -> ( Page.Model, Cmd Page.Msg )
+saveComplexFoodEdit model complexFoodClientInput =
     ( model
-    , model
-        |> Page.lenses.complexFoods.get
-        |> Dict.get complexFoodId
-        |> Maybe.andThen Either.rightToMaybe
-        |> Maybe.Extra.unwrap
-            Cmd.none
-            (.update
-                >> ComplexFoodClientInput.to
-                >> Requests.updateComplexFood model.authorizedAccess
-            )
+    , complexFoodClientInput
+        |> ComplexFoodClientInput.to
+        |> Requests.updateComplexFood model.authorizedAccess
     )
 
 
@@ -221,7 +215,7 @@ gotFetchRecipesResponse model result =
         |> Either.unpack (flip setError model)
             (\recipes ->
                 model
-                    |> Page.lenses.recipes.set (recipes |> List.sortBy .name)
+                    |> Page.lenses.recipes.set (recipes |> List.map (\r -> ( r.id, r )) |> Dict.fromList)
                     |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.recipes).set True
             )
     , Cmd.none

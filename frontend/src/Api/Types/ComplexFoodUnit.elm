@@ -1,26 +1,46 @@
 module Api.Types.ComplexFoodUnit exposing (..)
 
 import Json.Decode as Decode
-import Json.Decode.Pipeline exposing (..)
 import Json.Encode as Encode
 
 
-type ComplexFoodUnit = G | ML
+type ComplexFoodUnit
+    = G
+    | ML
+
+
+
+-- todo: Consider a more automatic approach
 
 
 decoderComplexFoodUnit : Decode.Decoder ComplexFoodUnit
-decoderComplexFoodUnit = Decode.field "type" Decode.string |> Decode.andThen decoderComplexFoodUnitTpe
+decoderComplexFoodUnit =
+    Decode.string |> Decode.andThen decoderComplexFoodUnitByString
 
-decoderComplexFoodUnitTpe : String -> Decode.Decoder ComplexFoodUnit
-decoderComplexFoodUnitTpe tpe =
-   case tpe of
-      "G" -> Decode.succeed G
-      "ML" -> Decode.succeed ML
-      _ -> Decode.fail ("Unexpected type for ComplexFoodUnit: " ++ tpe)
+
+decoderComplexFoodUnitByString : String -> Decode.Decoder ComplexFoodUnit
+decoderComplexFoodUnitByString string =
+    case string of
+        "G" ->
+            Decode.succeed G
+
+        "ML" ->
+            Decode.succeed ML
+
+        _ ->
+            Decode.fail ("Unexpected type for ComplexFoodUnit: " ++ string)
 
 
 encoderComplexFoodUnit : ComplexFoodUnit -> Encode.Value
-encoderComplexFoodUnit tpe =
-   case tpe of
-      G -> Encode.object [ ("type", Encode.string "G") ]
-      ML -> Encode.object [ ("type", Encode.string "ML") ]
+encoderComplexFoodUnit =
+    toString >> Encode.string
+
+
+toString : ComplexFoodUnit -> String
+toString complexFoodUnit =
+    case complexFoodUnit of
+        G ->
+            "G"
+
+        ML ->
+            "ML"

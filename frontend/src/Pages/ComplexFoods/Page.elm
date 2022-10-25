@@ -6,6 +6,7 @@ import Api.Types.Recipe exposing (Recipe)
 import Dict exposing (Dict)
 import Either exposing (Either)
 import Http exposing (Error)
+import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 import Pages.ComplexFoods.ComplexFoodClientInput exposing (ComplexFoodClientInput)
 import Pages.ComplexFoods.Pagination exposing (Pagination)
@@ -17,7 +18,7 @@ import Util.Initialization exposing (Initialization)
 
 type alias Model =
     { authorizedAccess : AuthorizedAccess
-    , recipes : List Recipe
+    , recipes : RecipeMap
     , complexFoods : ComplexFoodOrUpdateMap
     , complexFoodsToCreate : CreateComplexFoodsMap
     , recipesSearchString : String
@@ -38,8 +39,12 @@ type alias CreateComplexFoodsMap =
     Dict ComplexFoodId ComplexFoodClientInput
 
 
+type alias RecipeMap =
+    Dict RecipeId Recipe
+
+
 lenses :
-    { recipes : Lens Model (List Recipe)
+    { recipes : Lens Model RecipeMap
     , complexFoods : Lens Model ComplexFoodOrUpdateMap
     , complexFoodsToCreate : Lens Model CreateComplexFoodsMap
     , recipesSearchString : Lens Model String
@@ -62,11 +67,11 @@ type alias Flags =
 
 
 type Msg
-    = UpdateComplexFoodCreation CreateComplexFoodsMap
+    = UpdateComplexFoodCreation ComplexFoodClientInput
     | CreateComplexFood RecipeId
     | GotCreateComplexFoodResponse (Result Error ComplexFood)
     | UpdateComplexFood ComplexFoodClientInput
-    | SaveComplexFoodEdit ComplexFoodId
+    | SaveComplexFoodEdit ComplexFoodClientInput
     | GotSaveComplexFoodResponse (Result Error ComplexFood)
     | EnterEditComplexFood ComplexFoodId
     | ExitEditComplexFood ComplexFoodId
@@ -78,3 +83,9 @@ type Msg
     | DeselectRecipe RecipeId
     | SetRecipesSearchString String
     | SetPagination Pagination
+
+
+complexFoodNameOrEmpty : RecipeMap -> ComplexFoodId -> String
+complexFoodNameOrEmpty recipeMap complexFoodId =
+    Dict.get complexFoodId recipeMap
+        |> Maybe.Extra.unwrap "" .name

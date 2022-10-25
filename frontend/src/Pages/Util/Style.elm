@@ -16,7 +16,7 @@ classes :
         , editor : Attribute msg
         , logout : Attribute msg
         , navigation : Attribute msg
-        , pager: Attribute msg
+        , pager : Attribute msg
         , select : Attribute msg
         }
     , choices : Attribute msg
@@ -92,7 +92,7 @@ classes =
         , exact = class "exact"
         , high = class "high"
         }
-        , request = class "request"
+    , request = class "request"
     , search =
         { area = class "searchArea"
         , field = class "searchField"
@@ -107,6 +107,7 @@ ids :
     , addMealView : Attribute msg
     , addRecipeView : Attribute msg
     , addReferenceMapView : Attribute msg
+    , complexFoodEditor : Attribute msg
     , error : Attribute msg
     , ingredientEditor : Attribute msg
     , mealEntryEditor : Attribute msg
@@ -125,6 +126,7 @@ ids =
     , addMealView = id "addMealView"
     , addRecipeView = id "addRecipeView"
     , addReferenceMapView = id "addReferenceMapView"
+    , complexFoodEditor = id "complexFoodEditor"
     , error = id "error"
     , ingredientEditor = id "ingredientEditor"
     , mealEntryEditor = id "mealEntryEditor"

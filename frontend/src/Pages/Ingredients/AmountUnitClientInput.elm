@@ -35,7 +35,7 @@ to input =
     , factor = input.factor.value
     }
 
-
+--todo: Bundle as lenses
 measureId : Lens AmountUnitClientInput MeasureId
 measureId =
     Lens .measureId (\b a -> { a | measureId = b })
