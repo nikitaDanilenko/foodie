@@ -6,9 +6,9 @@ maintainer := "nikita.danilenko.is@gmail.com"
 
 version := "0.1"
 
-val circeVersion = "0.14.2"
-val slickVersion = "3.3.3"
-val jwtVersion   = "9.0.5"
+val circeVersion = "0.14.3"
+val slickVersion = "3.4.1"
+val jwtVersion   = "9.1.1"
 
 val config = ConfigFactory
   .parseFile(new File("conf/application.conf"))
@@ -25,27 +25,28 @@ lazy val root = (project in file("."))
       "com.typesafe.slick"    %% "slick"             % slickVersion,
       "com.typesafe.slick"    %% "slick-hikaricp"    % slickVersion,
       "com.typesafe.slick"    %% "slick-codegen"     % slickVersion,
-      "org.postgresql"         % "postgresql"        % "42.3.6",
-      "ch.qos.logback"         % "logback-classic"   % "1.2.11",
+      "org.postgresql"         % "postgresql"        % "42.5.0",
+      "ch.qos.logback"         % "logback-classic"   % "1.4.4",
       "io.circe"              %% "circe-core"        % circeVersion,
       "io.circe"              %% "circe-generic"     % circeVersion,
       "io.circe"              %% "circe-parser"      % circeVersion,
-      "org.typelevel"         %% "spire"             % "0.17.0-M1",
-      "org.flywaydb"          %% "flyway-play"       % "7.20.0",
-      "com.typesafe.play"     %% "play-slick"        % "5.0.2",
+      "org.typelevel"         %% "spire"             % "0.18.0",
+      "org.flywaydb"          %% "flyway-play"       % "7.25.0",
+      "com.typesafe.play"     %% "play-slick"        % "5.1.0",
       "com.dripower"          %% "play-circe"        % "2814.2",
       "com.davegurnell"       %% "bridges"           % "0.24.0",
       "com.github.pathikrit"  %% "better-files"      % "3.9.1",
       "com.typesafe"           % "config"            % "1.4.2",
-      "io.scalaland"          %% "chimney"           % "0.6.1",
+      "io.scalaland"          %% "chimney"           % "0.6.2",
       "com.github.jwt-scala"  %% "jwt-core"          % jwtVersion,
       "com.github.jwt-scala"  %% "jwt-circe"         % jwtVersion,
       "com.github.pureconfig" %% "pureconfig"        % "0.17.1",
-      "org.typelevel"         %% "cats-effect"       % "3.3.12",
-      "org.typelevel"         %% "cats-core"         % "2.7.0",
+      "org.typelevel"         %% "cats-effect"       % "3.3.14",
+      "org.typelevel"         %% "cats-core"         % "2.8.0",
       "com.beachape"          %% "enumeratum-circe"  % "1.7.0",
       "com.typesafe.play"     %% "play-mailer"       % "8.0.1",
-      "com.typesafe.play"     %% "play-mailer-guice" % "8.0.1"
+      "com.typesafe.play"     %% "play-mailer-guice" % "8.0.1",
+      "com.lihaoyi"           %% "pprint"            % "0.8.0"
     ),
     slickCodegenDatabaseUrl := config.getString("slick.dbs.default.db.url"),
     slickCodegenDatabaseUser := config.getString("slick.dbs.default.db.user"),
