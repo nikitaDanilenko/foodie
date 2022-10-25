@@ -342,16 +342,8 @@ addFood model foodId =
                 |> Compose.lensWithOptional (LensUtil.dictByKey foodId)
            ).getOption
         |> Maybe.Extra.unwrap Cmd.none
-            (\foodToAdd ->
-                foodToAdd
-                    |> IngredientCreationClientInput.toCreation
-                    |> (\ic ->
-                            Requests.addFood
-                                { configuration = model.authorizedAccess.configuration
-                                , jwt = model.authorizedAccess.jwt
-                                , ingredientCreation = ic
-                                }
-                       )
+            (IngredientCreationClientInput.toCreation
+                >> Requests.addFood model.authorizedAccess
             )
     )
 

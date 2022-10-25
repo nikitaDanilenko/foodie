@@ -16,7 +16,6 @@ import Api.Types.IngredientCreation exposing (IngredientCreation, encoderIngredi
 import Api.Types.IngredientUpdate exposing (IngredientUpdate, encoderIngredientUpdate)
 import Api.Types.Measure exposing (Measure, decoderMeasure)
 import Api.Types.Recipe exposing (Recipe, decoderRecipe)
-import Configuration exposing (Configuration)
 import Http exposing (Error)
 import Json.Decode as Decode
 import Pages.Ingredients.Page as Page
@@ -65,18 +64,14 @@ fetchMeasures flags =
 
 
 addFood :
-    { configuration : Configuration
-    , jwt : JWT
-    , ingredientCreation : IngredientCreation
-    }
+    AuthorizedAccess
+    -> IngredientCreation
     -> Cmd Page.Msg
-addFood ps =
+addFood authorizedAccess ingredientCreation =
     HttpUtil.runPatternWithJwt
-        { configuration = ps.configuration
-        , jwt = ps.jwt
-        }
+        authorizedAccess
         Addresses.Backend.recipes.ingredients.create
-        { body = encoderIngredientCreation ps.ingredientCreation |> Http.jsonBody
+        { body = encoderIngredientCreation ingredientCreation |> Http.jsonBody
         , expect = HttpUtil.expectJson Page.GotAddFoodResponse decoderIngredient
         }
 
