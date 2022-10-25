@@ -19,8 +19,8 @@ type alias Model =
     { authorizedAccess : AuthorizedAccess
     , recipes : List Recipe
     , complexFoods : ComplexFoodOrUpdateMap
-    , complexFoodToAdd : Maybe ComplexFoodClientInput
-    , recipesSearchString: String
+    , complexFoodsToCreate : CreateComplexFoodsMap
+    , recipesSearchString : String
     , initialization : Initialization Status
     , pagination : Pagination
     }
@@ -34,10 +34,14 @@ type alias ComplexFoodOrUpdateMap =
     Dict ComplexFoodId ComplexFoodOrUpdate
 
 
+type alias CreateComplexFoodsMap =
+    Dict ComplexFoodId ComplexFoodClientInput
+
+
 lenses :
     { recipes : Lens Model (List Recipe)
     , complexFoods : Lens Model ComplexFoodOrUpdateMap
-    , complexFoodToAdd : Lens Model (Maybe ComplexFoodClientInput)
+    , complexFoodsToCreate : Lens Model CreateComplexFoodsMap
     , recipesSearchString : Lens Model String
     , initialization : Lens Model (Initialization Status)
     , pagination : Lens Model Pagination
@@ -45,7 +49,7 @@ lenses :
 lenses =
     { recipes = Lens .recipes (\b a -> { a | recipes = b })
     , complexFoods = Lens .complexFoods (\b a -> { a | complexFoods = b })
-    , complexFoodToAdd = Lens .complexFoodToAdd (\b a -> { a | complexFoodToAdd = b })
+    , complexFoodsToCreate = Lens .complexFoodsToCreate (\b a -> { a | complexFoodsToCreate = b })
     , recipesSearchString = Lens .recipesSearchString (\b a -> { a | recipesSearchString = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , pagination = Lens .pagination (\b a -> { a | pagination = b })
@@ -58,9 +62,9 @@ type alias Flags =
 
 
 type Msg
-    = UpdateComplexFoodCreation (Maybe ComplexFoodClientInput)
-    | AddComplexFood RecipeId
-    | GotAddComplexFoodResponse (Result Error ComplexFood)
+    = UpdateComplexFoodCreation CreateComplexFoodsMap
+    | CreateComplexFood RecipeId
+    | GotCreateComplexFoodResponse (Result Error ComplexFood)
     | UpdateComplexFood ComplexFoodClientInput
     | SaveComplexFoodEdit ComplexFoodId
     | GotSaveComplexFoodResponse (Result Error ComplexFood)

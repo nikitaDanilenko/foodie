@@ -1,6 +1,6 @@
 module Addresses.Backend exposing (..)
 
-import Api.Auxiliary exposing (IngredientId, MealEntryId, MealId, NutrientCode, RecipeId, ReferenceMapId)
+import Api.Auxiliary exposing (ComplexFoodId, IngredientId, MealEntryId, MealId, NutrientCode, RecipeId, ReferenceMapId)
 import Maybe.Extra
 import Url.Builder exposing (QueryParameter)
 import Util.HttpUtil as HttpUtil exposing (ResourcePattern)
@@ -205,6 +205,24 @@ references =
                             (::) entriesWord <|
                                 [ String.fromInt nutrientCode ]
         }
+    }
+
+
+complexFoods :
+    { all : ResourcePattern
+    , create : ResourcePattern
+    , update : ResourcePattern
+    , delete : ComplexFoodId -> ResourcePattern
+    }
+complexFoods =
+    let
+        base =
+            (::) "complex-foods"
+    in
+    { all = get <| base <| []
+    , create = post <| base []
+    , update = patch <| base []
+    , delete = \complexFoodId -> delete <| base <| [ complexFoodId ]
     }
 
 
