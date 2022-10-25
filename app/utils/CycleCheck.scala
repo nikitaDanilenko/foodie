@@ -1,5 +1,8 @@
 package utils
 
+import cats.data.State
+import cats.syntax.traverse._
+
 object CycleCheck {
 
   case class Graph[A](
@@ -18,19 +21,27 @@ object CycleCheck {
     )
 
   def onCycle[A](vertex: A, graph: Graph[A]): Boolean = {
-    case class Step(
-        layer: Set[A],
-        visited: Set[A]
-    )
-    def mkStep(step: Step): Step =
-      Step(
-        layer = step.layer.flatMap(graph.adjacency.get).flatten,
-        visited = step.visited ++ step.layer
-      )
-    Iterator
-      .iterate(Step(Set(vertex), Set.empty))(mkStep)
-      .slice(1, graph.adjacency.size)
-      .exists(_.layer.contains(vertex))
+
+    def dfs(v: A, target: A): State[Set[A], Boolean] = {
+      for {
+        _ <- State.modify[Set[A]](_ + v)
+        successors = graph.adjacency.getOrElse(v, Seq.empty).toSet
+        result <-
+          if (successors.contains(target)) State.pure[Set[A], Boolean](true)
+          else
+            for {
+              visited <- State.get[Set[A]]
+              subSearches <-
+                (successors -- visited).toList
+                  .traverse(dfs(_, target))
+            } yield subSearches.exists(identity)
+      } yield result
+    }
+
+    dfs(vertex, vertex)
+      .run(Set.empty[A])
+      .value
+      ._2
   }
 
 }

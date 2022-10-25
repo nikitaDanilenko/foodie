@@ -194,20 +194,21 @@ object ComplexIngredientService {
     ): DBIO[Boolean] = {
       val action =
         sql"""with recursive transitive_references as (
-                select *
-                from #complex_ingredient
-                where recipe_id = ${recipeId.toString} :: uuid
+                select recipe_id, complex_food_id
+                from complex_ingredient
+                where recipe_id = ${newReferenceRecipeId.toString} :: uuid
                   union
-                    select *
-                      from #complex_ingredient ci
+                    select ci.recipe_id, ci.complex_food_id
+                      from complex_ingredient ci
                       inner join transitive_references r on r.recipe_id = ci.complex_food_id
               )
-                select * from transitive_references;"""
-          .as[(String, String, BigDecimal)]
+                select recipe_id, complex_food_id from transitive_references;"""
+          .as[(String, String)]
 
       action.map { rows =>
+        println(rows)
         val graph = CycleCheck.fromArcs(Arc(recipeId.toString, newReferenceRecipeId.toString) +: rows.map {
-          case (s1, s2, _) => Arc(s1, s2)
+          case (s1, s2) => Arc(s1, s2)
         })
         CycleCheck.onCycle(recipeId.toString, graph)
       }
