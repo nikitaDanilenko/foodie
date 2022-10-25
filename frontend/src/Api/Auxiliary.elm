@@ -41,3 +41,7 @@ type alias JWT =
 
 type alias ReferenceMapId =
     UUID
+
+
+type alias ComplexFoodId =
+    RecipeId
