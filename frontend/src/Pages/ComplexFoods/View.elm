@@ -211,8 +211,7 @@ editComplexFoodLine recipeMap complexFood complexFoodClientInput =
                     complexFood.unit |> unitToItem |> Just
                 , onChange =
                     onChangeDropdown
-                        { unitOf = .unit
-                        , mkMsg = Page.UpdateComplexFood
+                        { mkMsg = Page.UpdateComplexFood
                         , input = complexFoodClientInput
                         }
                 }
@@ -234,15 +233,14 @@ editComplexFoodLine recipeMap complexFood complexFoodClientInput =
 
 
 onChangeDropdown :
-    { unitOf : ComplexFoodClientInput -> ComplexFoodUnit
-    , input : ComplexFoodClientInput
+    { input : ComplexFoodClientInput
     , mkMsg : ComplexFoodClientInput -> Page.Msg
     }
     -> Maybe String
     -> Page.Msg
 onChangeDropdown ps =
     Maybe.andThen ComplexFoodUnit.fromString
-        >> Maybe.withDefault (ps.input |> ps.unitOf)
+        >> Maybe.withDefault ps.input.unit
         >> flip ComplexFoodClientInput.lenses.unit.set ps.input
         >> ps.mkMsg
 
@@ -294,6 +292,7 @@ viewRecipeLine complexFoodsToCreate complexFoods recipe =
                                         |> Editing.field identity
                                         |> ComplexFoodClientInput.from
                                         |> ComplexFoodClientInput.lenses.amount.set complexFoodToAdd.amount
+                                        |> ComplexFoodClientInput.lenses.unit.set complexFoodToAdd.unit
                                         |> Page.SaveComplexFoodEdit
                                     , Style.classes.button.edit
                                     )
@@ -327,8 +326,7 @@ viewRecipeLine complexFoodsToCreate complexFoods recipe =
                             , emptyItem = Nothing
                             , onChange =
                                 onChangeDropdown
-                                    { unitOf = .unit
-                                    , mkMsg = Page.UpdateComplexFoodCreation
+                                    { mkMsg = Page.UpdateComplexFoodCreation
                                     , input = complexFoodToAdd
                                     }
                             }

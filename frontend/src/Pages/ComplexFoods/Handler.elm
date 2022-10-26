@@ -166,6 +166,8 @@ gotSaveComplexFoodResponse model result =
                 model
                     |> mapComplexFoodOrUpdateByRecipeId complexFood.recipeId
                         (Either.andThen (always (Left complexFood)))
+                    |> Lens.modify Page.lenses.complexFoodsToCreate (Dict.remove complexFood.recipeId)
+                    |> Lens.modify Page.lenses.complexFoods (Dict.update complexFood.recipeId (always complexFood >> Left >> Just))
             )
     , Cmd.none
     )
