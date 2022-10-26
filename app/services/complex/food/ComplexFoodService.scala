@@ -116,7 +116,7 @@ object ComplexFoodService {
     override def create(userId: UserId, complexFood: ComplexFood)(implicit
         ec: ExecutionContext
     ): DBIO[ComplexFood] = {
-      val query          = complexFoodQuery(userId, complexFood.recipeId)
+      val query          = complexFoodQuery(complexFood.recipeId)
       val complexFoodRow = complexFood.transformInto[Tables.ComplexFoodRow]
       ifRecipeExists(userId, complexFood.recipeId) {
         for {
@@ -138,15 +138,15 @@ object ComplexFoodService {
         OptionT(get(userId, complexFood.recipeId))
           .getOrElseF(DBIO.failed(DBError.Complex.Food.NotFound))
       for {
-        complexFood <- findAction
-        _ <- complexFoodQuery(userId, complexFood.recipeId)
+        _ <- findAction
+        _ <- complexFoodQuery(complexFood.recipeId)
           .update(complexFood.transformInto[Tables.ComplexFoodRow])
         updatedFood <- findAction
       } yield updatedFood
     }
 
     override def delete(userId: UserId, recipeId: RecipeId)(implicit ec: ExecutionContext): DBIO[Boolean] =
-      complexFoodQuery(userId, recipeId).delete
+      complexFoodQuery(recipeId).delete
         .map(_ > 0)
 
     private def ifRecipeExists[A](
@@ -159,19 +159,9 @@ object ComplexFoodService {
         .flatMap(exists => if (exists) action else DBIO.failed(DBError.Complex.Food.RecipeNotFound))
 
     private def complexFoodQuery(
-        userId: UserId,
         recipeId: RecipeId
     ): Query[Tables.ComplexFood, Tables.ComplexFoodRow, Seq] =
-      for {
-        // Guard: If the query is empty, the second filter is not applied
-        _ <-
-          Tables.Recipe
-            .filter(recipe =>
-              recipe.userId === userId.transformInto[UUID] &&
-                recipe.id === recipeId.transformInto[UUID]
-            )
-        complexFoods <- Tables.ComplexFood.filter(_.recipeId === recipeId.transformInto[UUID])
-      } yield complexFoods
+      Tables.ComplexFood.filter(_.recipeId === recipeId.transformInto[UUID])
 
   }
 
