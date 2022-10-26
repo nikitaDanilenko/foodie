@@ -80,7 +80,7 @@ view model =
                     ( "", "" )
         in
         div [ Style.ids.complexFoodEditor ]
-            [ div [ Style.classes.elements ] [ label [] [ text "ComplexFoods" ] ]
+            [ div [ Style.classes.elements ] [ label [] [ text "Complex foods" ] ]
             , div [ Style.classes.choices ]
                 [ table []
                     [ colgroup []
@@ -169,7 +169,7 @@ editOrDeleteComplexFoodLine recipeMap complexFood =
     tr [ Style.classes.editing ]
         [ td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| Page.complexFoodNameOrEmpty recipeMap <| complexFood.recipeId ] ]
         , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| String.fromFloat <| complexFood.amount ] ]
-        , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| ComplexFoodUnit.toString <| complexFood.unit ] ]
+        , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| ComplexFoodUnit.toPrettyString <| complexFood.unit ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick editMsg ] [ text "Edit" ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Page.DeleteComplexFood complexFood.recipeId) ] [ text "Delete" ] ]
         ]
@@ -211,8 +211,7 @@ editComplexFoodLine recipeMap complexFood complexFoodClientInput =
                     complexFood.unit |> unitToItem |> Just
                 , onChange =
                     onChangeDropdown
-                        { amountLens = ComplexFoodClientInput.lenses.amount
-                        , unitOf = .unit
+                        { unitOf = .unit
                         , mkMsg = Page.UpdateComplexFood
                         , input = complexFoodClientInput
                         }
@@ -235,16 +234,16 @@ editComplexFoodLine recipeMap complexFood complexFoodClientInput =
 
 
 onChangeDropdown :
-    { amountLens : Lens input (ValidatedInput Float)
-    , unitOf : input -> ComplexFoodUnit
-    , input : input
-    , mkMsg : input -> Page.Msg
+    { unitOf : ComplexFoodClientInput -> ComplexFoodUnit
+    , input : ComplexFoodClientInput
+    , mkMsg : ComplexFoodClientInput -> Page.Msg
     }
     -> Maybe String
     -> Page.Msg
 onChangeDropdown ps =
-    Maybe.withDefault (ps.input |> ps.unitOf |> ComplexFoodUnit.toString)
-        >> flip (ps.amountLens |> Compose.lensWithLens ValidatedInput.lenses.text).set ps.input
+    Maybe.andThen ComplexFoodUnit.fromString
+        >> Maybe.withDefault (ps.input |> ps.unitOf)
+        >> flip ComplexFoodClientInput.lenses.unit.set ps.input
         >> ps.mkMsg
 
 
@@ -328,8 +327,7 @@ viewRecipeLine complexFoodsToCreate complexFoods recipe =
                             , emptyItem = Nothing
                             , onChange =
                                 onChangeDropdown
-                                    { amountLens = ComplexFoodClientInput.lenses.amount
-                                    , unitOf = .unit
+                                    { unitOf = .unit
                                     , mkMsg = Page.UpdateComplexFoodCreation
                                     , input = complexFoodToAdd
                                     }
@@ -361,7 +359,7 @@ viewRecipeLine complexFoodsToCreate complexFoods recipe =
 unitToItem : ComplexFoodUnit -> Item
 unitToItem complexFoodUnit =
     { value = complexFoodUnit |> ComplexFoodUnit.toString
-    , text = complexFoodUnit |> ComplexFoodUnit.toString |> String.toLower
+    , text = complexFoodUnit |> ComplexFoodUnit.toPrettyString
     , enabled = True
     }
 

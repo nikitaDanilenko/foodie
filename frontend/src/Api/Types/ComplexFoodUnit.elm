@@ -44,3 +44,16 @@ toString complexFoodUnit =
 
         ML ->
             "ML"
+
+
+toPrettyString : ComplexFoodUnit -> String
+toPrettyString =
+    toString >> String.toLower
+
+
+fromString : String -> Maybe ComplexFoodUnit
+fromString =
+    String.toUpper
+        >> (\s -> String.concat [ "\"", s, "\"" ])
+        >> Decode.decodeString decoderComplexFoodUnit
+        >> Result.toMaybe

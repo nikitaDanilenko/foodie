@@ -103,8 +103,8 @@ update msg model =
 updateComplexFoodCreation : Page.Model -> ComplexFoodClientInput -> ( Page.Model, Cmd Page.Msg )
 updateComplexFoodCreation model complexFoodClientInput =
     ( model
-        |> mapComplexFoodOrUpdateByRecipeId complexFoodClientInput.recipeId
-            (Either.map (Editing.updateLens.set complexFoodClientInput))
+        |> Lens.modify Page.lenses.complexFoodsToCreate
+            (Dict.update complexFoodClientInput.recipeId (always complexFoodClientInput >> Just))
     , Cmd.none
     )
 
