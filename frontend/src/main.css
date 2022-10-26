@@ -2,11 +2,7 @@ body, button, input {
     font-family: Arial, sans-serif;
 }
 
-#recipesButton,
-#mealsButton,
-#statisticsButton,
-#referenceMapsButton,
-#userSettingsButton {
+.overviewButton {
     border: none;
     text-align: center;
     padding: 5%;
@@ -22,11 +18,7 @@ body, button, input {
     background-color: rgb(66, 100, 160);
 }
 
-#recipesButton:hover,
-#mealsButton:hover,
-#statisticsButton:hover,
-#referenceMapsButton:hover,
-#userSettingsButton:hover,
+.overviewButton:hover,
 .navigationButton:hover:not(.disabled),
 .pagerButton:hover:not(.disabled) {
     background-color: rgb(100, 149, 237);
@@ -57,7 +49,8 @@ body, button, input {
 #mealEntryEditor table:not(.info),
 #referenceEntryEditor table,
 #statistics table,
-#navigation table {
+#navigation table,
+#complexFoodEditor table {
     border-spacing: 0;
     width: 100%;
     table-layout: fixed;
@@ -93,7 +86,8 @@ body, button, input {
 #ingredientEditor thead th,
 #mealEntryEditor thead th,
 #referenceEntryEditor thead th,
-#statistics thead th {
+#statistics thead th,
+#complexFoodEditor thead th {
     font-size: larger;
     font-weight: lighter;
     font-style: italic;
@@ -105,7 +99,8 @@ body, button, input {
 #ingredientEditor thead th:not(.numberLabel),
 #mealEntryEditor thead th:not(.numberLabel),
 #referenceEntryEditor thead th:not(.numberLabel),
-#statistics thead th:not(.numberLabel) {
+#statistics thead th:not(.numberLabel),
+#complexFoodEditor thead th:not(.numberLabel){
     text-align: left;
 }
 

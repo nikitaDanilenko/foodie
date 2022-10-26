@@ -24,36 +24,43 @@ view model =
             [ div []
                 [ Links.linkButton
                     { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.recipes.address <| ()
-                    , attributes = [ Style.ids.recipesButton ]
+                    , attributes = [ Style.classes.button.overview ]
                     , children = [ text "Recipes" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
                     { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.meals.address <| ()
-                    , attributes = [ Style.ids.mealsButton ]
+                    , attributes = [ Style.classes.button.overview ]
                     , children = [ text "Meals" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
                     { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.statistics.address <| ()
-                    , attributes = [ Style.ids.statisticsButton ]
+                    , attributes = [ Style.classes.button.overview ]
                     , children = [ text "Statistics" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
                     { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.referenceMaps.address <| ()
-                    , attributes = [ Style.ids.referenceMapsButton ]
+                    , attributes = [ Style.classes.button.overview ]
                     , children = [ text "Reference maps" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
                     { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.userSettings.address <| ()
-                    , attributes = [ Style.ids.userSettingsButton ]
+                    , attributes = [ Style.classes.button.overview ]
                     , children = [ text "User settings" ]
+                    }
+                ]
+            , div []
+                [ Links.linkButton
+                    { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.complexFoods.address <| ()
+                    , attributes = [ Style.classes.button.overview ]
+                    , children = [ text "Complex foods" ]
                     }
                 ]
             ]

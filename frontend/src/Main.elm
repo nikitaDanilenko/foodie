@@ -12,6 +12,9 @@ import Html exposing (Html, div, text)
 import Jwt
 import Maybe.Extra
 import Monocle.Lens exposing (Lens)
+import Pages.ComplexFoods.Handler
+import Pages.ComplexFoods.Page
+import Pages.ComplexFoods.View
 import Pages.Deletion.Handler
 import Pages.Deletion.Page
 import Pages.Deletion.View
@@ -122,6 +125,7 @@ type Page
     | Deletion Pages.Deletion.Page.Model
     | RequestRecovery Pages.Recovery.Request.Page.Model
     | ConfirmRecovery Pages.Recovery.Confirm.Page.Model
+    | ComplexFoods Pages.ComplexFoods.Page.Model
     | NotFound
 
 
@@ -148,6 +152,7 @@ type Msg
     | DeletionMsg Pages.Deletion.Page.Msg
     | RequestRecoveryMsg Pages.Recovery.Request.Page.Msg
     | ConfirmRecoveryMsg Pages.Recovery.Confirm.Page.Msg
+    | ComplexFoodsMsg Pages.ComplexFoods.Page.Msg
 
 
 titleFor : Model -> String
@@ -223,6 +228,9 @@ view model =
 
         ConfirmRecovery confirmRecovery ->
             Html.map ConfirmRecoveryMsg (Pages.Recovery.Confirm.View.view confirmRecovery)
+
+        ComplexFoods complexFoods ->
+            Html.map ComplexFoodsMsg (Pages.ComplexFoods.View.view complexFoods)
 
         NotFound ->
             div [] [ text "Page not found" ]
@@ -306,6 +314,9 @@ update msg model =
         ( ConfirmRecoveryMsg confirmRecoveryMsg, ConfirmRecovery confirmRecovery ) ->
             stepThrough steps.confirmRecovery model (Pages.Recovery.Confirm.Handler.update confirmRecoveryMsg confirmRecovery)
 
+        ( ComplexFoodsMsg complexFoodsMsg, ComplexFoods complexFoods ) ->
+            stepThrough steps.complexFoods model (Pages.ComplexFoods.Handler.update complexFoodsMsg complexFoods)
+
         _ ->
             ( model, Cmd.none )
 
@@ -332,6 +343,7 @@ steps :
     , deletion : StepParameters Pages.Deletion.Page.Model Pages.Deletion.Page.Msg
     , requestRecovery : StepParameters Pages.Recovery.Request.Page.Model Pages.Recovery.Request.Page.Msg
     , confirmRecovery : StepParameters Pages.Recovery.Confirm.Page.Model Pages.Recovery.Confirm.Page.Msg
+    , complexFoods : StepParameters Pages.ComplexFoods.Page.Model Pages.ComplexFoods.Page.Msg
     }
 steps =
     { login = StepParameters Login LoginMsg
@@ -349,6 +361,7 @@ steps =
     , deletion = StepParameters Deletion DeletionMsg
     , requestRecovery = StepParameters RequestRecovery RequestRecoveryMsg
     , confirmRecovery = StepParameters ConfirmRecovery ConfirmRecoveryMsg
+    , complexFoods = StepParameters ComplexFoods ComplexFoodsMsg
     }
 
 
@@ -373,6 +386,7 @@ type Route
     | DeletionRoute UserIdentifier JWT
     | RequestRecoveryRoute
     | ConfirmRecoveryRoute UserIdentifier JWT
+    | ComplexFoodsRoute
 
 
 plainRouteParser : Parser (Route -> a) a
@@ -393,6 +407,7 @@ plainRouteParser =
         , route Addresses.Frontend.deleteAccount.parser DeletionRoute
         , route Addresses.Frontend.requestRecovery.parser RequestRecoveryRoute
         , route Addresses.Frontend.confirmRecovery.parser ConfirmRecoveryRoute
+        , route Addresses.Frontend.complexFoods.parser ComplexFoodsRoute
         ]
 
 
@@ -490,6 +505,10 @@ followRoute model =
                         , recoveryJwt = jwt
                         }
                         |> stepThrough steps.confirmRecovery model
+
+                ComplexFoodsRoute ->
+                    Pages.ComplexFoods.Handler.init { authorizedAccess = authorizedAccess }
+                        |> stepThrough steps.complexFoods model
 
 
 fragmentToPath : Url -> Url

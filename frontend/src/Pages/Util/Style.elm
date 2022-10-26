@@ -16,6 +16,7 @@ classes :
         , editor : Attribute msg
         , logout : Attribute msg
         , navigation : Attribute msg
+        , overview : Attribute msg
         , pager : Attribute msg
         , select : Attribute msg
         }
@@ -64,6 +65,7 @@ classes =
         , editor = class "editorButton"
         , logout = class "logoutButton"
         , navigation = class "navigationButton"
+        , overview = class "overviewButton"
         , pager = class "pagerButton"
         , select = class "selectButton"
         }
@@ -111,15 +113,10 @@ ids :
     , error : Attribute msg
     , ingredientEditor : Attribute msg
     , mealEntryEditor : Attribute msg
-    , mealsButton : Attribute msg
     , navigation : Attribute msg
     , overviewMain : Attribute msg
-    , recipesButton : Attribute msg
     , referenceEntryEditor : Attribute msg
-    , referenceMapsButton : Attribute msg
     , statistics : Attribute msg
-    , statisticsButton : Attribute msg
-    , userSettingsButton : Attribute msg
     }
 ids =
     { add = id "add"
@@ -130,13 +127,8 @@ ids =
     , error = id "error"
     , ingredientEditor = id "ingredientEditor"
     , mealEntryEditor = id "mealEntryEditor"
-    , mealsButton = id "mealsButton"
     , navigation = id "navigation"
     , overviewMain = id "overviewMain"
-    , recipesButton = id "recipesButton"
     , referenceEntryEditor = id "referenceEntryEditor"
-    , referenceMapsButton = id "referenceMapsButton"
     , statistics = id "statistics"
-    , statisticsButton = id "statisticsButton"
-    , userSettingsButton = id "userSettingsButton"
     }

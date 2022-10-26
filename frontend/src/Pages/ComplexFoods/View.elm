@@ -37,7 +37,7 @@ view model =
         , initialization = .initialization
         , configuration = .authorizedAccess >> .configuration
         , jwt = .authorizedAccess >> .jwt >> Just
-        , currentPage = Nothing
+        , currentPage = Just ViewUtil.ComplexFoods
         , showNavigation = True
         }
         model

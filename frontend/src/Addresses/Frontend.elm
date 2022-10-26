@@ -1,4 +1,21 @@
-module Addresses.Frontend exposing (confirmRecovery, confirmRegistration, deleteAccount, ingredientEditor, login, mealEntryEditor, meals, overview, recipes, referenceEntries, referenceMaps, requestRecovery, requestRegistration, statistics, userSettings)
+module Addresses.Frontend exposing
+    ( complexFoods
+    , confirmRecovery
+    , confirmRegistration
+    , deleteAccount
+    , ingredientEditor
+    , login
+    , mealEntryEditor
+    , meals
+    , overview
+    , recipes
+    , referenceEntries
+    , referenceMaps
+    , requestRecovery
+    , requestRegistration
+    , statistics
+    , userSettings
+    )
 
 import Api.Auxiliary exposing (JWT, MealId, RecipeId, ReferenceMapId)
 import Api.Types.UserIdentifier exposing (UserIdentifier)
@@ -91,6 +108,11 @@ deleteAccount =
 confirmRecovery : AddressWithParser ( ( String, String ), JWT ) (UserIdentifier -> JWT -> a) a
 confirmRecovery =
     confirm "recover-account"
+
+
+complexFoods : AddressWithParser () a a
+complexFoods =
+    plain "complex-foods"
 
 
 confirm : String -> AddressWithParser ( ( String, String ), JWT ) (UserIdentifier -> JWT -> a) a
