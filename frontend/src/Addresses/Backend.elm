@@ -20,6 +20,12 @@ recipes :
         , update : ResourcePattern
         , delete : IngredientId -> ResourcePattern
         }
+    , complexIngredients :
+        { allOf : RecipeId -> ResourcePattern
+        , create : RecipeId -> ResourcePattern
+        , update : RecipeId -> ResourcePattern
+        , delete : RecipeId -> IngredientId -> ResourcePattern
+        }
     }
 recipes =
     let
@@ -31,6 +37,12 @@ recipes =
 
         ingredients =
             (::) ingredientsWord >> base
+
+        complexIngredientsWord =
+            "complex-ingredients"
+
+        complexIngredients recipeId =
+            (::) complexIngredientsWord >> (::) recipeId >> base
     in
     { measures = get <| base <| [ "measures" ]
     , foods = get <| base <| [ "foods" ]
@@ -44,6 +56,12 @@ recipes =
         , create = post <| ingredients []
         , update = patch <| ingredients []
         , delete = \ingredientId -> delete <| ingredients <| [ ingredientId ]
+        }
+    , complexIngredients =
+        { allOf = \recipeId -> get <| complexIngredients recipeId []
+        , create = \recipeId -> post <| complexIngredients recipeId []
+        , update = \recipeId -> patch <| complexIngredients recipeId []
+        , delete = \recipeId complexIngredientId -> delete <| complexIngredients recipeId <| [ complexIngredientId ]
         }
     }
 

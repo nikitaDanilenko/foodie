@@ -135,7 +135,7 @@ view model =
                                 , items = Pagination.lenses.ingredients
                                 }
                                 model
-                                >> Page.SetPagination
+                                >> Page.SetIngredientsPagination
                         , elements = viewEditIngredients
                         }
                     ]
@@ -175,7 +175,7 @@ view model =
                                     , items = Pagination.lenses.foods
                                     }
                                     model
-                                    >> Page.SetPagination
+                                    >> Page.SetIngredientsPagination
                             , elements = viewFoods
                             }
                         ]

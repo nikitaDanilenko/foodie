@@ -1,6 +1,7 @@
 module Pages.Ingredients.ComplexIngredientClientInput exposing (..)
 
 import Api.Auxiliary exposing (ComplexFoodId)
+import Api.Types.ComplexFood exposing (ComplexFood)
 import Api.Types.ComplexIngredient exposing (ComplexIngredient)
 import Monocle.Lens exposing (Lens)
 import Pages.Util.ValidatedInput as ValidatedInput exposing (ValidatedInput)
@@ -27,6 +28,13 @@ from complexIngredient =
         ValidatedInput.positive
             |> ValidatedInput.lenses.value.set complexIngredient.factor
             |> ValidatedInput.lenses.text.set (complexIngredient.factor |> String.fromFloat)
+    }
+
+
+fromFood : ComplexFood -> ComplexIngredientClientInput
+fromFood complexFood =
+    { complexFoodId = complexFood.recipeId
+    , factor = ValidatedInput.positive
     }
 
 

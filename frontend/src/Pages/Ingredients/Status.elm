@@ -28,10 +28,10 @@ isFinished : Status -> Bool
 isFinished status =
     List.all identity
         [ status.foods
-        --, status.complexFoods
+        , status.complexFoods
         , status.measures
         , status.ingredients
-        --, status.complexIngredients
+        , status.complexIngredients
         ]
 
 

@@ -30,6 +30,7 @@ type alias Model =
     , complexIngredientsGroup : FoodGroup ComplexIngredientId ComplexIngredient ComplexIngredientClientInput ComplexFoodId ComplexFood ComplexIngredientClientInput
     , measures : MeasureMap
     , initialization : Initialization Status
+    , foodsMode : FoodsMode
     }
 
 
@@ -37,8 +38,16 @@ type alias PlainIngredientOrUpdate =
     FoodGroup.IngredientOrUpdate Ingredient IngredientUpdateClientInput
 
 
+type alias ComplexIngredientOrUpdate =
+    FoodGroup.IngredientOrUpdate ComplexIngredient ComplexIngredientClientInput
+
+
 type alias FoodMap =
     Dict FoodId Food
+
+
+type alias ComplexFoodMap =
+    Dict ComplexFoodId ComplexFood
 
 
 type alias MeasureMap =
@@ -49,8 +58,21 @@ type alias AddFoodsMap =
     Dict FoodId IngredientCreationClientInput
 
 
+type alias AddComplexFoodsMap =
+    Dict ComplexFoodId ComplexIngredientClientInput
+
+
 type alias PlainIngredientOrUpdateMap =
     Dict IngredientId PlainIngredientOrUpdate
+
+
+type alias ComplexIngredientOrUpdateMap =
+    Dict ComplexIngredientId ComplexIngredientOrUpdate
+
+
+type FoodsMode
+    = Plain
+    | Complex
 
 
 lenses :
@@ -59,6 +81,7 @@ lenses :
     , complexIngredientsGroup : Lens Model (FoodGroup ComplexIngredientId ComplexIngredient ComplexIngredientClientInput ComplexFoodId ComplexFood ComplexIngredientClientInput)
     , recipeInfo : Lens Model (Maybe RecipeInfo)
     , initialization : Lens Model (Initialization Status)
+    , foodsMode : Lens Model FoodsMode
     }
 lenses =
     { measures = Lens .measures (\b a -> { a | measures = b })
@@ -66,30 +89,47 @@ lenses =
     , complexIngredientsGroup = Lens .complexIngredientsGroup (\b a -> { a | complexIngredientsGroup = b })
     , recipeInfo = Lens .recipeInfo (\b a -> { a | recipeInfo = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
+    , foodsMode = Lens .foodsMode (\b a -> { a | foodsMode = b })
     }
 
 
 type Msg
     = UpdateIngredient IngredientUpdateClientInput
+    | UpdateComplexIngredient ComplexIngredientClientInput
     | SaveIngredientEdit IngredientUpdateClientInput
+    | SaveComplexIngredientEdit ComplexIngredientClientInput
     | GotSaveIngredientResponse (Result Error Ingredient)
+    | GotSaveComplexIngredientResponse (Result Error ComplexIngredient)
     | EnterEditIngredient IngredientId
+    | EnterEditComplexIngredient ComplexIngredientId
     | ExitEditIngredientAt IngredientId
+    | ExitEditComplexIngredientAt ComplexIngredientId
     | DeleteIngredient IngredientId
+    | DeleteComplexIngredient ComplexIngredientId
     | GotDeleteIngredientResponse IngredientId (Result Error ())
+    | GotDeleteComplexIngredientResponse ComplexIngredientId (Result Error ())
     | GotFetchIngredientsResponse (Result Error (List Ingredient))
+    | GotFetchComplexIngredientsResponse (Result Error (List ComplexIngredient))
     | GotFetchFoodsResponse (Result Error (List Food))
+    | GotFetchComplexFoodsResponse (Result Error (List ComplexFood))
     | GotFetchMeasuresResponse (Result Error (List Measure))
     | GotFetchRecipeResponse (Result Error Recipe)
     | SelectFood Food
+    | SelectComplexFood ComplexFood
     | DeselectFood FoodId
+    | DeselectComplexFood ComplexFoodId
     | AddFood FoodId
+    | AddComplexFood ComplexFoodId
     | GotAddFoodResponse (Result Error Ingredient)
+    | GotAddComplexFoodResponse (Result Error ComplexIngredient)
     | UpdateAddFood IngredientCreationClientInput
+    | UpdateAddComplexFood ComplexIngredientClientInput
     | UpdateFoods String
     | UpdateMeasures String
     | SetFoodsSearchString String
-    | SetPagination Pagination
+    | SetComplexFoodsSearchString String
+    | SetIngredientsPagination Pagination
+    | SetComplexIngredientsPagination Pagination
 
 
 type alias Flags =
