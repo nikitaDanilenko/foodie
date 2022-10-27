@@ -18,6 +18,7 @@ import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Ingredients.AmountUnitClientInput as AmountUnitClientInput
+import Pages.Ingredients.FoodGroup as FoodGroup
 import Pages.Ingredients.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.Ingredients.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
 import Pages.Ingredients.Page as Page
@@ -50,30 +51,36 @@ view model =
         let
             viewEditIngredient =
                 Either.unpack
-                    (editOrDeleteIngredientLine model.measures model.foods)
-                    (\e -> e.update |> editIngredientLine model.measures model.foods e.original)
+                    (editOrDeleteIngredientLine model.measures model.ingredientsGroup.foods)
+                    (\e -> e.update |> editIngredientLine model.measures model.ingredientsGroup.foods e.original)
 
             viewEditIngredients =
-                model.ingredients
+                model.ingredientsGroup.ingredients
                     |> Dict.values
-                    |> List.sortBy (Editing.field .foodId >> Page.ingredientNameOrEmpty model.foods >> String.toLower)
+                    |> List.sortBy (Editing.field .foodId >> Page.ingredientNameOrEmpty model.ingredientsGroup.foods >> String.toLower)
                     |> ViewUtil.paginate
-                        { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.ingredients
+                        { pagination =
+                            Page.lenses.ingredientsGroup
+                                |> Compose.lensWithLens FoodGroup.lenses.pagination
+                                |> Compose.lensWithLens Pagination.lenses.ingredients
                         }
                         model
 
             viewFoods =
-                model.foods
-                    |> Dict.filter (\_ v -> SearchUtil.search model.foodsSearchString v.name)
+                model.ingredientsGroup.foods
+                    |> Dict.filter (\_ v -> SearchUtil.search model.ingredientsGroup.foodsSearchString v.name)
                     |> Dict.values
                     |> List.sortBy .name
                     |> ViewUtil.paginate
-                        { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.foods
+                        { pagination =
+                            Page.lenses.ingredientsGroup
+                                |> Compose.lensWithLens FoodGroup.lenses.pagination
+                                |> Compose.lensWithLens Pagination.lenses.foods
                         }
                         model
 
             anySelection =
-                model.foodsToAdd
+                model.ingredientsGroup.foodsToAdd
                     |> Dict.isEmpty
                     |> not
 
@@ -124,7 +131,7 @@ view model =
                     [ ViewUtil.pagerButtons
                         { msg =
                             PaginationSettings.updateCurrentPage
-                                { pagination = Page.lenses.pagination
+                                { pagination = Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.pagination
                                 , items = Pagination.lenses.ingredients
                                 }
                                 model
@@ -137,7 +144,7 @@ view model =
                 [ div [ Style.classes.addElement ]
                     [ HtmlUtil.searchAreaWith
                         { msg = Page.SetFoodsSearchString
-                        , searchString = model.foodsSearchString
+                        , searchString = model.ingredientsGroup.foodsSearchString
                         }
                     , table [ Style.classes.choiceTable ]
                         [ colgroup []
@@ -157,14 +164,14 @@ view model =
                         , tbody []
                             (viewFoods
                                 |> Paginate.page
-                                |> List.map (viewFoodLine model.foods model.foodsToAdd model.ingredients)
+                                |> List.map (viewFoodLine model.ingredientsGroup.foods model.ingredientsGroup.foodsToAdd model.ingredientsGroup.ingredients)
                             )
                         ]
                     , div [ Style.classes.pagination ]
                         [ ViewUtil.pagerButtons
                             { msg =
                                 PaginationSettings.updateCurrentPage
-                                    { pagination = Page.lenses.pagination
+                                    { pagination = Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.pagination
                                     , items = Pagination.lenses.foods
                                     }
                                     model
@@ -287,7 +294,7 @@ onChangeDropdown ps =
         >> ps.mkMsg
 
 
-viewFoodLine : Page.FoodMap -> Page.AddFoodsMap -> Page.IngredientOrUpdateMap -> Food -> Html Page.Msg
+viewFoodLine : Page.FoodMap -> Page.AddFoodsMap -> Page.PlainIngredientOrUpdateMap -> Food -> Html Page.Msg
 viewFoodLine foodMap ingredientsToAdd ingredients food =
     let
         addMsg =

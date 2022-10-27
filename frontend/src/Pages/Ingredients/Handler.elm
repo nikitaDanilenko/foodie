@@ -15,6 +15,7 @@ import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens exposing (Lens)
 import Monocle.Optional as Optional
+import Pages.Ingredients.FoodGroup as FoodGroup
 import Pages.Ingredients.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.Ingredients.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
 import Pages.Ingredients.Page as Page
@@ -45,14 +46,11 @@ init : Page.Flags -> ( Page.Model, Cmd Page.Msg )
 init flags =
     ( { authorizedAccess = flags.authorizedAccess
       , recipeId = flags.recipeId
-      , ingredients = Dict.empty
-      , foods = Dict.empty
+      , ingredientsGroup = FoodGroup.initial
+      , complexIngredientsGroup = FoodGroup.initial
       , measures = Dict.empty
-      , foodsSearchString = ""
-      , foodsToAdd = Dict.empty
       , recipeInfo = Nothing
       , initialization = Loading Status.initial
-      , pagination = Pagination.initial
       }
     , initialFetch
         flags.authorizedAccess
@@ -124,9 +122,10 @@ update msg model =
             setPagination model pagination
 
 
-mapIngredientOrUpdateById : IngredientId -> (Page.IngredientOrUpdate -> Page.IngredientOrUpdate) -> Page.Model -> Page.Model
+mapIngredientOrUpdateById : IngredientId -> (Page.PlainIngredientOrUpdate -> Page.PlainIngredientOrUpdate) -> Page.Model -> Page.Model
 mapIngredientOrUpdateById ingredientId =
-    Page.lenses.ingredients
+    Page.lenses.ingredientsGroup
+        |> Compose.lensWithLens FoodGroup.lenses.ingredients
         |> Compose.lensWithOptional (LensUtil.dictByKey ingredientId)
         |> Optional.modify
 
@@ -158,7 +157,9 @@ gotSaveIngredientResponse model result =
                 model
                     |> mapIngredientOrUpdateById ingredient.id
                         (always (Left ingredient))
-                    |> Lens.modify Page.lenses.foodsToAdd (Dict.remove ingredient.foodId)
+                    |> Lens.modify
+                        (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.foodsToAdd)
+                        (Dict.remove ingredient.foodId)
             )
     , Cmd.none
     )
@@ -193,7 +194,8 @@ gotDeleteIngredientResponse model ingredientId result =
         |> Either.fromResult
         |> Either.unpack (flip setError model)
             (model
-                |> Lens.modify Page.lenses.ingredients
+                |> Lens.modify
+                    (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.ingredients)
                     (Dict.remove ingredientId)
                 |> always
             )
@@ -208,7 +210,7 @@ gotFetchIngredientsResponse model result =
         |> Either.unpack (flip setError model)
             (\ingredients ->
                 model
-                    |> Page.lenses.ingredients.set
+                    |> (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.ingredients).set
                         (ingredients |> List.map (\ingredient -> ( ingredient.id, Left ingredient )) |> Dict.fromList)
                     |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.ingredients).set True
             )
@@ -222,7 +224,11 @@ gotFetchFoodsResponse model result =
         |> Either.fromResult
         |> Either.unpack (\error -> ( setError error model, Cmd.none ))
             (\foods ->
-                ( LensUtil.set foods .id Page.lenses.foods model
+                ( LensUtil.set
+                    foods
+                    .id
+                    (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.foods)
+                    model
                 , foods
                     |> Encode.list encoderFood
                     |> Encode.encode 0
@@ -267,7 +273,10 @@ updateFoods model =
         >> Either.unpack (\error -> ( setJsonError error model, Cmd.none ))
             (\foods ->
                 ( model
-                    |> LensUtil.set foods .id Page.lenses.foods
+                    |> LensUtil.set
+                        foods
+                        .id
+                        (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.foods)
                     |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.foods).set
                         (foods
                             |> List.isEmpty
@@ -307,8 +316,9 @@ updateMeasures model =
 setFoodsSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 setFoodsSearchString model string =
     ( model
-        |> Page.lenses.foodsSearchString.set string
-        |> (Page.lenses.pagination
+        |> (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.foodsSearchString).set string
+        |> (Page.lenses.ingredientsGroup
+                |> Compose.lensWithLens FoodGroup.lenses.pagination
                 |> Compose.lensWithLens Pagination.lenses.foods
                 |> Compose.lensWithLens PaginationSettings.lenses.currentPage
            ).set
@@ -320,7 +330,7 @@ setFoodsSearchString model string =
 selectFood : Page.Model -> Food -> ( Page.Model, Cmd msg )
 selectFood model food =
     ( model
-        |> Lens.modify Page.lenses.foodsToAdd
+        |> Lens.modify (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.foodsToAdd)
             (Dict.update food.id (always (IngredientCreationClientInput.default model.recipeId food.id (food.measures |> List.head |> Maybe.Extra.unwrap 0 .id)) >> Just))
     , Cmd.none
     )
@@ -329,7 +339,7 @@ selectFood model food =
 deselectFood : Page.Model -> FoodId -> ( Page.Model, Cmd Page.Msg )
 deselectFood model foodId =
     ( model
-        |> Lens.modify Page.lenses.foodsToAdd (Dict.remove foodId)
+        |> Lens.modify (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.foodsToAdd) (Dict.remove foodId)
     , Cmd.none
     )
 
@@ -338,7 +348,8 @@ addFood : Page.Model -> FoodId -> ( Page.Model, Cmd Page.Msg )
 addFood model foodId =
     ( model
     , model
-        |> (Page.lenses.foodsToAdd
+        |> (Page.lenses.ingredientsGroup
+                |> Compose.lensWithLens FoodGroup.lenses.foodsToAdd
                 |> Compose.lensWithOptional (LensUtil.dictByKey foodId)
            ).getOption
         |> Maybe.Extra.unwrap Cmd.none
@@ -356,10 +367,10 @@ gotAddFoodResponse model result =
             (\ingredient ->
                 model
                     |> Lens.modify
-                        Page.lenses.ingredients
+                        (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.ingredients)
                         (Dict.update ingredient.id (always ingredient >> Left >> Just))
                     |> Lens.modify
-                        Page.lenses.foodsToAdd
+                        (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.foodsToAdd)
                         (Dict.remove ingredient.foodId)
             )
     , Cmd.none
@@ -369,7 +380,7 @@ gotAddFoodResponse model result =
 updateAddFood : Page.Model -> IngredientCreationClientInput -> ( Page.Model, Cmd Page.Msg )
 updateAddFood model ingredientCreationClientInput =
     ( model
-        |> Lens.modify Page.lenses.foodsToAdd
+        |> Lens.modify (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.foodsToAdd)
             (Dict.update ingredientCreationClientInput.foodId (always ingredientCreationClientInput >> Just))
     , Cmd.none
     )
@@ -377,7 +388,7 @@ updateAddFood model ingredientCreationClientInput =
 
 setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
 setPagination model pagination =
-    ( model |> Page.lenses.pagination.set pagination
+    ( model |> (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.pagination).set pagination
     , Cmd.none
     )
 

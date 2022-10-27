@@ -45,3 +45,7 @@ type alias ReferenceMapId =
 
 type alias ComplexFoodId =
     RecipeId
+
+
+type alias ComplexIngredientId =
+    RecipeId
