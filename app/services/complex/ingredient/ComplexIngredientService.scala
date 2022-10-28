@@ -113,7 +113,6 @@ object ComplexIngredientService {
         ec: ExecutionContext
     ): DBIO[ComplexIngredient] = {
       val query = complexIngredientQuery(
-        userId = userId,
         recipeId = complexIngredient.recipeId,
         complexFoodId = complexIngredient.complexFoodId
       )
@@ -137,7 +136,6 @@ object ComplexIngredientService {
         ec: ExecutionContext
     ): DBIO[ComplexIngredient] = {
       val query = complexIngredientQuery(
-        userId = userId,
         recipeId = complexIngredient.recipeId,
         complexFoodId = complexIngredient.complexFoodId
       )
@@ -158,7 +156,7 @@ object ComplexIngredientService {
     override def delete(userId: UserId, recipeId: RecipeId, complexFoodId: ComplexFoodId)(implicit
         ec: ExecutionContext
     ): DBIO[Boolean] =
-      complexIngredientQuery(userId, recipeId, complexFoodId).delete
+      complexIngredientQuery(recipeId, complexFoodId).delete
         .map(_ > 0)
 
     private def ifRecipeExists[A](
@@ -171,23 +169,13 @@ object ComplexIngredientService {
         .flatMap(exists => if (exists) action else DBIO.failed(DBError.Complex.Ingredient.RecipeNotFound))
 
     private def complexIngredientQuery(
-        userId: UserId,
         recipeId: RecipeId,
         complexFoodId: ComplexFoodId
     ): Query[Tables.ComplexIngredient, Tables.ComplexIngredientRow, Seq] =
-      for {
-        // Guard: If the query is empty, the second filter is not applied
-        _ <-
-          Tables.Recipe
-            .filter(recipe =>
-              recipe.userId === userId.transformInto[UUID] &&
-                recipe.id === recipeId.transformInto[UUID]
-            )
-        complexIngredients <- Tables.ComplexIngredient.filter(ingredient =>
-          ingredient.recipeId === recipeId.transformInto[UUID] &&
-            ingredient.complexFoodId === complexFoodId.transformInto[UUID]
-        )
-      } yield complexIngredients
+      Tables.ComplexIngredient.filter(ingredient =>
+        ingredient.recipeId === recipeId.transformInto[UUID] &&
+          ingredient.complexFoodId === complexFoodId.transformInto[UUID]
+      )
 
     private def cycleCheck(recipeId: RecipeId, newReferenceRecipeId: RecipeId)(implicit
         ec: ExecutionContext
