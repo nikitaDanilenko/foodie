@@ -175,6 +175,9 @@ update msg model =
         Page.SetComplexIngredientsPagination pagination ->
             setComplexIngredientsPagination model pagination
 
+        Page.ChangeFoodsMode foodsMode ->
+            changeFoodsMode model foodsMode
+
 
 
 -- todo: Extract the last three lines
@@ -644,6 +647,14 @@ setIngredientsPagination model pagination =
 setComplexIngredientsPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
 setComplexIngredientsPagination model pagination =
     ( model |> (Page.lenses.complexIngredientsGroup |> Compose.lensWithLens FoodGroup.lenses.pagination).set pagination
+    , Cmd.none
+    )
+
+
+changeFoodsMode : Page.Model -> Page.FoodsMode -> ( Page.Model, Cmd Page.Msg )
+changeFoodsMode model foodsMode =
+    ( model
+        |> Page.lenses.foodsMode.set foodsMode
     , Cmd.none
     )
 

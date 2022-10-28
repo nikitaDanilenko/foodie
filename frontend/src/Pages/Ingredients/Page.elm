@@ -130,6 +130,7 @@ type Msg
     | SetComplexFoodsSearchString String
     | SetIngredientsPagination Pagination
     | SetComplexIngredientsPagination Pagination
+    | ChangeFoodsMode FoodsMode
 
 
 type alias Flags =
