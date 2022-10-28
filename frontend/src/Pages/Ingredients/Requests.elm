@@ -9,6 +9,7 @@ module Pages.Ingredients.Requests exposing
     , fetchIngredients
     , fetchMeasures
     , fetchRecipe
+    , fetchRecipes
     , saveComplexIngredient
     , saveIngredient
     )
@@ -57,6 +58,16 @@ fetchRecipe authorizedAccess recipeId =
         (Addresses.Backend.recipes.single recipeId)
         { body = Http.emptyBody
         , expect = HttpUtil.expectJson Page.GotFetchRecipeResponse decoderRecipe
+        }
+
+
+fetchRecipes : AuthorizedAccess -> Cmd Page.Msg
+fetchRecipes authorizedAccess =
+    HttpUtil.runPatternWithJwt
+        authorizedAccess
+        Addresses.Backend.recipes.all
+        { body = Http.emptyBody
+        , expect = HttpUtil.expectJson Page.GotFetchRecipesResponse (Decode.list decoderRecipe)
         }
 
 

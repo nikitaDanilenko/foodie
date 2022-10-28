@@ -9,7 +9,6 @@ import Api.Types.Measure exposing (Measure)
 import Api.Types.Recipe exposing (Recipe)
 import Dict exposing (Dict)
 import Http exposing (Error)
-import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 import Pages.Ingredients.ComplexIngredientClientInput exposing (ComplexIngredientClientInput)
 import Pages.Ingredients.FoodGroup as FoodGroup exposing (FoodGroup)
@@ -26,6 +25,7 @@ type alias Model =
     { authorizedAccess : AuthorizedAccess
     , recipeId : RecipeId
     , recipeInfo : Maybe RecipeInfo
+    , allRecipes : RecipeMap
     , ingredientsGroup : FoodGroup IngredientId Ingredient IngredientUpdateClientInput FoodId Food IngredientCreationClientInput
     , complexIngredientsGroup : FoodGroup ComplexIngredientId ComplexIngredient ComplexIngredientClientInput ComplexFoodId ComplexFood ComplexIngredientClientInput
     , measures : MeasureMap
@@ -48,6 +48,10 @@ type alias FoodMap =
 
 type alias ComplexFoodMap =
     Dict ComplexFoodId ComplexFood
+
+
+type alias RecipeMap =
+    Dict RecipeId Recipe
 
 
 type alias MeasureMap =
@@ -80,6 +84,7 @@ lenses :
     , ingredientsGroup : Lens Model (FoodGroup IngredientId Ingredient IngredientUpdateClientInput FoodId Food IngredientCreationClientInput)
     , complexIngredientsGroup : Lens Model (FoodGroup ComplexIngredientId ComplexIngredient ComplexIngredientClientInput ComplexFoodId ComplexFood ComplexIngredientClientInput)
     , recipeInfo : Lens Model (Maybe RecipeInfo)
+    , allRecipes : Lens Model RecipeMap
     , initialization : Lens Model (Initialization Status)
     , foodsMode : Lens Model FoodsMode
     }
@@ -88,6 +93,7 @@ lenses =
     , ingredientsGroup = Lens .ingredientsGroup (\b a -> { a | ingredientsGroup = b })
     , complexIngredientsGroup = Lens .complexIngredientsGroup (\b a -> { a | complexIngredientsGroup = b })
     , recipeInfo = Lens .recipeInfo (\b a -> { a | recipeInfo = b })
+    , allRecipes = Lens .allRecipes (\b a -> { a | allRecipes = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , foodsMode = Lens .foodsMode (\b a -> { a | foodsMode = b })
     }
@@ -114,6 +120,7 @@ type Msg
     | GotFetchComplexFoodsResponse (Result Error (List ComplexFood))
     | GotFetchMeasuresResponse (Result Error (List Measure))
     | GotFetchRecipeResponse (Result Error Recipe)
+    | GotFetchRecipesResponse (Result Error (List Recipe))
     | SelectFood Food
     | SelectComplexFood ComplexFood
     | DeselectFood FoodId
@@ -137,8 +144,3 @@ type alias Flags =
     { authorizedAccess : AuthorizedAccess
     , recipeId : RecipeId
     }
-
-
-ingredientNameOrEmpty : FoodMap -> FoodId -> String
-ingredientNameOrEmpty fm fi =
-    Dict.get fi fm |> Maybe.Extra.unwrap "" .name

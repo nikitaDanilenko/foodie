@@ -43,6 +43,7 @@ initialFetch authorizedAccess recipeId =
         , Requests.fetchRecipe authorizedAccess recipeId
         , doFetchFoods ()
         , Requests.fetchComplexFoods authorizedAccess
+        , Requests.fetchRecipes authorizedAccess
         , doFetchMeasures ()
         ]
 
@@ -55,6 +56,7 @@ init flags =
       , complexIngredientsGroup = FoodGroup.initial
       , measures = Dict.empty
       , recipeInfo = Nothing
+      , allRecipes = Dict.empty
       , initialization = Loading Status.initial
       , foodsMode = Page.Plain
       }
@@ -126,6 +128,9 @@ update msg model =
 
         Page.GotFetchRecipeResponse result ->
             gotFetchRecipeResponse model result
+
+        Page.GotFetchRecipesResponse result ->
+            gotFetchRecipesResponse model result
 
         Page.UpdateFoods string ->
             updateFoods model string
@@ -435,6 +440,20 @@ gotFetchRecipeResponse model result =
                 model
                     |> Page.lenses.recipeInfo.set (RecipeInfo.from recipe |> Just)
                     |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.recipe).set True
+            )
+    , Cmd.none
+    )
+
+
+gotFetchRecipesResponse : Page.Model -> Result Error (List Recipe) -> ( Page.Model, Cmd Page.Msg )
+gotFetchRecipesResponse model result =
+    ( result
+        |> Either.fromResult
+        |> Either.unpack (flip setError model)
+            (\recipes ->
+                model
+                    |> Page.lenses.allRecipes.set (recipes |> List.map (\r -> ( r.id, r )) |> Dict.fromList)
+                    |> (LensUtil.initializationField Page.lenses.initialization Status.lenses.allRecipes).set True
             )
     , Cmd.none
     )

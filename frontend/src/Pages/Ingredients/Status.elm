@@ -10,6 +10,7 @@ type alias Status =
     , ingredients : Bool
     , complexIngredients : Bool
     , recipe : Bool
+    , allRecipes : Bool
     }
 
 
@@ -21,6 +22,7 @@ initial =
     , ingredients = False
     , complexIngredients = False
     , recipe = False
+    , allRecipes = False
     }
 
 
@@ -32,6 +34,7 @@ isFinished status =
         , status.measures
         , status.ingredients
         , status.complexIngredients
+        , status.allRecipes
         ]
 
 
@@ -42,6 +45,7 @@ lenses :
     , ingredients : Lens Status Bool
     , complexIngredients : Lens Status Bool
     , recipe : Lens Status Bool
+    , allRecipes : Lens Status Bool
     }
 lenses =
     { foods = Lens .foods (\b a -> { a | foods = b })
@@ -50,4 +54,5 @@ lenses =
     , ingredients = Lens .ingredients (\b a -> { a | ingredients = b })
     , complexIngredients = Lens .complexIngredients (\b a -> { a | complexIngredients = b })
     , recipe = Lens .recipe (\b a -> { a | recipe = b })
+    , allRecipes = Lens .allRecipes (\b a -> { a | allRecipes = b })
     }
