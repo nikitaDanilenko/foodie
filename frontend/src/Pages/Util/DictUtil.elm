@@ -1,6 +1,7 @@
 module Pages.Util.DictUtil exposing (..)
 
 import Dict exposing (Dict)
+import Maybe.Extra
 
 
 existsValue : (v -> Bool) -> Dict comparable v -> Bool
@@ -15,3 +16,8 @@ firstSuch p =
     Dict.filter (always p)
         >> Dict.values
         >> List.head
+
+
+nameOrEmpty : Dict comparable { a | name : String } -> comparable -> String
+nameOrEmpty map id =
+    Dict.get id map |> Maybe.Extra.unwrap "" .name
