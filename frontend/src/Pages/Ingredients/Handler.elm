@@ -184,8 +184,6 @@ update msg model =
             changeFoodsMode model foodsMode
 
 
-
-
 mapIngredientOrUpdateById : IngredientId -> (Page.PlainIngredientOrUpdate -> Page.PlainIngredientOrUpdate) -> Page.Model -> Page.Model
 mapIngredientOrUpdateById ingredientId =
     Page.lenses.ingredientsGroup
