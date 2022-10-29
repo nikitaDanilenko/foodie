@@ -4,7 +4,7 @@ import Basics.Extra exposing (flip)
 import Dict exposing (Dict)
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
-import Monocle.Optional exposing (Optional)
+import Monocle.Optional as Optional exposing (Optional)
 import Util.Initialization as Initialization exposing (Initialization)
 
 
@@ -33,3 +33,9 @@ initializationField initializationLens subLens =
 identityLens : Lens a a
 identityLens =
     Lens identity always
+
+
+updateById : comparable -> Lens a (Dict comparable b) -> (b -> b) -> a -> a
+updateById id =
+    Compose.lensWithOptional (dictByKey id)
+        >> Optional.modify

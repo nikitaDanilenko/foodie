@@ -16,7 +16,7 @@ import Json.Encode as Encode
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens exposing (Lens)
-import Monocle.Optional as Optional
+import Monocle.Optional
 import Pages.Ingredients.ComplexIngredientClientInput as ComplexIngredientClientInput exposing (ComplexIngredientClientInput)
 import Pages.Ingredients.FoodGroup as FoodGroup
 import Pages.Ingredients.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
@@ -185,23 +185,19 @@ update msg model =
 
 
 
--- todo: Extract the last three lines
-
 
 mapIngredientOrUpdateById : IngredientId -> (Page.PlainIngredientOrUpdate -> Page.PlainIngredientOrUpdate) -> Page.Model -> Page.Model
 mapIngredientOrUpdateById ingredientId =
     Page.lenses.ingredientsGroup
         |> Compose.lensWithLens FoodGroup.lenses.ingredients
-        |> Compose.lensWithOptional (LensUtil.dictByKey ingredientId)
-        |> Optional.modify
+        |> LensUtil.updateById ingredientId
 
 
 mapComplexIngredientOrUpdateById : ComplexIngredientId -> (Page.ComplexIngredientOrUpdate -> Page.ComplexIngredientOrUpdate) -> Page.Model -> Page.Model
 mapComplexIngredientOrUpdateById complexIngredientId =
     Page.lenses.complexIngredientsGroup
         |> Compose.lensWithLens FoodGroup.lenses.ingredients
-        |> Compose.lensWithOptional (LensUtil.dictByKey complexIngredientId)
-        |> Optional.modify
+        |> LensUtil.updateById complexIngredientId
 
 
 updateIngredient : Page.Model -> IngredientUpdateClientInput -> ( Page.Model, Cmd msg )

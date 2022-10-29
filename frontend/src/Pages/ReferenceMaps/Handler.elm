@@ -7,9 +7,8 @@ import Dict
 import Either exposing (Either(..))
 import Http exposing (Error)
 import Maybe.Extra
-import Monocle.Compose as Compose
 import Monocle.Lens as Lens
-import Monocle.Optional as Optional
+import Monocle.Optional
 import Pages.ReferenceMaps.Page as Page exposing (ReferenceMapOrUpdate)
 import Pages.ReferenceMaps.Pagination as Pagination exposing (Pagination)
 import Pages.ReferenceMaps.ReferenceMapCreationClientInput as ReferenceMapCreationClientInput exposing (ReferenceMapCreationClientInput)
@@ -206,8 +205,7 @@ setPagination model pagination =
 mapReferenceMapOrUpdateById : ReferenceMapId -> (Page.ReferenceMapOrUpdate -> Page.ReferenceMapOrUpdate) -> Page.Model -> Page.Model
 mapReferenceMapOrUpdateById referenceMapId =
     Page.lenses.referenceMaps
-        |> Compose.lensWithOptional (LensUtil.dictByKey referenceMapId)
-        |> Optional.modify
+        |> LensUtil.updateById referenceMapId
 
 
 setError : Error -> Page.Model -> Page.Model

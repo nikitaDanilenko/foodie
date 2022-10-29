@@ -7,9 +7,8 @@ import Dict
 import Either exposing (Either(..))
 import Http exposing (Error)
 import Maybe.Extra
-import Monocle.Compose as Compose
 import Monocle.Lens as Lens
-import Monocle.Optional as Optional
+import Monocle.Optional
 import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
 import Pages.Meals.MealUpdateClientInput as MealUpdateClientInput exposing (MealUpdateClientInput)
 import Pages.Meals.Page as Page
@@ -208,8 +207,7 @@ setPagination model pagination =
 mapMealOrUpdateById : MealId -> (Page.MealOrUpdate -> Page.MealOrUpdate) -> Page.Model -> Page.Model
 mapMealOrUpdateById mealId =
     Page.lenses.meals
-        |> Compose.lensWithOptional (LensUtil.dictByKey mealId)
-        |> Optional.modify
+        |> LensUtil.updateById mealId
 
 
 setError : Error -> Page.Model -> Page.Model

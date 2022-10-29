@@ -12,7 +12,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens
-import Monocle.Optional as Optional
+import Monocle.Optional
 import Pages.ReferenceEntries.Page as Page exposing (Msg(..))
 import Pages.ReferenceEntries.Pagination as Pagination exposing (Pagination)
 import Pages.ReferenceEntries.ReferenceEntryCreationClientInput as ReferenceEntryCreationClientInput exposing (ReferenceEntryCreationClientInput)
@@ -331,8 +331,7 @@ setPagination model pagination =
 mapReferenceEntryOrUpdateById : NutrientCode -> (Page.ReferenceEntryOrUpdate -> Page.ReferenceEntryOrUpdate) -> Page.Model -> Page.Model
 mapReferenceEntryOrUpdateById ingredientId =
     Page.lenses.referenceEntries
-        |> Compose.lensWithOptional (LensUtil.dictByKey ingredientId)
-        |> Optional.modify
+        |> LensUtil.updateById ingredientId
 
 
 setError : Error -> Page.Model -> Page.Model

@@ -10,7 +10,7 @@ import Either exposing (Either(..))
 import Http exposing (Error)
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens
-import Monocle.Optional as Optional
+import Monocle.Optional
 import Pages.MealEntries.MealEntryCreationClientInput as MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntries.MealEntryUpdateClientInput as MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
 import Pages.MealEntries.MealInfo as MealInfo
@@ -307,8 +307,7 @@ setPagination model pagination =
 mapMealEntryOrUpdateById : MealEntryId -> (Page.MealEntryOrUpdate -> Page.MealEntryOrUpdate) -> Page.Model -> Page.Model
 mapMealEntryOrUpdateById mealEntryId =
     Page.lenses.mealEntries
-        |> Compose.lensWithOptional (LensUtil.dictByKey mealEntryId)
-        |> Optional.modify
+        |> LensUtil.updateById mealEntryId
 
 
 setError : Error -> Page.Model -> Page.Model
