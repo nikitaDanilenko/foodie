@@ -24,11 +24,11 @@ import Api.Types.IngredientCreation exposing (IngredientCreation, encoderIngredi
 import Api.Types.IngredientUpdate exposing (IngredientUpdate, encoderIngredientUpdate)
 import Api.Types.Measure exposing (Measure, decoderMeasure)
 import Api.Types.Recipe exposing (Recipe, decoderRecipe)
-import Http exposing (Error)
+import Http
 import Json.Decode as Decode
 import Pages.Ingredients.Page as Page
 import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
-import Util.HttpUtil as HttpUtil
+import Util.HttpUtil as HttpUtil exposing (Error)
 
 
 fetchIngredients : AuthorizedAccess -> RecipeId -> Cmd Page.Msg

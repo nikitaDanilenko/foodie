@@ -8,7 +8,6 @@ import Api.Types.ReferenceMap exposing (ReferenceMap)
 import Basics.Extra exposing (flip)
 import Dict exposing (Dict)
 import Either exposing (Either)
-import Http exposing (Error)
 import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 import Pages.ReferenceEntries.Pagination exposing (Pagination)
@@ -17,6 +16,7 @@ import Pages.ReferenceEntries.ReferenceEntryUpdateClientInput exposing (Referenc
 import Pages.ReferenceEntries.Status exposing (Status)
 import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.Editing exposing (Editing)
+import Util.HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization)
 
 

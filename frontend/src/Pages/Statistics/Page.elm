@@ -8,12 +8,12 @@ import Api.Types.ReferenceTree exposing (ReferenceTree)
 import Api.Types.RequestInterval exposing (RequestInterval)
 import Api.Types.Stats exposing (Stats)
 import Dict exposing (Dict)
-import Http exposing (Error)
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Statistics.Pagination exposing (Pagination)
 import Pages.Statistics.Status exposing (Status)
 import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
+import Util.HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization)
 
 

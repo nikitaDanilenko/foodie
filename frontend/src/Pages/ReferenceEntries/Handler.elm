@@ -7,7 +7,6 @@ import Api.Types.ReferenceMap exposing (ReferenceMap)
 import Basics.Extra exposing (flip)
 import Dict
 import Either exposing (Either(..))
-import Http exposing (Error)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Monocle.Compose as Compose
@@ -22,7 +21,7 @@ import Pages.ReferenceEntries.Status as Status
 import Pages.Util.PaginationSettings as PaginationSettings
 import Ports
 import Util.Editing as Editing exposing (Editing)
-import Util.HttpUtil as HttpUtil
+import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization as Initialization
 import Util.LensUtil as LensUtil
 

@@ -1,11 +1,10 @@
 module Pages.Deletion.Handler exposing (init, update)
 
 import Either
-import Http exposing (Error)
 import Pages.Deletion.Page as Page
 import Pages.Deletion.Requests as Requests
 import Ports
-import Util.HttpUtil as HttpUtil
+import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization(..))
 
 

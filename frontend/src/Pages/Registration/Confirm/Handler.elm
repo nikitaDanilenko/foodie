@@ -2,11 +2,10 @@ module Pages.Registration.Confirm.Handler exposing (init, update)
 
 import Basics.Extra exposing (flip)
 import Either
-import Http exposing (Error)
 import Pages.Registration.Confirm.Page as Page
 import Pages.Registration.Confirm.Requests as Requests
 import Pages.Util.ComplementInput as ComplementInput exposing (ComplementInput)
-import Util.HttpUtil as HttpUtil
+import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization(..))
 
 
@@ -46,7 +45,8 @@ setComplementInput model complementInput =
 request : Page.Model -> ( Page.Model, Cmd Page.Msg )
 request model =
     ( model
-    , Requests.request model.configuration model.registrationJWT
+    , Requests.request model.configuration
+        model.registrationJWT
         { password = model.complementInput.passwordInput.password1
         , displayName = model.complementInput.displayName
         }

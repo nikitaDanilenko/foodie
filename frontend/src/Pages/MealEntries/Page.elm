@@ -7,7 +7,6 @@ import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
 import Dict exposing (Dict)
 import Either exposing (Either)
-import Http exposing (Error)
 import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 import Pages.MealEntries.MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
@@ -17,6 +16,7 @@ import Pages.MealEntries.Pagination exposing (Pagination)
 import Pages.MealEntries.Status exposing (Status)
 import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Util.Editing exposing (Editing)
+import Util.HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization)
 
 

@@ -2,11 +2,11 @@ module Pages.UserSettings.Page exposing (..)
 
 import Api.Types.Mode exposing (Mode)
 import Api.Types.User exposing (User)
-import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
 import Pages.UserSettings.Status exposing (Status)
 import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Pages.Util.ComplementInput exposing (ComplementInput)
+import Util.HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization)
 
 

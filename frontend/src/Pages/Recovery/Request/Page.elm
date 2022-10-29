@@ -3,8 +3,8 @@ module Pages.Recovery.Request.Page exposing (..)
 import Api.Auxiliary exposing (UserId)
 import Api.Types.User exposing (User)
 import Configuration exposing (Configuration)
-import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
+import Util.HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization)
 
 

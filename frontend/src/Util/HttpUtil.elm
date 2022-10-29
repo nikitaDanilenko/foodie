@@ -4,6 +4,7 @@ import Api.Auxiliary exposing (JWT)
 import Configuration exposing (Configuration)
 import Http exposing (Body, Error(..), Expect, expectStringResponse)
 import Json.Decode as Decode
+import Json.Decode.Pipeline exposing (..)
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
@@ -13,41 +14,62 @@ import Url.Builder exposing (QueryParameter)
 import Util.Initialization as Initialization exposing (ErrorExplanation, Initialization)
 
 
-expectJson : (Result Http.Error a -> msg) -> Decode.Decoder a -> Expect msg
+type Error
+    = BadUrl String
+    | Timeout
+    | NetworkError
+    | BadStatus Int String
+    | BadBody String
+
+
+type alias BackendError =
+    { message : String
+    }
+
+
+decoderBackendError : Decode.Decoder BackendError
+decoderBackendError =
+    Decode.succeed BackendError
+        |> required "message" Decode.string
+
+
+expectJson : (Result Error a -> msg) -> Decode.Decoder a -> Expect msg
 expectJson toMsg decoder =
     expectStringResponse toMsg <|
         \response ->
             case response of
                 Http.BadUrl_ url ->
-                    Err (Http.BadUrl url)
+                    Err (BadUrl url)
 
                 Http.Timeout_ ->
-                    Err Http.Timeout
+                    Err Timeout
 
                 Http.NetworkError_ ->
-                    Err Http.NetworkError
+                    Err NetworkError
 
-                Http.BadStatus_ metadata _ ->
-                    Err (Http.BadStatus metadata.statusCode)
+                Http.BadStatus_ metadata body ->
+                    Decode.decodeString decoderBackendError body
+                        |> Result.mapError (Decode.errorToString >> BadBody)
+                        |> Result.andThen (.message >> BadStatus metadata.statusCode >> Err)
 
                 Http.GoodStatus_ _ body ->
                     Decode.decodeString decoder body
                         |> Result.mapError (Decode.errorToString >> BadBody)
 
 
-expectWhatever : (Result Http.Error () -> msg) -> Expect msg
+expectWhatever : (Result Error () -> msg) -> Expect msg
 expectWhatever toMsg =
     expectStringResponse toMsg <|
         \response ->
             case response of
                 Http.BadUrl_ url ->
-                    Err (Http.BadUrl url)
+                    Err (BadUrl url)
 
                 Http.Timeout_ ->
-                    Err Http.Timeout
+                    Err Timeout
 
                 Http.NetworkError_ ->
-                    Err Http.NetworkError
+                    Err NetworkError
 
                 Http.BadStatus_ _ body ->
                     Err (BadBody body)
@@ -56,7 +78,7 @@ expectWhatever toMsg =
                     Ok ()
 
 
-errorToExplanation : Http.Error -> ErrorExplanation
+errorToExplanation : Error -> ErrorExplanation
 errorToExplanation error =
     case error of
         BadUrl string ->
@@ -77,8 +99,8 @@ errorToExplanation error =
             , redirectToLogin = False
             }
 
-        BadStatus code ->
-            { cause = "BadStatus: " ++ String.fromInt code
+        BadStatus code explanation ->
+            { cause = "BadStatus: " ++ String.fromInt code ++ " - " ++ explanation
             , possibleSolution =
                 if code == 401 then
                     "Please log in again to continue."

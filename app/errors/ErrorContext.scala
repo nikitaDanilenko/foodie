@@ -38,6 +38,8 @@ object ErrorContext {
     case object Mismatch extends ServerErrorInstance("Settings do not correspond to requested settings")
 
     case object PasswordUpdate extends ServerErrorInstance("Password update failed")
+
+    case object InvalidCredentials extends ServerErrorInstance("Invalid combination of nickname and password")
   }
 
   object Recipe {

@@ -1,9 +1,9 @@
 module Pages.Registration.Request.Page exposing (..)
 
 import Configuration exposing (Configuration)
-import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
 import Pages.Util.ValidatedInput exposing (ValidatedInput)
+import Util.HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization)
 
 

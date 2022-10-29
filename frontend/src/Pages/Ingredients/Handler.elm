@@ -10,7 +10,6 @@ import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
 import Dict exposing (Dict)
 import Either exposing (Either(..))
-import Http exposing (Error(..))
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Maybe.Extra
@@ -30,7 +29,7 @@ import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
 import Pages.Util.PaginationSettings as PaginationSettings
 import Ports exposing (doFetchFoods, doFetchMeasures, storeFoods, storeMeasures)
 import Util.Editing as Editing exposing (Editing)
-import Util.HttpUtil as HttpUtil
+import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization(..))
 import Util.LensUtil as LensUtil
 

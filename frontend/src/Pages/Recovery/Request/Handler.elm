@@ -4,10 +4,9 @@ import Api.Auxiliary exposing (UserId)
 import Api.Types.User exposing (User)
 import Basics.Extra exposing (flip)
 import Either
-import Http exposing (Error)
 import Pages.Recovery.Request.Page as Page
 import Pages.Recovery.Request.Requests as Requests
-import Util.HttpUtil as HttpUtil
+import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization as Initialization
 
 

@@ -9,14 +9,13 @@ import Api.Types.Stats exposing (Stats)
 import Basics.Extra exposing (flip)
 import Dict
 import Either
-import Http exposing (Error)
 import Monocle.Lens as Lens
 import Pages.Statistics.Page as Page
 import Pages.Statistics.Pagination as Pagination exposing (Pagination)
 import Pages.Statistics.Requests as Requests
 import Pages.Statistics.Status as Status
 import Pages.Util.AuthorizedAccess exposing (AuthorizedAccess)
-import Util.HttpUtil as HttpUtil
+import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization as Initialization
 
 

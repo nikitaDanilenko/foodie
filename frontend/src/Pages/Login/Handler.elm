@@ -4,14 +4,13 @@ import Addresses.Frontend
 import Basics.Extra exposing (flip)
 import Browser.Navigation
 import Either
-import Http exposing (Error)
 import Monocle.Compose as Compose
 import Pages.Login.Page as Page
 import Pages.Login.Requests as Requests
 import Pages.Util.Links as Links
 import Ports
 import Util.CredentialsUtil as CredentialsUtil
-import Util.HttpUtil as HttpUtil
+import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization(..))
 
 

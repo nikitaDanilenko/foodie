@@ -2,11 +2,10 @@ module Pages.Recovery.Confirm.Handler exposing (init, update)
 
 import Basics.Extra exposing (flip)
 import Either
-import Http exposing (Error)
 import Pages.Recovery.Confirm.Page as Page
 import Pages.Recovery.Confirm.Requests as Requests
 import Pages.Util.PasswordInput as PasswordInput exposing (PasswordInput)
-import Util.HttpUtil as HttpUtil
+import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization as Initialization
 
 

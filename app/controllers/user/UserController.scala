@@ -65,8 +65,11 @@ class UserController @Inject() (
 
       transformer
         .fold(
-          BadRequest("Invalid credentials")
-        )(jwt => Ok(jwt.asJson))
+          BadRequest(ErrorContext.User.InvalidCredentials.asServerError.asJson)
+        )(
+          _.pipe(_.asJson)
+            .pipe(Ok(_))
+        )
     }
 
   def logout: Action[LogoutRequest] =
@@ -74,11 +77,13 @@ class UserController @Inject() (
       (request.body.mode match {
         case Mode.This => userService.deleteSession(request.user.id, request.sessionId)
         case Mode.All  => userService.deleteAllSessions(request.user.id)
-      }).map(_.pipe(_.asJson).pipe(Ok(_)))
-        .recover {
-          case error =>
-            BadRequest(s"Error during logout: ${error.getMessage}")
-        }
+      }).map(
+        _.pipe(_.asJson)
+          .pipe(Ok(_))
+      ).recover {
+        case error =>
+          BadRequest(s"Error during logout: ${error.getMessage}")
+      }
     }
 
   // TODO: Remove after testing

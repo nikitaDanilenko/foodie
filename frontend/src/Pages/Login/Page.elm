@@ -3,8 +3,8 @@ module Pages.Login.Page exposing (..)
 import Api.Auxiliary exposing (JWT)
 import Api.Types.Credentials exposing (Credentials)
 import Configuration exposing (Configuration)
-import Http exposing (Error)
 import Monocle.Lens exposing (Lens)
+import Util.HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization)
 
 

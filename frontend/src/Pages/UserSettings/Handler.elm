@@ -6,7 +6,6 @@ import Api.Types.User exposing (User)
 import Basics.Extra exposing (flip)
 import Browser.Navigation
 import Either
-import Http exposing (Error)
 import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Pages.UserSettings.Page as Page
@@ -17,7 +16,7 @@ import Pages.Util.ComplementInput as ComplementInput exposing (ComplementInput)
 import Pages.Util.Links as Links
 import Pages.Util.PasswordInput as PasswordInput
 import Ports
-import Util.HttpUtil as HttpUtil
+import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization exposing (Initialization(..))
 import Util.LensUtil as LensUtil
 

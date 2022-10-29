@@ -5,7 +5,6 @@ import Api.Types.ReferenceMap exposing (ReferenceMap)
 import Basics.Extra exposing (flip)
 import Dict
 import Either exposing (Either(..))
-import Http exposing (Error)
 import Maybe.Extra
 import Monocle.Lens as Lens
 import Monocle.Optional
@@ -16,7 +15,7 @@ import Pages.ReferenceMaps.ReferenceMapUpdateClientInput as ReferenceMapUpdateCl
 import Pages.ReferenceMaps.Requests as Requests
 import Pages.ReferenceMaps.Status as Status
 import Util.Editing as Editing exposing (Editing)
-import Util.HttpUtil as HttpUtil
+import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization as Initialization exposing (Initialization(..))
 import Util.LensUtil as LensUtil
 
