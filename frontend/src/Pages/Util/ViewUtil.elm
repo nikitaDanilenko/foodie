@@ -118,7 +118,7 @@ type Page
 
 navigationPages : String -> List Page
 navigationPages nickname =
-    [ Recipes, Meals, Statistics, ReferenceMaps, UserSettings nickname ]
+    [ Recipes, Meals, ComplexFoods, Statistics, ReferenceMaps, UserSettings nickname ]
 
 
 addressSuffix : Page -> String
