@@ -28,15 +28,11 @@ expectJson toMsg decoder =
                     Err Http.NetworkError
 
                 Http.BadStatus_ metadata _ ->
-                    Err (BadStatus metadata.statusCode)
+                    Err (Http.BadStatus metadata.statusCode)
 
                 Http.GoodStatus_ _ body ->
-                    case Decode.decodeString decoder body of
-                        Ok value ->
-                            Ok value
-
-                        Err err ->
-                            Err (BadBody (Decode.errorToString err))
+                    Decode.decodeString decoder body
+                        |> Result.mapError (Decode.errorToString >> BadBody)
 
 
 expectWhatever : (Result Http.Error () -> msg) -> Expect msg
@@ -60,26 +56,7 @@ expectWhatever toMsg =
                     Ok ()
 
 
-errorToString : Error -> String
-errorToString error =
-    case error of
-        BadUrl string ->
-            "BadUrl: " ++ string
-
-        Timeout ->
-            "Timeout"
-
-        NetworkError ->
-            "NetworkError"
-
-        BadStatus int ->
-            "BadStatus: " ++ String.fromInt int
-
-        BadBody string ->
-            string
-
-
-errorToExplanation : Error -> ErrorExplanation
+errorToExplanation : Http.Error -> ErrorExplanation
 errorToExplanation error =
     case error of
         BadUrl string ->
