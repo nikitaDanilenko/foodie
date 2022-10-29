@@ -251,8 +251,7 @@ addRecipe model recipeId =
     , Dict.get recipeId model.mealEntriesToAdd
         |> Maybe.map
             (MealEntryCreationClientInput.toCreation
-                >> Requests.AddMealEntryParams model.authorizedAccess
-                >> Requests.addMealEntry
+                >> Requests.addMealEntry model.authorizedAccess
             )
         |> Maybe.withDefault Cmd.none
     )

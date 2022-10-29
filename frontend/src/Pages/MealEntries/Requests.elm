@@ -1,6 +1,5 @@
 module Pages.MealEntries.Requests exposing
-    ( AddMealEntryParams
-    , addMealEntry
+    ( addMealEntry
     , deleteMealEntry
     , fetchMeal
     , fetchMealEntries
@@ -72,17 +71,11 @@ deleteMealEntry authorizedAccess mealEntryId =
         }
 
 
-type alias AddMealEntryParams =
-    { authorizedAccess : AuthorizedAccess
-    , mealEntryCreation : MealEntryCreation
-    }
-
-
-addMealEntry : AddMealEntryParams -> Cmd Msg
-addMealEntry ps =
+addMealEntry : AuthorizedAccess -> MealEntryCreation -> Cmd Msg
+addMealEntry authorizedAccess mealEntryCreation =
     HttpUtil.runPatternWithJwt
-        ps.authorizedAccess
+        authorizedAccess
         Addresses.Backend.meals.entries.create
-        { body = encoderMealEntryCreation ps.mealEntryCreation |> Http.jsonBody
+        { body = encoderMealEntryCreation mealEntryCreation |> Http.jsonBody
         , expect = HttpUtil.expectJson GotAddMealEntryResponse decoderMealEntry
         }
