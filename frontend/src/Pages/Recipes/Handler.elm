@@ -6,6 +6,7 @@ import Basics.Extra exposing (flip)
 import Dict
 import Either exposing (Either(..))
 import Maybe.Extra
+import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional
 import Pages.Recipes.Page as Page exposing (RecipeOrUpdate)
@@ -14,6 +15,7 @@ import Pages.Recipes.RecipeCreationClientInput as RecipeCreationClientInput expo
 import Pages.Recipes.RecipeUpdateClientInput as RecipeUpdateClientInput exposing (RecipeUpdateClientInput)
 import Pages.Recipes.Requests as Requests
 import Pages.Recipes.Status as Status
+import Pages.Util.PaginationSettings as PaginationSettings
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization as Initialization exposing (Initialization(..))
@@ -25,6 +27,7 @@ init flags =
     ( { authorizedAccess = flags.authorizedAccess
       , recipes = Dict.empty
       , recipeToAdd = Nothing
+      , searchString = ""
       , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
       }
@@ -70,6 +73,9 @@ update msg model =
 
         Page.SetPagination pagination ->
             setPagination model pagination
+
+        Page.SetSearchString string ->
+            setSearchString model string
 
 
 updateRecipeCreation : Page.Model -> Maybe RecipeCreationClientInput -> ( Page.Model, Cmd Page.Msg )
@@ -197,6 +203,21 @@ gotFetchRecipesResponse model dataOrError =
 setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
 setPagination model pagination =
     ( model |> Page.lenses.pagination.set pagination
+    , Cmd.none
+    )
+
+
+setSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
+setSearchString model string =
+    ( PaginationSettings.setSearchStringAndReset
+        { searchStringLens =
+            Page.lenses.searchString
+        , paginationSettingsLens =
+            Page.lenses.pagination
+                |> Compose.lensWithLens Pagination.lenses.recipes
+        }
+        model
+        string
     , Cmd.none
     )
 

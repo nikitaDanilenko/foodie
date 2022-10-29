@@ -27,6 +27,7 @@ import Pages.Util.ValidatedInput as ValidatedInput exposing (ValidatedInput)
 import Pages.Util.ViewUtil as ViewUtil
 import Paginate
 import Util.Editing as Editing
+import Util.SearchUtil as SearchUtil
 
 
 view : Page.Model -> Html Page.Msg
@@ -49,6 +50,7 @@ view model =
 
             viewEditRecipes =
                 model.recipes
+                    |> Dict.filter (\_ v -> SearchUtil.search model.searchString (Editing.field .name v))
                     |> Dict.values
                     |> List.sortBy (Editing.field .name >> String.toLower)
                     |> ViewUtil.paginate
@@ -61,7 +63,11 @@ view model =
         in
         div [ Style.ids.addRecipeView ]
             (button
-                ++ [ table []
+                ++ [ HtmlUtil.searchAreaWith
+                        { msg = Page.SetSearchString
+                        , searchString = model.searchString
+                        }
+                   , table []
                         [ colgroup []
                             [ col [] []
                             , col [] []

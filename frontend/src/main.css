@@ -325,9 +325,9 @@ th {
     background-color: rgb(40, 230, 250);
 }
 
-#addRecipeView input,
-#addMealView input,
-#addReferenceMapView input,
+#addRecipeView input:not(.searchField),
+#addMealView input:not(.searchField),
+#addReferenceMapView input:not(.searchField),
 #ingredientEditor input:not(.searchField),
 #mealEntryEditor input:not(.searchField),
 #referenceEntryEditor input:not(.searchField),

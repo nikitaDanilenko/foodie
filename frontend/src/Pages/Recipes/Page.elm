@@ -19,6 +19,7 @@ type alias Model =
     { authorizedAccess : AuthorizedAccess
     , recipes : RecipeOrUpdateMap
     , recipeToAdd : Maybe RecipeCreationClientInput
+    , searchString: String
     , initialization : Initialization Status
     , pagination : Pagination
     }
@@ -35,12 +36,14 @@ type alias RecipeOrUpdateMap =
 lenses :
     { recipes : Lens Model RecipeOrUpdateMap
     , recipeToAdd : Lens Model (Maybe RecipeCreationClientInput)
+    , searchString : Lens Model String
     , initialization : Lens Model (Initialization Status)
     , pagination : Lens Model Pagination
     }
 lenses =
     { recipes = Lens .recipes (\b a -> { a | recipes = b })
     , recipeToAdd = Lens .recipeToAdd (\b a -> { a | recipeToAdd = b })
+    , searchString = Lens .searchString (\b a -> { a | searchString = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , pagination = Lens .pagination (\b a -> { a | pagination = b })
     }
@@ -64,3 +67,4 @@ type Msg
     | GotDeleteRecipeResponse RecipeId (Result Error ())
     | GotFetchRecipesResponse (Result Error (List Recipe))
     | SetPagination Pagination
+    | SetSearchString String
