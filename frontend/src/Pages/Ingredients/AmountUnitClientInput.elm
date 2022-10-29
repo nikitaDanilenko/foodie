@@ -35,12 +35,12 @@ to input =
     , factor = input.factor.value
     }
 
---todo: Bundle as lenses
-measureId : Lens AmountUnitClientInput MeasureId
-measureId =
-    Lens .measureId (\b a -> { a | measureId = b })
 
-
-factor : Lens AmountUnitClientInput (ValidatedInput Float)
-factor =
-    Lens .factor (\b a -> { a | factor = b })
+lenses :
+    { measureId : Lens AmountUnitClientInput MeasureId
+    , factor : Lens AmountUnitClientInput (ValidatedInput Float)
+    }
+lenses =
+    { measureId = Lens .measureId (\b a -> { a | measureId = b })
+    , factor = Lens .factor (\b a -> { a | factor = b })
+    }

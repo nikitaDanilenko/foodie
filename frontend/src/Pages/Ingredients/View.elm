@@ -381,7 +381,7 @@ editIngredientLine measureMap foodMap ingredient ingredientUpdateClientInput =
                     (flip
                         (ValidatedInput.lift
                             (IngredientUpdateClientInput.lenses.amountUnit
-                                |> Compose.lensWithLens AmountUnitClientInput.factor
+                                |> Compose.lensWithLens AmountUnitClientInput.lenses.factor
                             )
                         ).set
                         ingredientUpdateClientInput
@@ -499,7 +499,7 @@ onChangeDropdown :
 onChangeDropdown ps =
     Maybe.andThen String.toInt
         >> Maybe.withDefault (ps.measureIdOf ps.input)
-        >> flip (ps.amountUnitLens |> Compose.lensWithLens AmountUnitClientInput.measureId).set ps.input
+        >> flip (ps.amountUnitLens |> Compose.lensWithLens AmountUnitClientInput.lenses.measureId).set ps.input
         >> ps.mkMsg
 
 
@@ -577,7 +577,7 @@ viewFoodLine foodMap ingredientsToAdd ingredients food =
                                 (flip
                                     (ValidatedInput.lift
                                         (IngredientCreationClientInput.amountUnit
-                                            |> Compose.lensWithLens AmountUnitClientInput.factor
+                                            |> Compose.lensWithLens AmountUnitClientInput.lenses.factor
                                         )
                                     ).set
                                     ingredientToAdd
