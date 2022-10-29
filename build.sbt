@@ -26,7 +26,7 @@ lazy val root = (project in file("."))
       "com.typesafe.slick"    %% "slick-hikaricp"    % slickVersion,
       "com.typesafe.slick"    %% "slick-codegen"     % slickVersion,
       "org.postgresql"         % "postgresql"        % "42.5.0",
-      "ch.qos.logback"         % "logback-classic"   % "1.4.4",
+      "ch.qos.logback"         % "logback-classic"   % "1.2.11",
       "io.circe"              %% "circe-core"        % circeVersion,
       "io.circe"              %% "circe-generic"     % circeVersion,
       "io.circe"              %% "circe-parser"      % circeVersion,
@@ -46,7 +46,9 @@ lazy val root = (project in file("."))
       "com.beachape"          %% "enumeratum-circe"  % "1.7.0",
       "com.typesafe.play"     %% "play-mailer"       % "8.0.1",
       "com.typesafe.play"     %% "play-mailer-guice" % "8.0.1",
-      "com.lihaoyi"           %% "pprint"            % "0.8.0"
+      "com.lihaoyi"           %% "pprint"            % "0.8.0",
+      // TODO: Fix SLF4J issue - needs provision, cf. error on running.
+      "org.slf4j" % "slf4j-api" % "2.0.3"
     ),
     slickCodegenDatabaseUrl := config.getString("slick.dbs.default.db.url"),
     slickCodegenDatabaseUser := config.getString("slick.dbs.default.db.user"),
