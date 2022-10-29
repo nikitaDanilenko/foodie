@@ -170,8 +170,18 @@ view model =
                     ]
                 ]
             , div []
-                [ button [ disabled <| model.foodsMode == Page.Plain, onClick <| Page.ChangeFoodsMode Page.Plain ] [ text "Ingredients" ]
-                , button [ disabled <| model.foodsMode == Page.Complex, onClick <| Page.ChangeFoodsMode Page.Complex ] [ text "Complex ingredients" ]
+                [ button
+                    [ disabled <| model.foodsMode == Page.Plain
+                    , onClick <| Page.ChangeFoodsMode Page.Plain
+                    , Style.classes.button.alternative
+                    ]
+                    [ text "Ingredients" ]
+                , button
+                    [ disabled <| model.foodsMode == Page.Complex
+                    , onClick <| Page.ChangeFoodsMode Page.Complex
+                    , Style.classes.button.alternative
+                    ]
+                    [ text "Complex ingredients" ]
                 ]
             , case model.foodsMode of
                 Page.Plain ->

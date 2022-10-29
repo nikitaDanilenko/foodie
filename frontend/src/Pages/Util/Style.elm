@@ -9,6 +9,7 @@ classes :
     , addView : Attribute msg
     , button :
         { add : Attribute msg
+        , alternative : Attribute msg
         , cancel : Attribute msg
         , confirm : Attribute msg
         , delete : Attribute msg
@@ -58,6 +59,7 @@ classes =
     , addView = class "addView"
     , button =
         { add = class "addButton"
+        , alternative = class "alternativeButton"
         , cancel = class "cancelButton"
         , confirm = class "confirmButton"
         , delete = class "deleteButton"
