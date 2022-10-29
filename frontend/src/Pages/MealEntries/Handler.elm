@@ -33,6 +33,7 @@ init flags =
       , mealEntries = Dict.empty
       , recipes = Dict.empty
       , recipesSearchString = ""
+      , entriesSearchString = ""
       , mealEntriesToAdd = Dict.empty
       , initialization = Loading Status.initial
       , pagination = Pagination.initial
@@ -102,6 +103,9 @@ update msg model =
 
         SetRecipesSearchString string ->
             setRecipesSearchString model string
+
+        SetEntriesSearchString string ->
+            setEntriesSearchString model string
 
         SetPagination pagination ->
             setPagination model pagination
@@ -288,6 +292,21 @@ setRecipesSearchString model string =
         , paginationSettingsLens =
             Page.lenses.pagination
                 |> Compose.lensWithLens Pagination.lenses.recipes
+        }
+        model
+        string
+    , Cmd.none
+    )
+
+
+setEntriesSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
+setEntriesSearchString model string =
+    ( PaginationSettings.setSearchStringAndReset
+        { searchStringLens =
+            Page.lenses.entriesSearchString
+        , paginationSettingsLens =
+            Page.lenses.pagination
+                |> Compose.lensWithLens Pagination.lenses.mealEntries
         }
         model
         string

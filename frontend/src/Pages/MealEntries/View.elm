@@ -49,8 +49,9 @@ view model =
 
             viewEditMealEntries =
                 model.mealEntries
+                    |> Dict.filter (\_ v -> SearchUtil.search model.entriesSearchString (DictUtil.nameOrEmpty model.recipes (Editing.field .recipeId v)))
                     |> Dict.values
-                    |> List.sortBy (Editing.field .recipeId >> Page.recipeNameOrEmpty model.recipes >> String.toLower)
+                    |> List.sortBy (Editing.field .recipeId >> DictUtil.nameOrEmpty model.recipes >> String.toLower)
                     |> ViewUtil.paginate
                         { pagination = Page.lenses.pagination |> Compose.lensWithLens Pagination.lenses.mealEntries
                         }
@@ -93,7 +94,11 @@ view model =
                 ]
             , div [ Style.classes.elements ] [ label [] [ text "Dishes" ] ]
             , div [ Style.classes.choices ]
-                [ table []
+                [ HtmlUtil.searchAreaWith
+                    { msg = Page.SetEntriesSearchString
+                    , searchString = model.entriesSearchString
+                    }
+                , table []
                     [ colgroup []
                         [ col [] []
                         , col [] []
@@ -178,7 +183,7 @@ editOrDeleteMealEntryLine recipeMap mealEntry =
             Page.EnterEditMealEntry mealEntry.id
     in
     tr [ Style.classes.editing ]
-        [ td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| Page.recipeNameOrEmpty recipeMap <| mealEntry.recipeId ] ]
+        [ td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| DictUtil.nameOrEmpty recipeMap <| mealEntry.recipeId ] ]
         , td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| Page.descriptionOrEmpty recipeMap <| mealEntry.recipeId ] ]
         , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| String.fromFloat <| mealEntry.numberOfServings ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick (Page.EnterEditMealEntry mealEntry.id) ] [ text "Edit" ] ]
@@ -196,7 +201,7 @@ editMealEntryLine recipeMap mealEntry mealEntryUpdateClientInput =
             Page.ExitEditMealEntryAt mealEntry.id
     in
     tr [ Style.classes.editLine ]
-        [ td [] [ label [] [ text <| Page.recipeNameOrEmpty recipeMap <| mealEntry.recipeId ] ]
+        [ td [] [ label [] [ text <| DictUtil.nameOrEmpty recipeMap <| mealEntry.recipeId ] ]
         , td [] [ label [] [ text <| Page.descriptionOrEmpty recipeMap <| mealEntry.recipeId ] ]
         , td [ Style.classes.numberCell ]
             [ input

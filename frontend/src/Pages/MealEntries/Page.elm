@@ -7,7 +7,6 @@ import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
 import Dict exposing (Dict)
 import Either exposing (Either)
-import Maybe.Extra
 import Monocle.Lens exposing (Lens)
 import Pages.MealEntries.MealEntryCreationClientInput exposing (MealEntryCreationClientInput)
 import Pages.MealEntries.MealEntryUpdateClientInput exposing (MealEntryUpdateClientInput)
@@ -27,6 +26,7 @@ type alias Model =
     , mealEntries : MealEntryOrUpdateMap
     , recipes : RecipeMap
     , recipesSearchString : String
+    , entriesSearchString : String
     , mealEntriesToAdd : AddMealEntriesMap
     , initialization : Initialization Status
     , pagination : Pagination
@@ -61,6 +61,7 @@ lenses :
     , mealEntriesToAdd : Lens Model AddMealEntriesMap
     , recipes : Lens Model RecipeMap
     , recipesSearchString : Lens Model String
+    , entriesSearchString : Lens Model String
     , initialization : Lens Model (Initialization Status)
     , pagination : Lens Model Pagination
     }
@@ -70,14 +71,10 @@ lenses =
     , mealEntriesToAdd = Lens .mealEntriesToAdd (\b a -> { a | mealEntriesToAdd = b })
     , recipes = Lens .recipes (\b a -> { a | recipes = b })
     , recipesSearchString = Lens .recipesSearchString (\b a -> { a | recipesSearchString = b })
+    , entriesSearchString = Lens .entriesSearchString (\b a -> { a | entriesSearchString = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , pagination = Lens .pagination (\b a -> { a | pagination = b })
     }
-
-
-recipeNameOrEmpty : RecipeMap -> RecipeId -> String
-recipeNameOrEmpty recipeMap =
-    flip Dict.get recipeMap >> Maybe.Extra.unwrap "" .name
 
 
 descriptionOrEmpty : RecipeMap -> RecipeId -> String
@@ -102,4 +99,5 @@ type Msg
     | GotAddMealEntryResponse (Result Error MealEntry)
     | UpdateAddRecipe MealEntryCreationClientInput
     | SetRecipesSearchString String
+    | SetEntriesSearchString String
     | SetPagination Pagination
