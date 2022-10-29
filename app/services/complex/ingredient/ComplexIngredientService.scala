@@ -188,7 +188,7 @@ object ComplexIngredientService {
                   union
                     select ci.recipe_id, ci.complex_food_id
                       from complex_ingredient ci
-                      inner join transitive_references r on r.recipe_id = ci.complex_food_id
+                      inner join transitive_references r on r.complex_food_id = ci.recipe_id
               )
                 select recipe_id, complex_food_id from transitive_references;"""
           .as[(String, String)]
