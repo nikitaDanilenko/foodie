@@ -19,6 +19,7 @@ type alias Model =
     { authorizedAccess : AuthorizedAccess
     , meals : MealOrUpdateMap
     , mealToAdd : Maybe MealCreationClientInput
+    , searchString : String
     , initialization : Initialization Status
     , pagination : Pagination
     }
@@ -35,12 +36,14 @@ type alias MealOrUpdateMap =
 lenses :
     { meals : Lens Model MealOrUpdateMap
     , mealToAdd : Lens Model (Maybe MealCreationClientInput)
+    , searchString : Lens Model String
     , initialization : Lens Model (Initialization Status)
     , pagination : Lens Model Pagination
     }
 lenses =
     { meals = Lens .meals (\b a -> { a | meals = b })
     , mealToAdd = Lens .mealToAdd (\b a -> { a | mealToAdd = b })
+    , searchString = Lens .searchString (\b a -> { a | searchString = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , pagination = Lens .pagination (\b a -> { a | pagination = b })
     }
@@ -64,3 +67,4 @@ type Msg
     | GotDeleteMealResponse MealId (Result Error ())
     | GotFetchMealsResponse (Result Error (List Meal))
     | SetPagination Pagination
+    | SetSearchString String

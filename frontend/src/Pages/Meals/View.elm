@@ -31,6 +31,7 @@ import Pages.Util.ViewUtil as ViewUtil
 import Paginate
 import Parser
 import Util.Editing as Editing
+import Util.SearchUtil as SearchUtil
 
 
 view : Page.Model -> Html Page.Msg
@@ -53,6 +54,7 @@ view model =
 
             viewEditMeals =
                 model.meals
+                    |> Dict.filter (\_ v -> SearchUtil.search model.searchString (Editing.field (.name >> Maybe.withDefault "") v))
                     |> Dict.values
                     |> List.sortBy (Editing.field .date >> DateUtil.toString)
                     |> List.reverse
@@ -65,7 +67,11 @@ view model =
         in
         div [ Style.ids.addMealView ]
             (button
-                ++ [ table []
+                ++ [ HtmlUtil.searchAreaWith
+                        { msg = Page.SetSearchString
+                        , searchString = model.searchString
+                        }
+                   , table []
                         [ colgroup []
                             [ col [] []
                             , col [] []

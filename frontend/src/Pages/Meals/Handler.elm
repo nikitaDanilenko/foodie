@@ -6,6 +6,7 @@ import Basics.Extra exposing (flip)
 import Dict
 import Either exposing (Either(..))
 import Maybe.Extra
+import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional
 import Pages.Meals.MealCreationClientInput as MealCreationClientInput exposing (MealCreationClientInput)
@@ -14,6 +15,7 @@ import Pages.Meals.Page as Page
 import Pages.Meals.Pagination as Pagination exposing (Pagination)
 import Pages.Meals.Requests as Requests
 import Pages.Meals.Status as Status
+import Pages.Util.PaginationSettings as PaginationSettings
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization as Initialization
@@ -25,6 +27,7 @@ init flags =
     ( { authorizedAccess = flags.authorizedAccess
       , meals = Dict.empty
       , mealToAdd = Nothing
+      , searchString = ""
       , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
       }
@@ -70,6 +73,9 @@ update msg model =
 
         Page.SetPagination pagination ->
             setPagination model pagination
+
+        Page.SetSearchString string ->
+            setSearchString model string
 
 
 updateMealCreation : Page.Model -> Maybe MealCreationClientInput -> ( Page.Model, Cmd Page.Msg )
@@ -199,6 +205,21 @@ gotFetchMealsResponse model dataOrError =
 setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
 setPagination model pagination =
     ( model |> Page.lenses.pagination.set pagination
+    , Cmd.none
+    )
+
+
+setSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
+setSearchString model string =
+    ( PaginationSettings.setSearchStringAndReset
+        { searchStringLens =
+            Page.lenses.searchString
+        , paginationSettingsLens =
+            Page.lenses.pagination
+                |> Compose.lensWithLens Pagination.lenses.meals
+        }
+        model
+        string
     , Cmd.none
     )
 
