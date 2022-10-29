@@ -22,7 +22,7 @@ import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Ingredients.AmountUnitClientInput as AmountUnitClientInput
 import Pages.Ingredients.ComplexIngredientClientInput as ComplexIngredientClientInput exposing (ComplexIngredientClientInput)
-import Pages.Ingredients.FoodGroup as FoodGroup
+import Pages.Ingredients.FoodGroup as FoodGroup exposing (FoodGroup, IngredientOrUpdate)
 import Pages.Ingredients.IngredientCreationClientInput as IngredientCreationClientInput exposing (IngredientCreationClientInput)
 import Pages.Ingredients.IngredientUpdateClientInput as IngredientUpdateClientInput exposing (IngredientUpdateClientInput)
 import Pages.Ingredients.Page as Page
@@ -63,30 +63,26 @@ view model =
                     (editOrDeleteComplexIngredientLine model.allRecipes model.complexIngredientsGroup.foods)
                     (\e -> e.update |> editComplexIngredientLine model.allRecipes model.complexIngredientsGroup.foods e.original)
 
-            --todo: Extract and abstract
-            viewEditIngredients =
-                model.ingredientsGroup.ingredients
+            viewEditIngredientsWith : Lens Page.Model (FoodGroup ingredientId ingredient update comparableFoodId food creation) -> (ingredient -> comparableFoodId) -> Dict comparableFoodId { a | name : String } -> PaginatedList (IngredientOrUpdate ingredient update)
+            viewEditIngredientsWith groupLens idOf nameMap =
+                model
+                    |> groupLens.get
+                    |> .ingredients
                     |> Dict.values
-                    |> List.sortBy (Editing.field .foodId >> DictUtil.nameOrEmpty model.ingredientsGroup.foods >> String.toLower)
+                    |> List.sortBy (Editing.field idOf >> DictUtil.nameOrEmpty nameMap >> String.toLower)
                     |> ViewUtil.paginate
                         { pagination =
-                            Page.lenses.ingredientsGroup
+                            groupLens
                                 |> Compose.lensWithLens FoodGroup.lenses.pagination
                                 |> Compose.lensWithLens Pagination.lenses.ingredients
                         }
                         model
 
+            viewEditIngredients =
+                viewEditIngredientsWith Page.lenses.ingredientsGroup .foodId model.ingredientsGroup.foods
+
             viewEditComplexIngredients =
-                model.complexIngredientsGroup.ingredients
-                    |> Dict.values
-                    |> List.sortBy (Editing.field .complexFoodId >> DictUtil.nameOrEmpty model.allRecipes >> String.toLower)
-                    |> ViewUtil.paginate
-                        { pagination =
-                            Page.lenses.complexIngredientsGroup
-                                |> Compose.lensWithLens FoodGroup.lenses.pagination
-                                |> Compose.lensWithLens Pagination.lenses.ingredients
-                        }
-                        model
+                viewEditIngredientsWith Page.lenses.complexIngredientsGroup .complexFoodId model.allRecipes
         in
         div [ Style.ids.ingredientEditor ]
             [ div []
