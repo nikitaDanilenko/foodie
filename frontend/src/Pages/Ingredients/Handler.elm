@@ -208,7 +208,7 @@ updateIngredient : Page.Model -> IngredientUpdateClientInput -> ( Page.Model, Cm
 updateIngredient model ingredientUpdateClientInput =
     ( model
         |> mapIngredientOrUpdateById ingredientUpdateClientInput.ingredientId
-            (Either.mapRight (Editing.updateLens.set ingredientUpdateClientInput))
+            (Either.mapRight (Editing.lenses.update.set ingredientUpdateClientInput))
     , Cmd.none
     )
 
@@ -217,7 +217,7 @@ updateComplexIngredient : Page.Model -> ComplexIngredientClientInput -> ( Page.M
 updateComplexIngredient model complexIngredientClientInput =
     ( model
         |> mapComplexIngredientOrUpdateById complexIngredientClientInput.complexFoodId
-            (Either.mapRight (Editing.updateLens.set complexIngredientClientInput))
+            (Either.mapRight (Editing.lenses.update.set complexIngredientClientInput))
     , Cmd.none
     )
 

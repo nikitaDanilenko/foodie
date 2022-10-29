@@ -114,7 +114,7 @@ updateReferenceEntry : Page.Model -> ReferenceEntryUpdateClientInput -> ( Page.M
 updateReferenceEntry model referenceEntryUpdateClientInput =
     ( model
         |> mapReferenceEntryOrUpdateById referenceEntryUpdateClientInput.nutrientCode
-            (Either.mapRight (Editing.updateLens.set referenceEntryUpdateClientInput))
+            (Either.mapRight (Editing.lenses.update.set referenceEntryUpdateClientInput))
     , Cmd.none
     )
 

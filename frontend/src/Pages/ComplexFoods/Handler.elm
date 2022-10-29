@@ -143,7 +143,7 @@ updateComplexFood : Page.Model -> ComplexFoodClientInput -> ( Page.Model, Cmd Pa
 updateComplexFood model complexFoodClientInput =
     ( model
         |> mapComplexFoodOrUpdateByRecipeId complexFoodClientInput.recipeId
-            (Either.mapRight (Editing.updateLens.set complexFoodClientInput))
+            (Either.mapRight (Editing.lenses.update.set complexFoodClientInput))
     , Cmd.none
     )
 

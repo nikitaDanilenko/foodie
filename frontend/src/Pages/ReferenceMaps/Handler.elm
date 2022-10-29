@@ -109,7 +109,7 @@ updateReferenceMap : Page.Model -> ReferenceMapUpdateClientInput -> ( Page.Model
 updateReferenceMap model referenceMapUpdate =
     ( model
         |> mapReferenceMapOrUpdateById referenceMapUpdate.id
-            (Either.mapRight (Editing.updateLens.set referenceMapUpdate))
+            (Either.mapRight (Editing.lenses.update.set referenceMapUpdate))
     , Cmd.none
     )
 

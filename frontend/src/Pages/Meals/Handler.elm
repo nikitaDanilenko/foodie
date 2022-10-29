@@ -110,7 +110,7 @@ updateMeal : Page.Model -> MealUpdateClientInput -> ( Page.Model, Cmd Page.Msg )
 updateMeal model mealUpdateClientInput =
     ( model
         |> mapMealOrUpdateById mealUpdateClientInput.id
-            (Either.mapRight (Editing.updateLens.set mealUpdateClientInput))
+            (Either.mapRight (Editing.lenses.update.set mealUpdateClientInput))
     , Cmd.none
     )
 

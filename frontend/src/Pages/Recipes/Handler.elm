@@ -109,7 +109,7 @@ updateRecipe : Page.Model -> RecipeUpdateClientInput -> ( Page.Model, Cmd Page.M
 updateRecipe model recipeUpdate =
     ( model
         |> mapRecipeOrUpdateById recipeUpdate.id
-            (Either.mapRight (Editing.updateLens.set recipeUpdate))
+            (Either.mapRight (Editing.lenses.update.set recipeUpdate))
     , Cmd.none
     )
 
