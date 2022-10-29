@@ -77,7 +77,7 @@ update msg model =
             gotDeleteReferenceEntryResponse model nutrientCode result
 
         Page.GotFetchReferenceEntriesResponse result ->
-            gotFetchReferenceEntrysResponse model result
+            gotFetchReferenceEntriesResponse model result
 
         Page.GotFetchReferenceMapResponse result ->
             gotFetchReferenceMapResponse model result
@@ -186,8 +186,8 @@ gotDeleteReferenceEntryResponse model nutrientCode result =
     )
 
 
-gotFetchReferenceEntrysResponse : Page.Model -> Result Error (List ReferenceEntry) -> ( Page.Model, Cmd Page.Msg )
-gotFetchReferenceEntrysResponse model result =
+gotFetchReferenceEntriesResponse : Page.Model -> Result Error (List ReferenceEntry) -> ( Page.Model, Cmd Page.Msg )
+gotFetchReferenceEntriesResponse model result =
     ( result
         |> Either.fromResult
         |> Either.unpack (flip setError model)
@@ -308,13 +308,15 @@ updateNutrients model =
 
 setNutrientsSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 setNutrientsSearchString model string =
-    ( model
-        |> Page.lenses.nutrientsSearchString.set string
-        |> (Page.lenses.pagination
+    ( PaginationSettings.setSearchStringAndReset
+        { searchStringLens =
+            Page.lenses.nutrientsSearchString
+        , paginationSettingsLens =
+            Page.lenses.pagination
                 |> Compose.lensWithLens Pagination.lenses.nutrients
-                |> Compose.lensWithLens PaginationSettings.lenses.currentPage
-           ).set
-            1
+        }
+        model
+        string
     , Cmd.none
     )
 

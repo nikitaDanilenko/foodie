@@ -506,34 +506,36 @@ updateMeasures model =
             )
 
 
-
--- todo: Extract common implementation
-
-
 setFoodsSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 setFoodsSearchString model string =
-    ( model
-        |> (Page.lenses.ingredientsGroup |> Compose.lensWithLens FoodGroup.lenses.foodsSearchString).set string
-        |> (Page.lenses.ingredientsGroup
+    ( PaginationSettings.setSearchStringAndReset
+        { searchStringLens =
+            Page.lenses.ingredientsGroup
+                |> Compose.lensWithLens FoodGroup.lenses.foodsSearchString
+        , paginationSettingsLens =
+            Page.lenses.ingredientsGroup
                 |> Compose.lensWithLens FoodGroup.lenses.pagination
                 |> Compose.lensWithLens Pagination.lenses.foods
-                |> Compose.lensWithLens PaginationSettings.lenses.currentPage
-           ).set
-            1
+        }
+        model
+        string
     , Cmd.none
     )
 
 
 setComplexFoodsSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 setComplexFoodsSearchString model string =
-    ( model
-        |> (Page.lenses.complexIngredientsGroup |> Compose.lensWithLens FoodGroup.lenses.foodsSearchString).set string
-        |> (Page.lenses.complexIngredientsGroup
+    ( PaginationSettings.setSearchStringAndReset
+        { searchStringLens =
+            Page.lenses.complexIngredientsGroup
+                |> Compose.lensWithLens FoodGroup.lenses.foodsSearchString
+        , paginationSettingsLens =
+            Page.lenses.complexIngredientsGroup
                 |> Compose.lensWithLens FoodGroup.lenses.pagination
                 |> Compose.lensWithLens Pagination.lenses.foods
-                |> Compose.lensWithLens PaginationSettings.lenses.currentPage
-           ).set
-            1
+        }
+        model
+        string
     , Cmd.none
     )
 

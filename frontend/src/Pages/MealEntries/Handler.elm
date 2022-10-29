@@ -282,16 +282,17 @@ updateAddRecipe model mealEntryCreationClientInput =
     )
 
 
-
 setRecipesSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
 setRecipesSearchString model string =
-    ( model
-        |> Page.lenses.recipesSearchString.set string
-        |> (Page.lenses.pagination
+    ( PaginationSettings.setSearchStringAndReset
+        { searchStringLens =
+            Page.lenses.recipesSearchString
+        , paginationSettingsLens =
+            Page.lenses.pagination
                 |> Compose.lensWithLens Pagination.lenses.recipes
-                |> Compose.lensWithLens PaginationSettings.lenses.currentPage
-           ).set
-            1
+        }
+        model
+        string
     , Cmd.none
     )
 

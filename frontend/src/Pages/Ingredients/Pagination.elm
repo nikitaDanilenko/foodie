@@ -26,5 +26,3 @@ lenses =
     , foods = Lens .foods (\b a -> { a | foods = b })
     }
 
-
-
