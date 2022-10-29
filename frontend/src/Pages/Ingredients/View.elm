@@ -198,13 +198,8 @@ viewPlain model =
                     }
                     model
 
-        anySelection =
-            model.ingredientsGroup.foodsToAdd
-                |> Dict.isEmpty
-                |> not
-
         ( amount, unit ) =
-            if anySelection then
+            if anySelection Page.lenses.ingredientsGroup model then
                 ( "Amount", "Unit" )
 
             else
@@ -270,13 +265,8 @@ viewComplex model =
                     }
                     model
 
-        anySelection =
-            model.complexIngredientsGroup.foodsToAdd
-                |> Dict.isEmpty
-                |> not
-
         ( amount, unit ) =
-            if anySelection then
+            if anySelection Page.lenses.complexIngredientsGroup model then
                 ( "Factor", "Amount" )
 
             else
@@ -334,7 +324,7 @@ editOrDeleteIngredientLine measureMap foodMap ingredient =
     tr [ Style.classes.editing ]
         [ td [ Style.classes.editable, onClick editMsg ] [ label [] [ text <| DictUtil.nameOrEmpty foodMap <| ingredient.foodId ] ]
         , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| String.fromFloat <| ingredient.amountUnit.factor ] ]
-        , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| Maybe.Extra.unwrap "" .name <| flip Dict.get measureMap <| ingredient.amountUnit.measureId ] ]
+        , td [ Style.classes.editable, Style.classes.numberLabel, onClick editMsg ] [ label [] [ text <| DictUtil.nameOrEmpty measureMap <| ingredient.amountUnit.measureId ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick editMsg ] [ text "Edit" ] ]
         , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Page.DeleteIngredient ingredient.id) ] [ text "Delete" ] ]
         ]
@@ -474,12 +464,9 @@ unitDropdown fm fId =
 
 
 startingDropdownUnit : Page.MeasureMap -> MeasureId -> Dropdown.Item
-startingDropdownUnit mm mId =
-    { value = String.fromInt mId
-    , text =
-        mm
-            |> Dict.get mId
-            |> Maybe.Extra.unwrap "" .name
+startingDropdownUnit measureMap measureId =
+    { value = String.fromInt measureId
+    , text = DictUtil.nameOrEmpty measureMap measureId
     , enabled = True
     }
 
@@ -722,3 +709,10 @@ viewComplexFoodLine recipeMap complexFoodMap complexIngredientsToAdd complexIngr
         (td [ Style.classes.editable ] [ label [] [ text info.name ] ]
             :: process
         )
+
+
+anySelection : Lens Page.Model (FoodGroup ingredientId ingredient update foodId food creation) -> Page.Model -> Bool
+anySelection foodGroupLens =
+    (foodGroupLens |> Compose.lensWithLens FoodGroup.lenses.foodsToAdd).get
+        >> Dict.isEmpty
+        >> not
