@@ -6,6 +6,7 @@ import Basics.Extra exposing (flip)
 import Dict
 import Either exposing (Either(..))
 import Maybe.Extra
+import Monocle.Compose as Compose
 import Monocle.Lens as Lens
 import Monocle.Optional
 import Pages.ReferenceMaps.Page as Page exposing (ReferenceMapOrUpdate)
@@ -14,6 +15,7 @@ import Pages.ReferenceMaps.ReferenceMapCreationClientInput as ReferenceMapCreati
 import Pages.ReferenceMaps.ReferenceMapUpdateClientInput as ReferenceMapUpdateClientInput exposing (ReferenceMapUpdateClientInput)
 import Pages.ReferenceMaps.Requests as Requests
 import Pages.ReferenceMaps.Status as Status
+import Pages.Util.PaginationSettings as PaginationSettings
 import Util.Editing as Editing exposing (Editing)
 import Util.HttpUtil as HttpUtil exposing (Error)
 import Util.Initialization as Initialization exposing (Initialization(..))
@@ -25,6 +27,7 @@ init flags =
     ( { authorizedAccess = flags.authorizedAccess
       , referenceMaps = Dict.empty
       , referenceMapToAdd = Nothing
+      , searchString = ""
       , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
       }
@@ -70,6 +73,9 @@ update msg model =
 
         Page.SetPagination pagination ->
             setPagination model pagination
+
+        Page.SetSearchString string ->
+            setSearchString model string
 
 
 updateReferenceMapCreation : Page.Model -> Maybe ReferenceMapCreationClientInput -> ( Page.Model, Cmd Page.Msg )
@@ -197,6 +203,21 @@ gotFetchReferenceMapsResponse model dataOrError =
 setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
 setPagination model pagination =
     ( model |> Page.lenses.pagination.set pagination
+    , Cmd.none
+    )
+
+
+setSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
+setSearchString model string =
+    ( PaginationSettings.setSearchStringAndReset
+        { searchStringLens =
+            Page.lenses.searchString
+        , paginationSettingsLens =
+            Page.lenses.pagination
+                |> Compose.lensWithLens Pagination.lenses.referenceMaps
+        }
+        model
+        string
     , Cmd.none
     )
 
