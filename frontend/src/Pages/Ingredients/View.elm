@@ -63,11 +63,17 @@ view model =
                     (editOrDeleteComplexIngredientLine model.allRecipes model.complexIngredientsGroup.foods)
                     (\e -> e.update |> editComplexIngredientLine model.allRecipes model.complexIngredientsGroup.foods e.original)
 
-            viewEditIngredientsWith : Lens Page.Model (FoodGroup ingredientId ingredient update comparableFoodId food creation) -> (ingredient -> comparableFoodId) -> Dict comparableFoodId { a | name : String } -> PaginatedList (IngredientOrUpdate ingredient update)
-            viewEditIngredientsWith groupLens idOf nameMap =
+            viewEditIngredientsWith :
+                (IngredientOrUpdate ingredient update -> Bool)
+                -> Lens Page.Model (FoodGroup comparableIngredientId ingredient update comparableFoodId food creation)
+                -> (ingredient -> comparableFoodId)
+                -> Dict comparableFoodId { a | name : String }
+                -> PaginatedList (IngredientOrUpdate ingredient update)
+            viewEditIngredientsWith searchFilter groupLens idOf nameMap =
                 model
                     |> groupLens.get
                     |> .ingredients
+                    |> Dict.filter (\_ v -> searchFilter v)
                     |> Dict.values
                     |> List.sortBy (Editing.field idOf >> DictUtil.nameOrEmpty nameMap >> String.toLower)
                     |> ViewUtil.paginate
@@ -79,10 +85,24 @@ view model =
                         model
 
             viewEditIngredients =
-                viewEditIngredientsWith Page.lenses.ingredientsGroup .foodId model.ingredientsGroup.foods
+                viewEditIngredientsWith
+                    (Editing.field (.foodId >> DictUtil.nameOrEmpty model.ingredientsGroup.foods)
+                        >> SearchUtil.search model.ingredientsSearchString
+                    )
+                    Page.lenses.ingredientsGroup
+                    .foodId
+                    model.ingredientsGroup.foods
 
             viewEditComplexIngredients =
-                viewEditIngredientsWith Page.lenses.complexIngredientsGroup .complexFoodId model.allRecipes
+                viewEditIngredientsWith
+                    (Editing.field .complexFoodId
+                        >> (\id -> complexFoodInfo id model.allRecipes model.complexIngredientsGroup.foods)
+                        >> .name
+                        >> SearchUtil.search model.complexIngredientsSearchString
+                    )
+                    Page.lenses.complexIngredientsGroup
+                    .complexFoodId
+                    model.allRecipes
         in
         div [ Style.ids.ingredientEditor ]
             [ div []
@@ -99,7 +119,11 @@ view model =
                 ]
             , div [ Style.classes.elements ] [ label [] [ text "Ingredients" ] ]
             , div [ Style.classes.choices ]
-                [ table []
+                [ HtmlUtil.searchAreaWith
+                    { msg = Page.SetIngredientsSearchString
+                    , searchString = model.ingredientsSearchString
+                    }
+                , table []
                     [ colgroup []
                         [ col [] []
                         , col [] []
@@ -135,7 +159,11 @@ view model =
                 ]
             , div [ Style.classes.elements ] [ label [] [ text "Complex ingredients" ] ]
             , div [ Style.classes.choices ]
-                [ table []
+                [ HtmlUtil.searchAreaWith
+                    { msg = Page.SetComplexIngredientsSearchString
+                    , searchString = model.complexIngredientsSearchString
+                    }
+                , table []
                     [ colgroup []
                         [ col [] []
                         , col [] []
@@ -218,7 +246,7 @@ viewPlain model =
     div [ Style.classes.addView ]
         [ div [ Style.classes.addElement ]
             [ HtmlUtil.searchAreaWith
-                { msg = Page.SetComplexFoodsSearchString
+                { msg = Page.SetFoodsSearchString
                 , searchString = model.ingredientsGroup.foodsSearchString
                 }
             , table [ Style.classes.choiceTable ]

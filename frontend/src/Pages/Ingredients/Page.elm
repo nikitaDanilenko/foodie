@@ -31,6 +31,8 @@ type alias Model =
     , measures : MeasureMap
     , initialization : Initialization Status
     , foodsMode : FoodsMode
+    , ingredientsSearchString : String
+    , complexIngredientsSearchString : String
     }
 
 
@@ -87,6 +89,8 @@ lenses :
     , allRecipes : Lens Model RecipeMap
     , initialization : Lens Model (Initialization Status)
     , foodsMode : Lens Model FoodsMode
+    , ingredientsSearchString : Lens Model String
+    , complexIngredientsSearchString : Lens Model String
     }
 lenses =
     { measures = Lens .measures (\b a -> { a | measures = b })
@@ -96,6 +100,8 @@ lenses =
     , allRecipes = Lens .allRecipes (\b a -> { a | allRecipes = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , foodsMode = Lens .foodsMode (\b a -> { a | foodsMode = b })
+    , ingredientsSearchString = Lens .ingredientsSearchString (\b a -> { a | ingredientsSearchString = b })
+    , complexIngredientsSearchString = Lens .complexIngredientsSearchString (\b a -> { a | complexIngredientsSearchString = b })
     }
 
 
@@ -138,6 +144,8 @@ type Msg
     | SetIngredientsPagination Pagination
     | SetComplexIngredientsPagination Pagination
     | ChangeFoodsMode FoodsMode
+    | SetIngredientsSearchString String
+    | SetComplexIngredientsSearchString String
 
 
 type alias Flags =

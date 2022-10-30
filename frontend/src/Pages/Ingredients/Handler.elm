@@ -58,6 +58,8 @@ init flags =
       , allRecipes = Dict.empty
       , initialization = Loading Status.initial
       , foodsMode = Page.Plain
+      , ingredientsSearchString = ""
+      , complexIngredientsSearchString = ""
       }
     , initialFetch
         flags.authorizedAccess
@@ -181,6 +183,12 @@ update msg model =
 
         Page.ChangeFoodsMode foodsMode ->
             changeFoodsMode model foodsMode
+
+        Page.SetIngredientsSearchString string ->
+            setIngredientsSearchString model string
+
+        Page.SetComplexIngredientsSearchString string ->
+            setComplexIngredientsSearchString model string
 
 
 mapIngredientOrUpdateById : IngredientId -> (Page.PlainIngredientOrUpdate -> Page.PlainIngredientOrUpdate) -> Page.Model -> Page.Model
@@ -669,6 +677,44 @@ changeFoodsMode : Page.Model -> Page.FoodsMode -> ( Page.Model, Cmd Page.Msg )
 changeFoodsMode model foodsMode =
     ( model
         |> Page.lenses.foodsMode.set foodsMode
+    , Cmd.none
+    )
+
+
+setIngredientsSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
+setIngredientsSearchString =
+    setSearchString
+        { searchStringLens = Page.lenses.ingredientsSearchString
+        , foodGroupLens = Page.lenses.ingredientsGroup
+        }
+
+
+setComplexIngredientsSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
+setComplexIngredientsSearchString =
+    setSearchString
+        { searchStringLens = Page.lenses.complexIngredientsSearchString
+        , foodGroupLens = Page.lenses.complexIngredientsGroup
+        }
+
+
+setSearchString :
+    { searchStringLens : Lens Page.Model String
+    , foodGroupLens : Lens Page.Model (FoodGroup.FoodGroup ingredientId ingredient update foodId food creation)
+    }
+    -> Page.Model
+    -> String
+    -> ( Page.Model, Cmd Page.Msg )
+setSearchString lenses model string =
+    ( PaginationSettings.setSearchStringAndReset
+        { searchStringLens =
+            lenses.searchStringLens
+        , paginationSettingsLens =
+            lenses.foodGroupLens
+                |> Compose.lensWithLens FoodGroup.lenses.pagination
+                |> Compose.lensWithLens Pagination.lenses.ingredients
+        }
+        model
+        string
     , Cmd.none
     )
 
