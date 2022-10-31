@@ -52,9 +52,16 @@ view model =
                     (editOrDeleteMealLine model.authorizedAccess.configuration)
                     (\e -> e.update |> editMealLine)
 
+            filterOn =
+                SearchUtil.search model.searchString
+
             viewEditMeals =
                 model.meals
-                    |> Dict.filter (\_ v -> SearchUtil.search model.searchString (Editing.field (.name >> Maybe.withDefault "") v))
+                    |> Dict.filter
+                        (\_ v ->
+                            filterOn (Editing.field (.name >> Maybe.withDefault "") v)
+                                || filterOn (Editing.field .date v |> DateUtil.toString)
+                        )
                     |> Dict.values
                     |> List.sortBy (Editing.field .date >> DateUtil.toString)
                     |> List.reverse
