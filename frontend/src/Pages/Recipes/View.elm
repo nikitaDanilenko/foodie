@@ -48,9 +48,16 @@ view model =
                     (editOrDeleteRecipeLine model.authorizedAccess.configuration)
                     (\e -> e.update |> editRecipeLine)
 
+            filterOn =
+                SearchUtil.search model.searchString
+
             viewEditRecipes =
                 model.recipes
-                    |> Dict.filter (\_ v -> SearchUtil.search model.searchString (Editing.field .name v))
+                    |> Dict.filter
+                        (\_ v ->
+                            filterOn (Editing.field .name v)
+                                || filterOn (Editing.field .description v |> Maybe.withDefault "")
+                        )
                     |> Dict.values
                     |> List.sortBy (Editing.field .name >> String.toLower)
                     |> ViewUtil.paginate
