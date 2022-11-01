@@ -25,6 +25,7 @@ type alias Model =
     , referenceTree : Maybe ReferenceNutrientTree
     , initialization : Initialization Status
     , pagination : Pagination
+    , nutrientsSearchString : String
     , fetching : Bool
     }
 
@@ -38,6 +39,7 @@ lenses :
     , referenceTree : Lens Model (Maybe ReferenceNutrientTree)
     , initialization : Lens Model (Initialization Status)
     , pagination : Lens Model Pagination
+    , nutrientsSearchString : Lens Model String
     , fetching : Lens Model Bool
     }
 lenses =
@@ -53,6 +55,7 @@ lenses =
     , referenceTree = Lens .referenceTree (\b a -> { a | referenceTree = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , pagination = Lens .pagination (\b a -> { a | pagination = b })
+    , nutrientsSearchString = Lens .nutrientsSearchString (\b a -> { a | nutrientsSearchString = b })
     , fetching = Lens .fetching (\b a -> { a | fetching = b })
     }
 
@@ -76,3 +79,4 @@ type Msg
     | GotFetchReferenceTreesResponse (Result Error (List ReferenceTree))
     | SetPagination Pagination
     | SelectReferenceMap (Maybe ReferenceMapId)
+    | SetNutrientsSearchString String

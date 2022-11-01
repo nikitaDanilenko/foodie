@@ -28,6 +28,7 @@ init flags =
       , referenceTree = Nothing
       , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
+      , nutrientsSearchString = ""
       , fetching = False
       }
     , initialFetch flags.authorizedAccess
@@ -69,6 +70,9 @@ update msg model =
 
         Page.SelectReferenceMap referenceMapId ->
             selectReferenceMap model referenceMapId
+
+        Page.SetNutrientsSearchString string ->
+            setNutrientsSearchString model string
 
 
 setFromDate : Page.Model -> Maybe Date -> ( Page.Model, Cmd Page.Msg )
@@ -156,6 +160,14 @@ selectReferenceMap model referenceMapId =
     ( referenceMapId
         |> Maybe.andThen (flip Dict.get model.referenceTrees)
         |> flip Page.lenses.referenceTree.set model
+    , Cmd.none
+    )
+
+
+setNutrientsSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
+setNutrientsSearchString model string =
+    ( model
+        |> Page.lenses.nutrientsSearchString.set string
     , Cmd.none
     )
 

@@ -12,18 +12,21 @@ import FormatNumber.Locales
 import Html exposing (Html, button, col, colgroup, div, input, label, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (colspan, scope, type_, value)
 import Html.Events exposing (onClick, onInput)
+import List.Extra
 import Maybe.Extra
 import Monocle.Compose as Compose
 import Monocle.Lens exposing (Lens)
 import Pages.Statistics.Page as Page
 import Pages.Statistics.Pagination as Pagination
 import Pages.Util.DateUtil as DateUtil
+import Pages.Util.HtmlUtil as HtmlUtil
 import Pages.Util.Links as Links
 import Pages.Util.PaginationSettings as PaginationSettings
 import Pages.Util.Style as Style
 import Pages.Util.ViewUtil as ViewUtil
 import Paginate
 import Parser
+import Util.SearchUtil as SearchUtil
 
 
 view : Page.Model -> Html Page.Msg
@@ -48,6 +51,11 @@ view model =
         }
         model
     <|
+        let
+            viewNutrients =
+                model.stats.nutrients
+                    |> List.filter (\nutrient -> [ nutrient.name, nutrient.symbol ] |> List.Extra.find (SearchUtil.search model.nutrientsSearchString) |> Maybe.Extra.isJust)
+        in
         div [ Style.ids.statistics ]
             [ div []
                 [ table [ Style.classes.intervalSelection ]
@@ -111,7 +119,11 @@ view model =
                 ]
             , div [ Style.classes.elements ] [ text "Nutrients" ]
             , div [ Style.classes.info, Style.classes.nutrients ]
-                [ table []
+                [ HtmlUtil.searchAreaWith
+                    { msg = Page.SetNutrientsSearchString
+                    , searchString = model.nutrientsSearchString
+                    }
+                , table []
                     [ thead []
                         [ tr [ Style.classes.tableHeader ]
                             [ th [] [ label [] [ text "Name" ] ]
@@ -122,7 +134,7 @@ view model =
                             , th [ Style.classes.numberLabel ] [ label [] [ text "Percentage" ] ]
                             ]
                         ]
-                    , tbody [] (List.map (model.referenceTree |> Maybe.Extra.unwrap Dict.empty .values |> nutrientInformationLine) model.stats.nutrients)
+                    , tbody [] (List.map (model.referenceTree |> Maybe.Extra.unwrap Dict.empty .values |> nutrientInformationLine) viewNutrients)
                     ]
                 ]
             , div [ Style.classes.elements ] [ text "Meals" ]

@@ -331,7 +331,7 @@ th {
 #ingredientEditor input:not(.searchField),
 #mealEntryEditor input:not(.searchField),
 #referenceEntryEditor input:not(.searchField),
-#statistics input {
+#statistics input:not(.searchField) {
     box-sizing: border-box;
     width: 100%;
     font-size: larger;
