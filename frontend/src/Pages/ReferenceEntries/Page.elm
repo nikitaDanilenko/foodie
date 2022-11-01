@@ -27,6 +27,7 @@ type alias Model =
     , referenceEntries : ReferenceEntryOrUpdateMap
     , nutrients : NutrientMap
     , nutrientsSearchString : String
+    , referenceEntriesSearchString : String
     , referenceEntriesToAdd : AddNutrientMap
     , initialization : Initialization Status
     , pagination : Pagination
@@ -61,6 +62,7 @@ lenses :
     , referenceEntriesToAdd : Lens Model AddNutrientMap
     , nutrients : Lens Model NutrientMap
     , nutrientsSearchString : Lens Model String
+    , referenceEntriesSearchString : Lens Model String
     , initialization : Lens Model (Initialization Status)
     , pagination : Lens Model Pagination
     }
@@ -70,6 +72,7 @@ lenses =
     , referenceEntriesToAdd = Lens .referenceEntriesToAdd (\b a -> { a | referenceEntriesToAdd = b })
     , nutrients = Lens .nutrients (\b a -> { a | nutrients = b })
     , nutrientsSearchString = Lens .nutrientsSearchString (\b a -> { a | nutrientsSearchString = b })
+    , referenceEntriesSearchString = Lens .referenceEntriesSearchString (\b a -> { a | referenceEntriesSearchString = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , pagination = Lens .pagination (\b a -> { a | pagination = b })
     }
@@ -103,4 +106,5 @@ type Msg
     | UpdateAddNutrient ReferenceEntryCreationClientInput
     | UpdateNutrients String
     | SetNutrientsSearchString String
+    | SetReferenceEntriesSearchString String
     | SetPagination Pagination

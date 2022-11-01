@@ -34,6 +34,7 @@ init flags =
       , referenceEntries = Dict.empty
       , nutrients = Dict.empty
       , nutrientsSearchString = ""
+      , referenceEntriesSearchString = ""
       , referenceEntriesToAdd = Dict.empty
       , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
@@ -101,6 +102,9 @@ update msg model =
 
         Page.SetNutrientsSearchString string ->
             setNutrientsSearchString model string
+
+        Page.SetReferenceEntriesSearchString string ->
+            setReferenceEntriesSearchString model string
 
         Page.UpdateNutrients string ->
             updateNutrients model string
@@ -319,6 +323,19 @@ setNutrientsSearchString model string =
     , Cmd.none
     )
 
+setReferenceEntriesSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
+setReferenceEntriesSearchString model string =
+    ( PaginationSettings.setSearchStringAndReset
+        { searchStringLens =
+            Page.lenses.referenceEntriesSearchString
+        , paginationSettingsLens =
+            Page.lenses.pagination
+                |> Compose.lensWithLens Pagination.lenses.referenceEntries
+        }
+        model
+        string
+    , Cmd.none
+    )
 
 setPagination : Page.Model -> Pagination -> ( Page.Model, Cmd Page.Msg )
 setPagination model pagination =

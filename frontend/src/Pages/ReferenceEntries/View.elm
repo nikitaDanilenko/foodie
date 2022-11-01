@@ -47,6 +47,7 @@ view model =
 
             viewEditReferenceEntries =
                 model.referenceEntries
+                    |> Dict.filter (\_ v -> SearchUtil.search model.referenceEntriesSearchString (Editing.field .nutrientCode v |> Page.nutrientNameOrEmpty model.nutrients))
                     |> Dict.toList
                     |> List.sortBy (\( k, _ ) -> Page.nutrientNameOrEmpty model.nutrients k |> String.toLower)
                     |> List.map Tuple.second
@@ -79,7 +80,11 @@ view model =
         in
         div [ Style.ids.referenceEntryEditor ]
             [ div []
-                [ table []
+                [ HtmlUtil.searchAreaWith
+                    { msg = Page.SetReferenceEntriesSearchString
+                    , searchString = model.referenceEntriesSearchString
+                    }
+                , table []
                     [ colgroup []
                         [ col [] []
                         , col [] []
