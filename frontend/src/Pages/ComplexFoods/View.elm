@@ -50,6 +50,7 @@ view model =
 
             viewEditComplexFoods =
                 model.complexFoods
+                    |> Dict.filter (\complexFoodId _ -> SearchUtil.search model.complexFoodsSearchString (Page.complexFoodNameOrEmpty model.recipes complexFoodId))
                     |> Dict.values
                     |> List.sortBy (Editing.field .recipeId >> Page.complexFoodNameOrEmpty model.recipes >> String.toLower)
                     |> ViewUtil.paginate
@@ -82,7 +83,11 @@ view model =
         div [ Style.ids.complexFoodEditor ]
             [ div [ Style.classes.elements ] [ label [] [ text "Complex foods" ] ]
             , div [ Style.classes.choices ]
-                [ table []
+                [ HtmlUtil.searchAreaWith
+                    { msg = Page.SetComplexFoodsSearchString
+                    , searchString = model.complexFoodsSearchString
+                    }
+                , table []
                     [ colgroup []
                         [ col [] []
                         , col [] []

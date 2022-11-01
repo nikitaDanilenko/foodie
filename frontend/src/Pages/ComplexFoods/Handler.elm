@@ -32,6 +32,7 @@ init flags =
       , complexFoods = Dict.empty
       , complexFoodsToCreate = Dict.empty
       , recipesSearchString = ""
+      , complexFoodsSearchString = ""
       , initialization = Initialization.Loading Status.initial
       , pagination = Pagination.initial
       }
@@ -94,6 +95,9 @@ update msg model =
 
         Page.SetRecipesSearchString string ->
             setRecipesSearchString model string
+
+        Page.SetComplexFoodsSearchString string ->
+            setComplexFoodsSearchString model string
 
         Page.SetPagination pagination ->
             setPagination model pagination
@@ -267,6 +271,18 @@ setRecipesSearchString model string =
     , Cmd.none
     )
 
+setComplexFoodsSearchString : Page.Model -> String -> ( Page.Model, Cmd Page.Msg )
+setComplexFoodsSearchString model string =
+    ( PaginationSettings.setSearchStringAndReset
+        { searchStringLens = Page.lenses.complexFoodsSearchString
+        , paginationSettingsLens =
+            Page.lenses.pagination
+                |> Compose.lensWithLens Pagination.lenses.complexFoods
+        }
+        model
+        string
+    , Cmd.none
+    )
 
 setPagination : Page.Model -> Pagination.Pagination -> ( Page.Model, Cmd Page.Msg )
 setPagination model pagination =

@@ -22,6 +22,7 @@ type alias Model =
     , complexFoods : ComplexFoodOrUpdateMap
     , complexFoodsToCreate : CreateComplexFoodsMap
     , recipesSearchString : String
+    , complexFoodsSearchString : String
     , initialization : Initialization Status
     , pagination : Pagination
     }
@@ -48,6 +49,7 @@ lenses :
     , complexFoods : Lens Model ComplexFoodOrUpdateMap
     , complexFoodsToCreate : Lens Model CreateComplexFoodsMap
     , recipesSearchString : Lens Model String
+    , complexFoodsSearchString : Lens Model String
     , initialization : Lens Model (Initialization Status)
     , pagination : Lens Model Pagination
     }
@@ -56,6 +58,7 @@ lenses =
     , complexFoods = Lens .complexFoods (\b a -> { a | complexFoods = b })
     , complexFoodsToCreate = Lens .complexFoodsToCreate (\b a -> { a | complexFoodsToCreate = b })
     , recipesSearchString = Lens .recipesSearchString (\b a -> { a | recipesSearchString = b })
+    , complexFoodsSearchString = Lens .complexFoodsSearchString (\b a -> { a | complexFoodsSearchString = b })
     , initialization = Lens .initialization (\b a -> { a | initialization = b })
     , pagination = Lens .pagination (\b a -> { a | pagination = b })
     }
@@ -82,6 +85,7 @@ type Msg
     | SelectRecipe Recipe
     | DeselectRecipe RecipeId
     | SetRecipesSearchString String
+    | SetComplexFoodsSearchString String
     | SetPagination Pagination
 
 
