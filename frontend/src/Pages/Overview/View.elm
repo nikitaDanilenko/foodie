@@ -37,6 +37,13 @@ view model =
                 ]
             , div []
                 [ Links.linkButton
+                    { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.complexFoods.address <| ()
+                    , attributes = [ Style.classes.button.overview ]
+                    , children = [ text "Complex foods" ]
+                    }
+                ]
+            , div []
+                [ Links.linkButton
                     { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.statistics.address <| ()
                     , attributes = [ Style.classes.button.overview ]
                     , children = [ text "Statistics" ]
@@ -54,13 +61,6 @@ view model =
                     { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.userSettings.address <| ()
                     , attributes = [ Style.classes.button.overview ]
                     , children = [ text "User settings" ]
-                    }
-                ]
-            , div []
-                [ Links.linkButton
-                    { url = Links.frontendPage model.authorizedAccess.configuration <| Addresses.Frontend.complexFoods.address <| ()
-                    , attributes = [ Style.classes.button.overview ]
-                    , children = [ text "Complex foods" ]
                     }
                 ]
             ]
