@@ -5,12 +5,12 @@ import Json.Decode.Pipeline exposing (..)
 import Json.Encode as Encode
 
 
-type alias AmountUnit = { measureId: (Maybe Int), factor: Float }
+type alias AmountUnit = { measureId: Int, factor: Float }
 
 
 decoderAmountUnit : Decode.Decoder AmountUnit
-decoderAmountUnit = Decode.succeed AmountUnit |> optional "measureId" (Decode.maybe Decode.int) Nothing |> required "factor" Decode.float
+decoderAmountUnit = Decode.succeed AmountUnit |> required "measureId" Decode.int |> required "factor" Decode.float
 
 
 encoderAmountUnit : AmountUnit -> Encode.Value
-encoderAmountUnit obj = Encode.object [ ("measureId", Maybe.withDefault Encode.null (Maybe.map Encode.int obj.measureId)), ("factor", Encode.float obj.factor) ]
+encoderAmountUnit obj = Encode.object [ ("measureId", Encode.int obj.measureId), ("factor", Encode.float obj.factor) ]
