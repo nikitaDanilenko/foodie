@@ -42,7 +42,7 @@ object NutrientService {
 
   trait Companion {
 
-    def nutrientOfFood(
+    def nutrientsOfFood(
         foodId: FoodId,
         measureId: Option[MeasureId],
         amount: BigDecimal
@@ -76,7 +76,7 @@ object NutrientService {
         measureId: Option[MeasureId],
         factor: BigDecimal
     ): Future[NutrientMap] =
-      db.run(companion.nutrientOfFood(foodId, measureId, factor))
+      db.run(companion.nutrientsOfFood(foodId, measureId, factor))
 
     override def nutrientsOfIngredient(ingredient: Ingredient): Future[NutrientMap] =
       db.run(companion.nutrientsOfIngredient(ingredient))
@@ -110,7 +110,7 @@ object NutrientService {
         OptionT.when(measureId.transformInto[Int] == specialized.measureId)(specialized)
       }.getOrElseF(DBIO.failed(DBError.Nutrient.ConversionFactorNotFound))
 
-    override def nutrientOfFood(
+    override def nutrientsOfFood(
         foodId: FoodId,
         measureId: Option[MeasureId],
         factor: BigDecimal
@@ -127,7 +127,7 @@ object NutrientService {
       } yield factor *: conversionFactor *: nutrientBase
 
     override def nutrientsOfIngredient(ingredient: Ingredient)(implicit ec: ExecutionContext): DBIO[NutrientMap] =
-      nutrientOfFood(
+      nutrientsOfFood(
         foodId = ingredient.foodId,
         measureId = ingredient.amountUnit.measureId,
         factor = ingredient.amountUnit.factor
