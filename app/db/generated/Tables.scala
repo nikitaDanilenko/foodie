@@ -475,19 +475,19 @@ trait Tables {
    *  @param id Database column id SqlType(uuid), PrimaryKey
    *  @param recipeId Database column recipe_id SqlType(uuid)
    *  @param foodNameId Database column food_name_id SqlType(int4)
-   *  @param measureId Database column measure_id SqlType(int4)
+   *  @param measureId Database column measure_id SqlType(int4), Default(None)
    *  @param factor Database column factor SqlType(numeric) */
-  case class RecipeIngredientRow(id: java.util.UUID, recipeId: java.util.UUID, foodNameId: Int, measureId: Int, factor: scala.math.BigDecimal)
+  case class RecipeIngredientRow(id: java.util.UUID, recipeId: java.util.UUID, foodNameId: Int, measureId: Option[Int] = None, factor: scala.math.BigDecimal)
   /** GetResult implicit for fetching RecipeIngredientRow objects using plain SQL queries */
-  implicit def GetResultRecipeIngredientRow(implicit e0: GR[java.util.UUID], e1: GR[Int], e2: GR[scala.math.BigDecimal]): GR[RecipeIngredientRow] = GR{
+  implicit def GetResultRecipeIngredientRow(implicit e0: GR[java.util.UUID], e1: GR[Int], e2: GR[Option[Int]], e3: GR[scala.math.BigDecimal]): GR[RecipeIngredientRow] = GR{
     prs => import prs._
-    RecipeIngredientRow.tupled((<<[java.util.UUID], <<[java.util.UUID], <<[Int], <<[Int], <<[scala.math.BigDecimal]))
+    RecipeIngredientRow.tupled((<<[java.util.UUID], <<[java.util.UUID], <<[Int], <<?[Int], <<[scala.math.BigDecimal]))
   }
   /** Table description of table recipe_ingredient. Objects of this class serve as prototypes for rows in queries. */
   class RecipeIngredient(_tableTag: Tag) extends profile.api.Table[RecipeIngredientRow](_tableTag, "recipe_ingredient") {
     def * = (id, recipeId, foodNameId, measureId, factor) <> (RecipeIngredientRow.tupled, RecipeIngredientRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(id), Rep.Some(recipeId), Rep.Some(foodNameId), Rep.Some(measureId), Rep.Some(factor))).shaped.<>({r=>import r._; _1.map(_=> RecipeIngredientRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(id), Rep.Some(recipeId), Rep.Some(foodNameId), measureId, Rep.Some(factor))).shaped.<>({r=>import r._; _1.map(_=> RecipeIngredientRow.tupled((_1.get, _2.get, _3.get, _4, _5.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(uuid), PrimaryKey */
     val id: Rep[java.util.UUID] = column[java.util.UUID]("id", O.PrimaryKey)
@@ -495,17 +495,17 @@ trait Tables {
     val recipeId: Rep[java.util.UUID] = column[java.util.UUID]("recipe_id")
     /** Database column food_name_id SqlType(int4) */
     val foodNameId: Rep[Int] = column[Int]("food_name_id")
-    /** Database column measure_id SqlType(int4) */
-    val measureId: Rep[Int] = column[Int]("measure_id")
+    /** Database column measure_id SqlType(int4), Default(None) */
+    val measureId: Rep[Option[Int]] = column[Option[Int]]("measure_id", O.Default(None))
     /** Database column factor SqlType(numeric) */
     val factor: Rep[scala.math.BigDecimal] = column[scala.math.BigDecimal]("factor")
 
     /** Foreign key referencing ConversionFactor (database name recipe_ingredient_food_name_id_measure_id_fk) */
-    lazy val conversionFactorFk = foreignKey("recipe_ingredient_food_name_id_measure_id_fk", (foodNameId, measureId), ConversionFactor)(r => (r.foodId, r.measureId), onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    lazy val conversionFactorFk = foreignKey("recipe_ingredient_food_name_id_measure_id_fk", (foodNameId, measureId), ConversionFactor)(r => (r.foodId, Rep.Some(r.measureId)), onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
     /** Foreign key referencing FoodName (database name recipe_ingredient_food_name_id_fk) */
     lazy val foodNameFk = foreignKey("recipe_ingredient_food_name_id_fk", foodNameId, FoodName)(r => r.foodId, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
     /** Foreign key referencing MeasureName (database name recipe_ingredient_measure_id_fk) */
-    lazy val measureNameFk = foreignKey("recipe_ingredient_measure_id_fk", measureId, MeasureName)(r => r.measureId, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    lazy val measureNameFk = foreignKey("recipe_ingredient_measure_id_fk", measureId, MeasureName)(r => Rep.Some(r.measureId), onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
     /** Foreign key referencing Recipe (database name recipe_ingredient_recipe_id_fk) */
     lazy val recipeFk = foreignKey("recipe_ingredient_recipe_id_fk", recipeId, Recipe)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
   }
