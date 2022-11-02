@@ -6,7 +6,7 @@ import utils.TransformerUtils.Implicits._
 
 @JsonCodec
 case class AmountUnit(
-    measureId: Int,
+    measureId: Option[Int],
     factor: BigDecimal
 )
 

@@ -6,9 +6,9 @@ import cats.syntax.contravariantSemigroupal._
 import cats.syntax.traverse._
 import db.generated.Tables
 import io.scalaland.chimney.dsl.TransformerOps
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
 import services.recipe.Ingredient
-import services.{DBError, FoodId, MeasureId}
+import services.{ DBError, FoodId, MeasureId }
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
@@ -17,13 +17,13 @@ import utils.DBIOUtil.instances._
 import utils.TransformerUtils.Implicits._
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait NutrientService {
 
   def nutrientsOfFood(
       foodId: FoodId,
-      measureId: MeasureId,
+      measureId: Option[MeasureId],
       factor: BigDecimal
   ): Future[NutrientMap]
 
@@ -44,7 +44,7 @@ object NutrientService {
 
     def nutrientOfFood(
         foodId: FoodId,
-        measureId: MeasureId,
+        measureId: Option[MeasureId],
         amount: BigDecimal
     )(implicit ec: ExecutionContext): DBIO[NutrientMap]
 
@@ -71,7 +71,11 @@ object NutrientService {
       extends NutrientService
       with HasDatabaseConfigProvider[PostgresProfile] {
 
-    override def nutrientsOfFood(foodId: FoodId, measureId: MeasureId, factor: BigDecimal): Future[NutrientMap] =
+    override def nutrientsOfFood(
+        foodId: FoodId,
+        measureId: Option[MeasureId],
+        factor: BigDecimal
+    ): Future[NutrientMap] =
       db.run(companion.nutrientOfFood(foodId, measureId, factor))
 
     override def nutrientsOfIngredient(ingredient: Ingredient): Future[NutrientMap] =
@@ -101,20 +105,26 @@ object NutrientService {
           )
           .result
           .headOption: DBIO[Option[Tables.ConversionFactorRow]]
-      )
-        .getOrElseF(DBIO.failed(DBError.Nutrient.ConversionFactorNotFound))
+      ).orElse {
+        val specialized = hundredGrams(foodId)
+        OptionT.when(measureId.transformInto[Int] == specialized.measureId)(specialized)
+      }.getOrElseF(DBIO.failed(DBError.Nutrient.ConversionFactorNotFound))
 
     override def nutrientOfFood(
         foodId: FoodId,
-        measureId: MeasureId,
+        measureId: Option[MeasureId],
         factor: BigDecimal
     )(implicit
         ec: ExecutionContext
     ): DBIO[NutrientMap] =
       for {
-        nutrientBase     <- nutrientBaseOf(foodId)
-        conversionFactor <- conversionFactor(foodId, measureId)
-      } yield factor *: conversionFactor.conversionFactorValue *: nutrientBase
+        nutrientBase <- nutrientBaseOf(foodId)
+        conversionFactor <-
+          measureId
+            .fold(DBIO.successful(BigDecimal(1)): DBIO[BigDecimal])(
+              conversionFactor(foodId, _).map(_.conversionFactorValue)
+            )
+      } yield factor *: conversionFactor *: nutrientBase
 
     override def nutrientsOfIngredient(ingredient: Ingredient)(implicit ec: ExecutionContext): DBIO[NutrientMap] =
       nutrientOfFood(
@@ -165,6 +175,14 @@ object NutrientService {
               ).mapN((n, a) => n.map(_ -> a))
             )
       } yield pairs.flatten.toMap
+
+    private def hundredGrams(foodId: Int): Tables.ConversionFactorRow =
+      Tables.ConversionFactorRow(
+        foodId = foodId,
+        measureId = 1455,
+        conversionFactorValue = BigDecimal(1),
+        convFactorDateOfEntry = java.sql.Date.valueOf("2022-11-01")
+      )
 
   }
 

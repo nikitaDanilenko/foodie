@@ -25,7 +25,7 @@ object Ingredient {
         _.amountUnit,
         r =>
           AmountUnit(
-            measureId = r.measureId.transformInto[MeasureId],
+            measureId = r.measureId.map(_.transformInto[MeasureId]),
             factor = r.factor
           )
       )
@@ -37,7 +37,7 @@ object Ingredient {
         id = ingredient.id.transformInto[UUID],
         recipeId = recipeId.transformInto[UUID],
         foodNameId = ingredient.foodId.transformInto[Int],
-        measureId = ingredient.amountUnit.measureId.transformInto[Int],
+        measureId = ingredient.amountUnit.measureId.map(_.transformInto[Int]),
         factor = ingredient.amountUnit.factor
       )
   }
