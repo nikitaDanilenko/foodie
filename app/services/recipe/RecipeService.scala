@@ -186,7 +186,10 @@ object RecipeService {
             .map(_.measureId)
             .result
             .flatMap(measureIds =>
-              Tables.MeasureName.filter(_.measureId.inSetBind(measureIds)).result.map(ms => food -> ms.toList)
+              Tables.MeasureName
+                .filter(_.measureId.inSetBind(AmountUnit.hundredGrams.transformInto[Int] +: measureIds))
+                .result
+                .map(ms => food -> ms.toList)
             ): DBIO[(Tables.FoodNameRow, List[Tables.MeasureNameRow])]
         }
       } yield withMeasure.map(_.transformInto[Food])
