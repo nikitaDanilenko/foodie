@@ -5,7 +5,7 @@ import bridges.core.Type.Ref
 import bridges.core._
 import bridges.core.syntax._
 import bridges.elm._
-import controllers.complex.{ ComplexFood, ComplexFoodUnit }
+import controllers.complex.ComplexFood
 import controllers.meal._
 import controllers.recipe._
 import controllers.reference._
@@ -40,6 +40,13 @@ object Bridge {
             imports = s"\nimport $elmModule.NutrientUnit exposing (..)",
             encoder = "encoderNutrientUnit",
             decoder = "decoderNutrientUnit"
+          ),
+        Ref("ComplexFoodUnit")
+          -> TypeReplacement(
+            "ComplexFoodUnit",
+            imports = s"\nimport $elmModule.ComplexFoodUnit exposing (..)",
+            encoder = "encoderComplexFoodUnit",
+            decoder = "decoderComplexFoodUnit"
           )
       )
     )
@@ -120,7 +127,6 @@ object Bridge {
     mkAndWrite[RecoveryRequest]
     mkAndWrite[ComplexIngredient]
     mkAndWrite[ComplexFood]
-    mkAndWrite[ComplexFoodUnit]
   }
 
 }
