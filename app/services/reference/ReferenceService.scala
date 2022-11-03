@@ -7,7 +7,7 @@ import db.generated.Tables
 import errors.{ ErrorContext, ServerError }
 import io.scalaland.chimney.dsl._
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
-import services.nutrient.{ Nutrient, NutrientMap }
+import services.nutrient.{ Nutrient, ReferenceNutrientMap }
 import services.{ DBError, NutrientCode, ReferenceMapId, UserId }
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
@@ -25,7 +25,7 @@ trait ReferenceService {
   def getReferenceNutrientsMap(
       userId: UserId,
       referenceMapId: ReferenceMapId
-  ): Future[Option[NutrientMap]]
+  ): Future[Option[ReferenceNutrientMap]]
 
   def getReferenceMap(userId: UserId, referenceMapId: ReferenceMapId): Future[Option[ReferenceMap]]
 
@@ -79,7 +79,10 @@ object ReferenceService {
     override def allReferenceMaps(userId: UserId): Future[Seq[ReferenceMap]] =
       db.run(companion.allReferenceMaps(userId))
 
-    override def getReferenceNutrientsMap(userId: UserId, referenceMapId: ReferenceMapId): Future[Option[NutrientMap]] =
+    override def getReferenceNutrientsMap(
+        userId: UserId,
+        referenceMapId: ReferenceMapId
+    ): Future[Option[ReferenceNutrientMap]] =
       db.run(companion.getReferenceNutrientsMap(userId, referenceMapId))
 
     override def getReferenceMap(userId: UserId, referenceMapId: ReferenceMapId): Future[Option[ReferenceMap]] =
@@ -167,7 +170,7 @@ object ReferenceService {
     def getReferenceNutrientsMap(
         userId: UserId,
         referenceMapId: ReferenceMapId
-    )(implicit ec: ExecutionContext): DBIO[Option[NutrientMap]]
+    )(implicit ec: ExecutionContext): DBIO[Option[ReferenceNutrientMap]]
 
     def getReferenceMap(userId: UserId, referenceMapId: ReferenceMapId)(implicit
         ec: ExecutionContext
@@ -225,7 +228,7 @@ object ReferenceService {
     override def getReferenceNutrientsMap(
         userId: UserId,
         referenceMapId: ReferenceMapId
-    )(implicit ec: ExecutionContext): DBIO[Option[NutrientMap]] = {
+    )(implicit ec: ExecutionContext): DBIO[Option[ReferenceNutrientMap]] = {
       val transformer = for {
         referenceEntries <- OptionT.liftF(allReferenceEntries(userId, referenceMapId))
         referenceEntriesAmounts <-

@@ -172,7 +172,7 @@ object NutrientService {
               (
                 getNutrient(n.nutrientId),
                 Applicative[DBIO].pure(n.nutrientValue)
-              ).mapN((n, a) => n.map(_ -> a))
+              ).mapN((n, a) => n.map(_ -> AmountEvaluation.embed(a)))
             )
       } yield pairs.flatten.toMap
 

@@ -23,7 +23,7 @@ object Stats {
           symbol = nutrient.symbol,
           unit = nutrient.unit.transformInto[NutrientUnit],
           amounts = Amounts(
-            total = amount,
+            total = amount.amount,
             dailyAverage = daily(nutrient)
           )
         )

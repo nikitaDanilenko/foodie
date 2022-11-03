@@ -1,8 +1,8 @@
 package services.reference
 
-import services.nutrient.NutrientMap
+import services.nutrient.ReferenceNutrientMap
 
 case class ReferenceTree(
     referenceMap: ReferenceMap,
-    nutrientMap: NutrientMap
+    nutrientMap: ReferenceNutrientMap
 )
