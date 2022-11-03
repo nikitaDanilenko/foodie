@@ -1,5 +1,6 @@
 package services.stats
 
+import algebra.ring.AdditiveMonoid
 import cats.data.OptionT
 import cats.syntax.traverse._
 import db.generated.Tables
@@ -7,13 +8,14 @@ import io.scalaland.chimney.dsl.TransformerOps
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
 import services.complex.ingredient.ComplexIngredientService
 import services.meal.{ MealEntry, MealService }
-import services.nutrient.{ NutrientMap, NutrientService }
+import services.nutrient.{ AmountEvaluation, NutrientMap, NutrientService }
 import services.recipe.{ Recipe, RecipeService }
-import services.{ MealId, RecipeId, UserId }
+import services.{ FoodId, MealId, RecipeId, UserId }
 import slick.dbio.DBIO
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import spire.implicits._
+import spire.math.Natural
 import utils.DBIOUtil
 import utils.DBIOUtil.instances._
 import utils.TransformerUtils.Implicits._
@@ -52,7 +54,8 @@ object StatsService {
 
     private case class RecipeNutrientMap(
         recipe: Recipe,
-        nutrientMap: NutrientMap
+        nutrientMap: NutrientMap,
+        foodIds: Set[FoodId]
     )
 
     override def nutrientsOverTime(
@@ -93,9 +96,23 @@ object StatsService {
             (me.numberOfServings / recipeNutrientMap.recipe.numberOfServings) *: recipeNutrientMap.nutrientMap
           }
           .qsum
+        val totalNumberOfIngredients = nutrientsPerRecipe.values.flatMap(_.foodIds).size
         Stats(
           meals = meals,
-          nutrientMap = MapUtil.unionWith(nutrientMap, allNutrients.map(n => n -> BigDecimal(0)).toMap)((x, _) => x)
+          nutrientMap = MapUtil
+            .unionWith(
+              nutrientMap,
+              allNutrients.map(n => n -> AdditiveMonoid[AmountEvaluation].zero).toMap
+            )((x, _) => x)
+            .view
+            .mapValues(amountEvaluation =>
+              Amount(
+                Some(amountEvaluation.amount).filter(_ => amountEvaluation.used > Natural.zero),
+                numberOfIngredients = Natural(totalNumberOfIngredients),
+                numberOfDefinedValues = amountEvaluation.used
+              )
+            )
+            .toMap
         )
       }
     }
@@ -111,16 +128,18 @@ object StatsService {
         ingredients        <- OptionT.liftF(RecipeService.Live.getIngredients(userId, recipeId))
         complexIngredients <- OptionT.liftF(ComplexIngredientService.Live.all(userId, recipeId))
         nutrients          <- OptionT.liftF(NutrientService.Live.nutrientsOfIngredients(ingredients))
-        nutrientsOfComplexIngredients <-
+        recipeNutrientMapsOfComplexNutrients <-
           complexIngredients
             .traverse { complexIngredient =>
               nutrientsOfRecipe(userId, complexIngredient.complexFoodId)
-                .map(recipeNutrientMap => complexIngredient.factor *: recipeNutrientMap.nutrientMap)
+                .map(recipeNutrientMap =>
+                  recipeNutrientMap.copy(nutrientMap = complexIngredient.factor *: recipeNutrientMap.nutrientMap)
+                )
             }
-            .map(_.qsum)
       } yield RecipeNutrientMap(
         recipe = recipe,
-        nutrientMap = nutrients + nutrientsOfComplexIngredients
+        nutrientMap = nutrients + recipeNutrientMapsOfComplexNutrients.map(_.nutrientMap).qsum,
+        foodIds = ingredients.map(_.foodId).toSet ++ recipeNutrientMapsOfComplexNutrients.flatMap(_.foodIds)
       )
 
   }

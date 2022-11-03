@@ -23,8 +23,10 @@ object Stats {
           symbol = nutrient.symbol,
           unit = nutrient.unit.transformInto[NutrientUnit],
           amounts = Amounts(
-            total = amount.amount,
-            dailyAverage = daily(nutrient)
+            total = amount.value,
+            dailyAverage = daily(nutrient),
+            numberOfIngredients = amount.numberOfIngredients.intValue,
+            numberOfDefinedValues = amount.numberOfDefinedValues.intValue
           )
         )
     }.toSeq

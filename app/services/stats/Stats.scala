@@ -1,18 +1,19 @@
 package services.stats
 
-import java.time.LocalDate
 import io.scalaland.chimney.dsl._
 import services.meal.Meal
-import services.nutrient.{ NutrientMap, ReferenceNutrientMap }
+import services.nutrient.Nutrient
+
+import java.time.LocalDate
 
 case class Stats(
     meals: Seq[Meal],
-    nutrientMap: NutrientMap
+    nutrientMap: Map[Nutrient, Amount]
 )
 
 object Stats {
 
-  def dailyAverage(stats: Stats): ReferenceNutrientMap = {
+  def dailyAverage(stats: Stats): Map[Nutrient, Option[BigDecimal]] = {
     val days = stats.meals
       .map(_.date.date)
       .distinct
@@ -24,7 +25,7 @@ object Stats {
     } else _ => 0
 
     stats.nutrientMap.view
-      .mapValues(a => modifier(a.amount))
+      .mapValues(a => a.value.map(modifier))
       .toMap
   }
 
