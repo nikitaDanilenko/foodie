@@ -65,7 +65,7 @@ deleteMealEntry : AuthorizedAccess -> MealEntryId -> Cmd Msg
 deleteMealEntry authorizedAccess mealEntryId =
     HttpUtil.runPatternWithJwt
         authorizedAccess
-        (Addresses.Backend.meals.delete mealEntryId)
+        (Addresses.Backend.meals.entries.delete mealEntryId)
         { body = Http.emptyBody
         , expect = HttpUtil.expectWhatever (GotDeleteMealEntryResponse mealEntryId)
         }
