@@ -5,6 +5,7 @@ import Api.Types.Date exposing (Date)
 import Api.Types.Meal exposing (Meal)
 import Api.Types.NutrientInformation exposing (NutrientInformation)
 import Api.Types.NutrientUnit as NutrientUnit exposing (NutrientUnit)
+import Basics.Extra exposing (flip)
 import Dict exposing (Dict)
 import Dropdown exposing (dropdown)
 import FormatNumber
@@ -178,7 +179,7 @@ nutrientInformationLine referenceValues nutrientInformation =
 
         factor =
             referenceFactor
-                { actualValue = nutrientInformation.amounts.dailyAverage
+                { actualValue = nutrientInformation.amounts.values |> Maybe.map .dailyAverage
                 , referenceValue = referenceValue
                 }
 
@@ -196,17 +197,38 @@ nutrientInformationLine referenceValues nutrientInformation =
                     ]
                 )
                 factor
+
+        quotientInfo =
+            [ nutrientInformation.amounts.numberOfDefinedValues, nutrientInformation.amounts.numberOfIngredients ]
+                |> List.map String.fromInt
+                |> String.join "/"
+                |> Just
+                |> Maybe.Extra.filter (\_ -> nutrientInformation.amounts.values |> Maybe.Extra.isJust)
+                |> Maybe.Extra.unwrap "" (\v -> [ " ", "(", v, ")" ] |> String.join "")
+
+        isComplete =
+            nutrientInformation.amounts.numberOfDefinedValues == nutrientInformation.amounts.numberOfIngredients
+
+        ( completenessInfo, completenessStyles ) =
+            if isComplete then
+                ( "", [] )
+
+            else
+                ( quotientInfo, [ Style.classes.incomplete ] )
+
+        displayValueWith f =
+            Maybe.Extra.unwrap "" (f >> displayFloat >> flip (++) completenessInfo)
     in
     tr [ Style.classes.editLine ]
         [ td [] [ label [] [ text <| nutrientInformation.name ] ]
-        , td [ Style.classes.numberCell ] [ label [] [ text <| displayFloat <| nutrientInformation.amounts.total ] ]
-        , td [ Style.classes.numberCell ] [ label [] [ text <| displayFloat <| nutrientInformation.amounts.dailyAverage ] ]
+        , td [ Style.classes.numberCell ] [ label completenessStyles [ text <| displayValueWith .total <| nutrientInformation.amounts.values ] ]
+        , td [ Style.classes.numberCell ] [ label completenessStyles [ text <| displayValueWith .dailyAverage nutrientInformation.amounts.values ] ]
         , td [ Style.classes.numberCell ] [ label [] [ text <| Maybe.Extra.unwrap "" displayFloat <| referenceValue ] ]
         , td [ Style.classes.numberCell ] [ label [] [ text <| NutrientUnit.toString <| nutrientInformation.unit ] ]
         , td [ Style.classes.numberCell ]
-            [ label factorStyle
+            [ label (factorStyle ++ completenessStyles)
                 [ text <|
-                    Maybe.Extra.unwrap "" ((\v -> v ++ "%") << displayFloat) <|
+                    Maybe.Extra.unwrap "" (displayFloat >> flip (++) "%" >> flip (++) completenessInfo) <|
                         factor
                 ]
             ]
@@ -243,15 +265,14 @@ displayFloat =
 
 
 referenceFactor :
-    { actualValue : Float
+    { actualValue : Maybe Float
     , referenceValue : Maybe Float
     }
     -> Maybe Float
 referenceFactor vs =
     vs.referenceValue
         |> Maybe.Extra.filter (\x -> x > 0)
-        |> Maybe.map
+        |> Maybe.andThen
             (\r ->
-                100
-                    * (vs.actualValue / r)
+                vs.actualValue |> Maybe.map (\a -> 100 * (a / r))
             )

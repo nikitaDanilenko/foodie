@@ -34,6 +34,7 @@ classes :
     , editLine : Attribute msg
     , elements : Attribute msg
     , ellipsis : Attribute msg
+    , incomplete : Attribute msg
     , info : Attribute msg
     , intervalSelection : Attribute msg
     , meals : Attribute msg
@@ -84,6 +85,7 @@ classes =
     , editLine = class "editLine"
     , elements = class "elements"
     , ellipsis = class "ellipsis"
+    , incomplete = class "incomplete"
     , info = class "info"
     , intervalSelection = class "intervalSection"
     , meals = class "meals"
