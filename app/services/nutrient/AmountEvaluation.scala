@@ -1,32 +1,33 @@
 package services.nutrient
 
 import algebra.instances.MapAdditiveMonoid
+import services.FoodId
 import spire.algebra.{ Field, LeftModule, Ring }
 import spire.implicits._
 import spire.math.Natural
 
 case class AmountEvaluation(
     amount: BigDecimal,
-    used: Natural
+    encounteredFoodIds: Set[FoodId]
 )
 
 object AmountEvaluation {
 
-  def embed(amount: BigDecimal): AmountEvaluation = AmountEvaluation(amount, Natural.one)
+  def embed(amount: BigDecimal, foodId: FoodId): AmountEvaluation = AmountEvaluation(amount, Set(foodId))
 
   implicit val amountEvaluationField: Field[AmountEvaluation] = new Field[AmountEvaluation] {
-    override def zero: AmountEvaluation = AmountEvaluation(BigDecimal(0), Natural.zero)
+    override def zero: AmountEvaluation = AmountEvaluation(BigDecimal(0), Set.empty)
 
     override def plus(x: AmountEvaluation, y: AmountEvaluation): AmountEvaluation =
-      AmountEvaluation(x.amount + y.amount, x.used + y.used)
+      AmountEvaluation(x.amount + y.amount, x.encounteredFoodIds ++ y.encounteredFoodIds)
 
     override def div(x: AmountEvaluation, y: AmountEvaluation): AmountEvaluation =
-      AmountEvaluation(x.amount / y.amount, x.used + y.used)
+      AmountEvaluation(x.amount / y.amount, x.encounteredFoodIds ++ y.encounteredFoodIds)
 
-    override def one: AmountEvaluation = AmountEvaluation(BigDecimal(1), Natural.zero)
+    override def one: AmountEvaluation = AmountEvaluation(BigDecimal(1), Set.empty)
 
     override def times(x: AmountEvaluation, y: AmountEvaluation): AmountEvaluation =
-      AmountEvaluation(x.amount * y.amount, x.used + y.used)
+      AmountEvaluation(x.amount * y.amount, x.encounteredFoodIds ++ y.encounteredFoodIds)
 
     override def negate(x: AmountEvaluation): AmountEvaluation = x.copy(amount = -x.amount)
   }

@@ -96,7 +96,7 @@ object StatsService {
             (me.numberOfServings / recipeNutrientMap.recipe.numberOfServings) *: recipeNutrientMap.nutrientMap
           }
           .qsum
-        val totalNumberOfIngredients = nutrientsPerRecipe.values.flatMap(_.foodIds).size
+        val totalNumberOfIngredients = nutrientsPerRecipe.values.flatMap(_.foodIds).toSet.size
         Stats(
           meals = meals,
           nutrientMap = MapUtil
@@ -107,9 +107,9 @@ object StatsService {
             .view
             .mapValues(amountEvaluation =>
               Amount(
-                Some(amountEvaluation.amount).filter(_ => amountEvaluation.used > Natural.zero),
+                value = Some(amountEvaluation.amount).filter(_ => amountEvaluation.encounteredFoodIds.nonEmpty),
                 numberOfIngredients = Natural(totalNumberOfIngredients),
-                numberOfDefinedValues = amountEvaluation.used
+                numberOfDefinedValues = Natural(amountEvaluation.encounteredFoodIds.size)
               )
             )
             .toMap
