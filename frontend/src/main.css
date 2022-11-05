@@ -459,3 +459,7 @@ th {
     margin-top: 15px;
     table-layout: fixed;
 }
+
+.incomplete {
+    text-decoration: underline dashed rgb(218, 112, 214);
+}
