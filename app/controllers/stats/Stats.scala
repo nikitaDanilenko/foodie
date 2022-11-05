@@ -4,6 +4,7 @@ import controllers.meal.Meal
 import io.circe.generic.JsonCodec
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl.TransformerOps
+import cats.syntax.contravariantSemigroupal._
 
 @JsonCodec
 case class Stats(
@@ -23,8 +24,7 @@ object Stats {
           symbol = nutrient.symbol,
           unit = nutrient.unit.transformInto[NutrientUnit],
           amounts = Amounts(
-            total = amount.value,
-            dailyAverage = daily(nutrient),
+            values = (amount.value, daily(nutrient)).mapN(Values.apply),
             numberOfIngredients = amount.numberOfIngredients.intValue,
             numberOfDefinedValues = amount.numberOfDefinedValues.intValue
           )

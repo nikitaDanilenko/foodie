@@ -9,7 +9,7 @@ import controllers.complex.ComplexFood
 import controllers.meal._
 import controllers.recipe._
 import controllers.reference._
-import controllers.stats.{ Amounts, Nutrient, NutrientInformation, Stats }
+import controllers.stats.{ Amounts, Nutrient, NutrientInformation, Stats, Values }
 import controllers.user._
 import security.jwt.LoginContent
 import shapeless.Lazy
@@ -127,6 +127,7 @@ object Bridge {
     mkAndWrite[RecoveryRequest]
     mkAndWrite[ComplexIngredient]
     mkAndWrite[ComplexFood]
+    mkAndWrite[Values]
   }
 
 }
