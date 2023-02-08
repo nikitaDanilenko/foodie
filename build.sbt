@@ -31,7 +31,7 @@ lazy val root = (project in file("."))
       "io.circe"                   %% "circe-generic"             % circeVersion,
       "io.circe"                   %% "circe-parser"              % circeVersion,
       "org.typelevel"              %% "spire"                     % "0.18.0",
-      "org.flywaydb"               %% "flyway-play"               % "7.25.0",
+      "org.flywaydb"               %% "flyway-play"               % "7.31.0",
       "com.typesafe.play"          %% "play-slick"                % "5.1.0",
       "com.dripower"               %% "play-circe"                % "2814.2",
       "com.davegurnell"            %% "bridges"                   % "0.24.0",
