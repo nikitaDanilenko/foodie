@@ -37,7 +37,7 @@ lazy val root = (project in file("."))
       "com.davegurnell"       %% "bridges"             % "0.24.0",
       "com.github.pathikrit"  %% "better-files"        % "3.9.2",
       "com.typesafe"           % "config"              % "1.4.2",
-      "io.scalaland"          %% "chimney"             % "0.7.2",
+      "io.scalaland"          %% "chimney"             % "0.7.3",
       "com.github.jwt-scala"  %% "jwt-core"            % jwtVersion,
       "com.github.jwt-scala"  %% "jwt-circe"           % jwtVersion,
       "com.github.pureconfig" %% "pureconfig"          % "0.17.2",
