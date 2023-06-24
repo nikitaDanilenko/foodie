@@ -8,7 +8,7 @@ version := "0.1"
 
 val circeVersion = "0.14.5"
 val slickVersion = "3.4.1"
-val jwtVersion   = "9.3.0"
+val jwtVersion   = "9.4.0"
 
 val config = ConfigFactory
   .parseFile(new File("conf/application.conf"))
