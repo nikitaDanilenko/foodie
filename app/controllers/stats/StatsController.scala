@@ -3,6 +3,7 @@ package controllers.stats
 import action.UserAction
 import cats.data.OptionT
 import controllers.common.RequestInterval
+import db.ProfileId
 import errors.ErrorContext
 import io.circe.syntax._
 import io.scalaland.chimney.dsl.TransformerOps
@@ -30,21 +31,23 @@ class StatsController @Inject() (
     extends AbstractController(controllerComponents)
     with Circe {
 
-  def get(from: Option[String], to: Option[String]): Action[AnyContent] =
+  def get(profileId: UUID, from: Option[String], to: Option[String]): Action[AnyContent] =
     userAction.async { request =>
+      val typedProfileId = profileId.transformInto[ProfileId]
       val transformer = for {
         stats <-
           OptionT.liftF(
             statsService
               .nutrientsOverTime(
                 userId = request.user.id,
+                profileId = typedProfileId,
                 requestInterval = RequestInterval(
                   from = from.flatMap(Date.parse),
                   to = to.flatMap(Date.parse)
                 ).transformInto[common.RequestInterval]
               )
           )
-        weightInGrams <- OptionT(statsService.weightOfMeals(request.user.id, stats.meals.map(_.id)))
+        weightInGrams <- OptionT(statsService.weightOfMeals(request.user.id, typedProfileId, stats.meals.map(_.id)))
       } yield (stats, weightInGrams)
         .pipe(_.transformInto[Stats])
         .pipe(_.asJson)
@@ -105,13 +108,14 @@ class StatsController @Inject() (
         .recover(errorHandler)
     }
 
-  def ofMeal(mealId: UUID): Action[AnyContent] =
+  def ofMeal(profileId: UUID, mealId: UUID): Action[AnyContent] =
     userAction.async { request =>
-      val typedMealId = mealId.transformInto[db.MealId]
+      val typedProfileId = profileId.transformInto[db.ProfileId]
+      val typedMealId    = mealId.transformInto[db.MealId]
 
       val transformer = for {
-        nutrients     <- OptionT.liftF(statsService.nutrientsOfMeal(request.user.id, typedMealId))
-        weightInGrams <- OptionT(statsService.weightOfMeal(request.user.id, typedMealId))
+        nutrients     <- OptionT.liftF(statsService.nutrientsOfMeal(request.user.id, typedProfileId, typedMealId))
+        weightInGrams <- OptionT(statsService.weightOfMeal(request.user.id, typedProfileId, typedMealId))
       } yield (nutrients, weightInGrams)
         .pipe(_.transformInto[TotalOnlyStats])
         .pipe(_.asJson)
@@ -135,9 +139,9 @@ class StatsController @Inject() (
         .recover(errorHandler)
     }
 
-  def recipeOccurrences: Action[AnyContent] = userAction.async { request =>
+  def recipeOccurrences(profileId: UUID): Action[AnyContent] = userAction.async { request =>
     statsService
-      .recipeOccurrences(request.user.id)
+      .recipeOccurrences(request.user.id, profileId.transformInto[ProfileId])
       .map(
         _.map(_.transformInto[RecipeOccurrence])
           .pipe(_.asJson)

@@ -1,6 +1,6 @@
 package services
 
-import db.{ MealId, RecipeId, ReferenceMapId, UserId }
+import db.{ MealId, ProfileId, RecipeId, ReferenceMapId, UserId }
 import services.complex.food.ComplexFood
 import services.complex.ingredient.ComplexIngredient
 import services.meal.{ FullMeal, Meal, MealEntry }
@@ -36,15 +36,15 @@ object ContentsUtil {
 
   object Meal {
 
-    def from(userId: UserId, meals: Seq[Meal]): Seq[(UserId, Meal)] =
-      meals.map(userId -> _)
+    def from(userId: UserId, profileId: ProfileId, meals: Seq[Meal]): Seq[(UserId, ProfileId, Meal)] =
+      meals.map(meal => (userId, profileId, meal))
 
   }
 
   object MealEntry {
 
-    def from(userId: UserId, fullMeal: FullMeal): Seq[(UserId, MealId, MealEntry)] =
-      fullMeal.mealEntries.map(entry => (userId, fullMeal.meal.id, entry))
+    def from(userId: UserId, profileId: ProfileId, fullMeal: FullMeal): Seq[(UserId, ProfileId, MealId, MealEntry)] =
+      fullMeal.mealEntries.map(entry => (userId, profileId, fullMeal.meal.id, entry))
 
   }
 

@@ -3,7 +3,7 @@ package services.duplication.meal
 import cats.data.OptionT
 import db.daos.meal.MealKey
 import db.generated.Tables
-import db.{ MealEntryId, MealId, UserId }
+import db.{ MealEntryId, MealId, ProfileId, UserId }
 import errors.{ ErrorContext, ServerError }
 import io.scalaland.chimney.dsl._
 import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
@@ -30,13 +30,14 @@ class Live @Inject() (
 
   override def duplicate(
       userId: UserId,
+      profileId: ProfileId,
       id: MealId,
       timeOfDuplication: SimpleDate
   ): Future[ServerError.Or[Meal]] = {
     val action = for {
       mealEntries <- mealServiceCompanion
-        .getMealEntries(userId, Seq(id))
-        .map(_.getOrElse(MealKey(userId, id), Seq.empty))
+        .getMealEntries(userId, profileId, Seq(id))
+        .map(_.getOrElse(MealKey(userId, profileId, id), Seq.empty))
       newMealEntries = mealEntries.map { mealEntry =>
         Duplication.DuplicatedMealEntry(
           mealEntry = mealEntry,
@@ -46,11 +47,12 @@ class Live @Inject() (
       newMealId = UUID.randomUUID().transformInto[MealId]
       newMeal <- companion.duplicateMeal(
         userId = userId,
+        profileId = profileId,
         id = id,
         newId = newMealId,
         timestamp = timeOfDuplication
       )
-      _ <- companion.duplicateMealEntries(userId, newMealId, newMealEntries)
+      _ <- companion.duplicateMealEntries(userId, profileId, newMealId, newMealEntries)
     } yield newMeal
 
     db.runTransactionally(action)
@@ -71,6 +73,7 @@ object Live {
 
     override def duplicateMeal(
         userId: UserId,
+        profileId: ProfileId,
         id: MealId,
         newId: MealId,
         timestamp: SimpleDate
@@ -78,10 +81,11 @@ object Live {
         ec: ExecutionContext
     ): DBIO[Meal] = {
       val transformer = for {
-        meal <- OptionT(mealServiceCompanion.getMeal(userId, id))
+        meal <- OptionT(mealServiceCompanion.getMeal(userId, profileId, id))
         inserted <- OptionT.liftF(
           mealServiceCompanion.createMeal(
             userId = userId,
+            profileId = profileId,
             mealId = newId,
             mealCreation = MealCreation(
               date = timestamp,
@@ -97,6 +101,7 @@ object Live {
 
     override def duplicateMealEntries(
         userId: UserId,
+        profileId: ProfileId,
         newMealId: MealId,
         mealEntries: Seq[Duplication.DuplicatedMealEntry]
     )(implicit
@@ -106,7 +111,7 @@ object Live {
         .insertAll {
           mealEntries.map { duplicatedMealEntry =>
             val newMealEntry = duplicatedMealEntry.mealEntry.copy(id = duplicatedMealEntry.newId)
-            MealEntry.TransformableToDB(userId, newMealId, newMealEntry).transformInto[Tables.MealEntryRow]
+            MealEntry.TransformableToDB(userId, profileId, newMealId, newMealEntry).transformInto[Tables.MealEntryRow]
           }
         }
         .map(_.map(_.transformInto[MealEntry]))

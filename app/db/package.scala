@@ -41,6 +41,10 @@ package object db {
 
   type UserId = UUID @@ UserTag
 
+  sealed trait ProfileTag
+
+  type ProfileId = UUID @@ ProfileTag
+
   sealed trait SessionTag
 
   type SessionId = UUID @@ SessionTag

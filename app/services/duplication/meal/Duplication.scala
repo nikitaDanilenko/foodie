@@ -1,6 +1,6 @@
 package services.duplication.meal
 
-import db.{ MealEntryId, MealId, UserId }
+import db.{ MealEntryId, MealId, ProfileId, UserId }
 import errors.ServerError
 import services.meal.{ Meal, MealEntry }
 import slick.dbio.DBIO
@@ -12,6 +12,7 @@ trait Duplication {
 
   def duplicate(
       userId: UserId,
+      profileId: ProfileId,
       id: MealId,
       timeOfDuplication: SimpleDate
   ): Future[ServerError.Or[Meal]]
@@ -29,6 +30,7 @@ object Duplication {
 
     def duplicateMeal(
         userId: UserId,
+        profileId: ProfileId,
         id: MealId,
         newId: MealId,
         timestamp: SimpleDate
@@ -36,6 +38,7 @@ object Duplication {
 
     def duplicateMealEntries(
         userId: UserId,
+        profileId: ProfileId,
         newMealId: MealId,
         mealEntries: Seq[DuplicatedMealEntry]
     )(implicit ec: ExecutionContext): DBIO[Seq[MealEntry]]

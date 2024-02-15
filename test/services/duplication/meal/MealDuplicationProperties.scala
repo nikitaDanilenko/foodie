@@ -26,10 +26,11 @@ object MealDuplicationProperties extends Properties("Meal duplication") {
 
   def servicesWith(
       userId: UserId,
+      profileId: ProfileId,
       fullMeal: FullMeal
   ): Services = {
-    val mealDao      = DAOTestInstance.Meal.instanceFrom(ContentsUtil.Meal.from(userId, Seq(fullMeal.meal)))
-    val mealEntryDao = DAOTestInstance.MealEntry.instanceFrom(ContentsUtil.MealEntry.from(userId, fullMeal))
+    val mealDao      = DAOTestInstance.Meal.instanceFrom(ContentsUtil.Meal.from(userId, profileId, Seq(fullMeal.meal)))
+    val mealEntryDao = DAOTestInstance.MealEntry.instanceFrom(ContentsUtil.MealEntry.from(userId, profileId, fullMeal))
 
     val mealServiceCompanion = new services.meal.Live.Companion(
       mealDao = mealDao,
@@ -54,16 +55,19 @@ object MealDuplicationProperties extends Properties("Meal duplication") {
 
   private case class DuplicationSetup(
       userId: UserId,
+      profileId: ProfileId,
       recipes: List[Recipe],
       fullMeal: FullMeal
   )
 
   private val duplicationSetupGen: Gen[DuplicationSetup] = for {
-    userId   <- GenUtils.taggedId[UserTag]
-    recipes  <- Gen.nonEmptyListOf(services.recipe.Gens.recipeGen)
-    fullMeal <- services.meal.Gens.fullMealGen(NonEmptyList.fromListUnsafe(recipes.map(_.id)))
+    userId    <- GenUtils.taggedId[UserTag]
+    profileId <- GenUtils.taggedId[ProfileTag]
+    recipes   <- Gen.nonEmptyListOf(services.recipe.Gens.recipeGen)
+    fullMeal  <- services.meal.Gens.fullMealGen(NonEmptyList.fromListUnsafe(recipes.map(_.id)))
   } yield DuplicationSetup(
     userId = userId,
+    profileId = profileId,
     recipes = recipes,
     fullMeal = fullMeal
   )
@@ -87,16 +91,19 @@ object MealDuplicationProperties extends Properties("Meal duplication") {
   property("Duplication produces expected result") = Prop.forAll(duplicationSetupGen :| "setup") { setup =>
     val services = servicesWith(
       userId = setup.userId,
+      profileId = setup.profileId,
       fullMeal = setup.fullMeal
     )
     val transformer = for {
-      timestamp      <- EitherT.liftF[Future, ServerError, SimpleDate](DateUtil.now)
-      duplicatedMeal <- EitherT(services.duplication.duplicate(setup.userId, setup.fullMeal.meal.id, timestamp))
+      timestamp <- EitherT.liftF[Future, ServerError, SimpleDate](DateUtil.now)
+      duplicatedMeal <- EitherT(
+        services.duplication.duplicate(setup.userId, setup.profileId, setup.fullMeal.meal.id, timestamp)
+      )
       mealEntries <- EitherT
         .liftF[Future, ServerError, Map[MealKey, Seq[MealEntry]]](
-          services.mealService.getMealEntries(setup.userId, Seq(duplicatedMeal.id))
+          services.mealService.getMealEntries(setup.userId, setup.profileId, Seq(duplicatedMeal.id))
         )
-        .map(_.getOrElse(MealKey(setup.userId, duplicatedMeal.id), List.empty))
+        .map(_.getOrElse(MealKey(setup.userId, setup.profileId, duplicatedMeal.id), List.empty))
     } yield {
       Prop.all(
         groupMealEntries(mealEntries) ?= groupMealEntries(setup.fullMeal.mealEntries),
@@ -112,16 +119,19 @@ object MealDuplicationProperties extends Properties("Meal duplication") {
   property("Duplication adds value") = Prop.forAll(duplicationSetupGen :| "setup") { setup =>
     val services = servicesWith(
       userId = setup.userId,
+      profileId = setup.profileId,
       fullMeal = setup.fullMeal
     )
     val transformer = for {
       allMealsBefore <- EitherT.liftF[Future, ServerError, Seq[Meal]](
-        services.mealService.allMeals(setup.userId, RequestInterval(None, None))
+        services.mealService.allMeals(setup.userId, setup.profileId, RequestInterval(None, None))
       )
-      timestamp  <- EitherT.liftF[Future, ServerError, SimpleDate](DateUtil.now)
-      duplicated <- EitherT(services.duplication.duplicate(setup.userId, setup.fullMeal.meal.id, timestamp))
+      timestamp <- EitherT.liftF[Future, ServerError, SimpleDate](DateUtil.now)
+      duplicated <- EitherT(
+        services.duplication.duplicate(setup.userId, setup.profileId, setup.fullMeal.meal.id, timestamp)
+      )
       allMealsAfter <- EitherT.liftF[Future, ServerError, Seq[Meal]](
-        services.mealService.allMeals(setup.userId, RequestInterval(None, None))
+        services.mealService.allMeals(setup.userId, setup.profileId, RequestInterval(None, None))
       )
     } yield {
       allMealsAfter.map(_.id).sorted ?= (allMealsBefore :+ duplicated).map(_.id).sorted
@@ -130,17 +140,19 @@ object MealDuplicationProperties extends Properties("Meal duplication") {
     DBTestUtil.awaitProp(transformer)
   }
 
+  // Todo: Add tests for other mismatches
   property("Duplication fails for wrong user id") = Prop.forAll(
     duplicationSetupGen :| "setup",
     GenUtils.taggedId[UserTag] :| "userId2"
   ) { (setup, userId2) =>
     val services = servicesWith(
       userId = setup.userId,
+      profileId = setup.profileId,
       fullMeal = setup.fullMeal
     )
     val propF = for {
       timestamp <- DateUtil.now
-      result    <- services.duplication.duplicate(userId2, setup.fullMeal.meal.id, timestamp)
+      result    <- services.duplication.duplicate(userId2, setup.profileId, setup.fullMeal.meal.id, timestamp)
     } yield result.isLeft
 
     DBTestUtil.await(propF)

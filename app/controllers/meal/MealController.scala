@@ -2,7 +2,7 @@ package controllers.meal
 
 import action.UserAction
 import cats.data.{ EitherT, OptionT }
-import db.{ MealEntryId, MealId }
+import db.{ MealEntryId, MealId, ProfileId }
 import errors.{ ErrorContext, ServerError }
 import io.circe.syntax._
 import io.scalaland.chimney.dsl.TransformerOps
@@ -28,11 +28,12 @@ class MealController @Inject() (
     extends AbstractController(controllerComponents)
     with Circe {
 
-  def all: Action[AnyContent] =
+  def all(profileId: UUID): Action[AnyContent] =
     userAction.async { request =>
       mealService
         .allMeals(
           userId = request.user.id,
+          profileId = profileId.transformInto[ProfileId],
           interval = RequestInterval(from = None, to = None).transformInto[services.common.RequestInterval]
         )
         .map(
@@ -45,9 +46,9 @@ class MealController @Inject() (
         .recover(errorHandler)
     }
 
-  def get(mealId: UUID): Action[AnyContent] =
+  def get(profileId: UUID, mealId: UUID): Action[AnyContent] =
     userAction.async { request =>
-      OptionT(mealService.getMeal(request.user.id, mealId.transformInto[MealId]))
+      OptionT(mealService.getMeal(request.user.id, profileId.transformInto[ProfileId], mealId.transformInto[MealId]))
         .fold(
           NotFound(ErrorContext.Meal.NotFound.asServerError.asJson): Result
         )(
@@ -58,11 +59,15 @@ class MealController @Inject() (
         .recover(errorHandler)
     }
 
-  def create: Action[MealCreation] =
+  def create(profileId: UUID): Action[MealCreation] =
     userAction.async(circe.tolerantJson[MealCreation]) { request =>
       EitherT(
         mealService
-          .createMeal(request.user.id, request.body.transformInto[services.meal.MealCreation])
+          .createMeal(
+            request.user.id,
+            profileId.transformInto[ProfileId],
+            request.body.transformInto[services.meal.MealCreation]
+          )
       )
         .map(
           _.pipe(_.transformInto[Meal])
@@ -73,12 +78,13 @@ class MealController @Inject() (
         .recover(errorHandler)
     }
 
-  def update(mealId: UUID): Action[MealUpdate] =
+  def update(profileId: UUID, mealId: UUID): Action[MealUpdate] =
     userAction.async(circe.tolerantJson[MealUpdate]) { request =>
       EitherT(
         mealService
           .updateMeal(
             request.user.id,
+            profileId.transformInto[ProfileId],
             mealId.transformInto[MealId],
             request.body.transformInto[services.meal.MealUpdate]
           )
@@ -92,10 +98,10 @@ class MealController @Inject() (
         .recover(errorHandler)
     }
 
-  def delete(mealId: UUID): Action[AnyContent] =
+  def delete(profileId: UUID, mealId: UUID): Action[AnyContent] =
     userAction.async { request =>
       mealService
-        .deleteMeal(request.user.id, mealId.transformInto[MealId])
+        .deleteMeal(request.user.id, profileId.transformInto[ProfileId], mealId.transformInto[MealId])
         .map(
           _.pipe(_.asJson)
             .pipe(Ok(_))
@@ -103,11 +109,12 @@ class MealController @Inject() (
         .recover(errorHandler)
     }
 
-  def getMealEntries(mealId: UUID): Action[AnyContent] =
+  def getMealEntries(profileId: UUID, mealId: UUID): Action[AnyContent] =
     userAction.async { request =>
       mealService
         .getMealEntries(
           request.user.id,
+          profileId.transformInto[ProfileId],
           Seq(mealId.transformInto[MealId])
         )
         .map(
@@ -119,12 +126,13 @@ class MealController @Inject() (
         .recover(errorHandler)
     }
 
-  def duplicate(mealId: UUID): Action[SimpleDate] =
+  def duplicate(profileId: UUID, mealId: UUID): Action[SimpleDate] =
     userAction.async(circe.tolerantJson[SimpleDate]) { request =>
       EitherT(
         mealDuplication
           .duplicate(
             userId = request.user.id,
+            profileId.transformInto[ProfileId],
             id = mealId.transformInto[MealId],
             timeOfDuplication = request.body
           )
@@ -138,11 +146,12 @@ class MealController @Inject() (
         .recover(errorHandler)
     }
 
-  def addMealEntry(mealId: UUID): Action[MealEntryCreation] =
+  def addMealEntry(profileId: UUID, mealId: UUID): Action[MealEntryCreation] =
     userAction.async(circe.tolerantJson[MealEntryCreation]) { request =>
       EitherT(
         mealService.addMealEntry(
           userId = request.user.id,
+          profileId.transformInto[ProfileId],
           mealId = mealId.transformInto[MealId],
           mealEntryCreation = request.body.transformInto[services.meal.MealEntryCreation]
         )
@@ -156,11 +165,12 @@ class MealController @Inject() (
         .recover(errorHandler)
     }
 
-  def updateMealEntry(mealId: UUID, mealEntryId: UUID): Action[MealEntryUpdate] =
+  def updateMealEntry(profileId: UUID, mealId: UUID, mealEntryId: UUID): Action[MealEntryUpdate] =
     userAction.async(circe.tolerantJson[MealEntryUpdate]) { request =>
       EitherT(
         mealService.updateMealEntry(
           userId = request.user.id,
+          profileId.transformInto[ProfileId],
           mealId = mealId.transformInto[MealId],
           mealEntryId = mealEntryId.transformInto[MealEntryId],
           mealEntryUpdate = request.body.transformInto[services.meal.MealEntryUpdate]
@@ -175,10 +185,15 @@ class MealController @Inject() (
         .recover(errorHandler)
     }
 
-  def deleteMealEntry(mealId: UUID, mealEntryId: UUID): Action[AnyContent] =
+  def deleteMealEntry(profileId: UUID, mealId: UUID, mealEntryId: UUID): Action[AnyContent] =
     userAction.async { request =>
       mealService
-        .removeMealEntry(request.user.id, mealId.transformInto[MealId], mealEntryId.transformInto[MealEntryId])
+        .removeMealEntry(
+          request.user.id,
+          profileId.transformInto[ProfileId],
+          mealId.transformInto[MealId],
+          mealEntryId.transformInto[MealEntryId]
+        )
         .map(
           _.pipe(_.asJson)
             .pipe(Ok(_))

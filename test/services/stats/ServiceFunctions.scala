@@ -24,8 +24,8 @@ object ServiceFunctions {
 
   // TODO #64: Add values for complex food, and complex ingredient services.
   def statsServiceWith(
-      mealContents: Seq[(UserId, Meal)],
-      mealEntryContents: Seq[(UserId, MealId, MealEntry)],
+      mealContents: Seq[(UserId, ProfileId, Meal)],
+      mealEntryContents: Seq[(UserId, ProfileId, MealId, MealEntry)],
       recipeContents: Seq[(UserId, Recipe)],
       ingredientContents: Seq[(UserId, RecipeId, Ingredient)]
   ): StatsService = {

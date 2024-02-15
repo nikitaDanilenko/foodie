@@ -1,7 +1,7 @@
 package services.stats
 
 import cats.data.NonEmptyList
-import db.{ UserId, UserTag }
+import db.{ ProfileId, ProfileTag, UserId, UserTag }
 import org.scalacheck.Prop.AnyOperators
 import org.scalacheck.{ Gen, Prop, Properties }
 import services.meal.FullMeal
@@ -31,15 +31,18 @@ object RecipeOccurrenceProperties extends Properties("Recipe occurrence") {
 
   private case class MealsSetup(
       userAndRecipes: UserIdAndRecipes,
+      profileId: ProfileId,
       fullMeals: List[FullMeal]
   )
 
   private val mealsSetupGen: Gen[MealsSetup] =
     for {
       userAndRecipe <- userIdAndRecipesGen
+      profileId     <- GenUtils.taggedId[ProfileTag]
       fullMeals     <- Gen.nonEmptyListOf(meal.Gens.fullMealGen(userAndRecipe.recipes.map(_.id)))
     } yield MealsSetup(
       userAndRecipes = userAndRecipe,
+      profileId = profileId,
       fullMeals = fullMeals
     )
 
@@ -49,14 +52,14 @@ object RecipeOccurrenceProperties extends Properties("Recipe occurrence") {
     val userId    = setup.userAndRecipes.userId
     val recipeMap = setup.userAndRecipes.recipes.map(recipe => recipe.id -> recipe).toList.toMap
     val statsService = ServiceFunctions.statsServiceWith(
-      mealContents = ContentsUtil.Meal.from(userId, setup.fullMeals.map(_.meal)),
-      mealEntryContents = setup.fullMeals.flatMap(ContentsUtil.MealEntry.from(userId, _)),
+      mealContents = ContentsUtil.Meal.from(userId, setup.profileId, setup.fullMeals.map(_.meal)),
+      mealEntryContents = setup.fullMeals.flatMap(ContentsUtil.MealEntry.from(userId, setup.profileId, _)),
       recipeContents = ContentsUtil.Recipe.from(userId, setup.userAndRecipes.recipes.toList),
       ingredientContents = Seq.empty
     )
 
     val propF = for {
-      recipeOccurrencesFromService <- statsService.recipeOccurrences(userId)
+      recipeOccurrencesFromService <- statsService.recipeOccurrences(userId, setup.profileId)
     } yield {
       val latestProps = recipeOccurrencesFromService.map { recipeOccurrence =>
         val expected =

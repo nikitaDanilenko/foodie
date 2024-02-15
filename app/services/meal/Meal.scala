@@ -1,7 +1,7 @@
 package services.meal
 
 import db.generated.Tables
-import db.{ MealId, UserId }
+import db.{ MealId, ProfileId, UserId }
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl.TransformerOps
 import utils.TransformerUtils.Implicits._
@@ -34,6 +34,7 @@ object Meal {
 
   case class TransformableToDB(
       userId: UserId,
+      profileId: ProfileId,
       meal: Meal
   )
 
@@ -41,6 +42,7 @@ object Meal {
     Tables.MealRow(
       id = transformableToDB.meal.id.transformInto[UUID],
       userId = transformableToDB.userId.transformInto[UUID],
+      profileId = transformableToDB.profileId.transformInto[UUID],
       consumedOnDate = transformableToDB.meal.date.date.transformInto[LocalDate].transformInto[java.sql.Date],
       consumedOnTime = transformableToDB.meal.date.time.map(_.transformInto[LocalTime].transformInto[java.sql.Time]),
       name = transformableToDB.meal.name

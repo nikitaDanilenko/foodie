@@ -219,10 +219,12 @@ object DAOTestInstance {
 
       }
 
-    def instanceFrom(contents: Seq[(UserId, Meal)]): db.daos.meal.DAO =
+    def instanceFrom(contents: Seq[(UserId, ProfileId, Meal)]): db.daos.meal.DAO =
       instance(
-        contents.map { case (userId, meal) =>
-          MealKey(userId, meal.id) -> services.meal.Meal.TransformableToDB(userId, meal).transformInto[Tables.MealRow]
+        contents.map { case (userId, profileId, meal) =>
+          MealKey(userId, profileId, meal.id) -> services.meal.Meal
+            .TransformableToDB(userId, profileId, meal)
+            .transformInto[Tables.MealRow]
         }
       )
 
@@ -240,12 +242,13 @@ object DAOTestInstance {
 
         override def findAllFor(
             userId: UserId,
+            profileId: ProfileId,
             mealIds: Seq[MealId]
         )(implicit ec: ExecutionContext): DBIO[Map[MealKey, Seq[Tables.MealEntryRow]]] =
           fromIO {
             map.values
               .filter(meal => mealIds.contains(meal.mealId.transformInto[MealId]))
-              .groupBy(mealEntry => MealKey(userId, mealEntry.mealId.transformInto[MealId]))
+              .groupBy(mealEntry => MealKey(userId, profileId, mealEntry.mealId.transformInto[MealId]))
               .view
               .mapValues(_.toSeq)
               .toMap
@@ -253,11 +256,11 @@ object DAOTestInstance {
 
       }
 
-    def instanceFrom(contents: Seq[(UserId, MealId, MealEntry)]): db.daos.mealEntry.DAO =
+    def instanceFrom(contents: Seq[(UserId, ProfileId, MealId, MealEntry)]): db.daos.mealEntry.DAO =
       instance(
-        contents.map { case (userId, mealId, mealEntry) =>
+        contents.map { case (userId, profileId, mealId, mealEntry) =>
           val row = services.meal.MealEntry
-            .TransformableToDB(userId, mealId, mealEntry)
+            .TransformableToDB(userId, profileId, mealId, mealEntry)
             .transformInto[Tables.MealEntryRow]
           MealEntryKey.of(row) -> row
         }

@@ -40,8 +40,12 @@ class Live @Inject() (
 ) extends StatsService
     with HasDatabaseConfigProvider[PostgresProfile] {
 
-  override def nutrientsOverTime(userId: UserId, requestInterval: RequestInterval): Future[Stats] =
-    db.runTransactionally(companion.nutrientsOverTime(userId, requestInterval))
+  override def nutrientsOverTime(
+      userId: UserId,
+      profileId: ProfileId,
+      requestInterval: RequestInterval
+  ): Future[Stats] =
+    db.runTransactionally(companion.nutrientsOverTime(userId, profileId, requestInterval))
 
   override def nutrientsOfFood(foodId: FoodId): Future[Option[NutrientAmountMap]] =
     db.runTransactionally(companion.nutrientsOfFood(foodId))
@@ -55,20 +59,20 @@ class Live @Inject() (
   override def nutrientsOfRecipe(userId: UserId, recipeId: RecipeId): Future[Option[NutrientAmountMap]] =
     db.runTransactionally(companion.nutrientsOfRecipe(userId, recipeId))
 
-  override def nutrientsOfMeal(userId: UserId, mealId: MealId): Future[NutrientAmountMap] =
-    db.runTransactionally(companion.nutrientsOfMeal(userId, mealId))
+  override def nutrientsOfMeal(userId: UserId, profileId: ProfileId, mealId: MealId): Future[NutrientAmountMap] =
+    db.runTransactionally(companion.nutrientsOfMeal(userId, profileId, mealId))
 
   override def weightOfRecipe(userId: UserId, recipeId: RecipeId): Future[Option[BigDecimal]] =
     db.runTransactionally(companion.weightOfRecipe(userId, recipeId))
 
-  override def weightOfMeal(userId: UserId, mealId: MealId): Future[Option[BigDecimal]] =
-    db.runTransactionally(companion.weightOfMeal(userId, mealId))
+  override def weightOfMeal(userId: UserId, profileId: ProfileId, mealId: MealId): Future[Option[BigDecimal]] =
+    db.runTransactionally(companion.weightOfMeal(userId, profileId, mealId))
 
-  override def weightOfMeals(userId: UserId, mealIds: Seq[MealId]): Future[Option[BigDecimal]] =
-    db.runTransactionally(companion.weightOfMeals(userId, mealIds))
+  override def weightOfMeals(userId: UserId, profileId: ProfileId, mealIds: Seq[MealId]): Future[Option[BigDecimal]] =
+    db.runTransactionally(companion.weightOfMeals(userId, profileId, mealIds))
 
-  override def recipeOccurrences(userId: UserId): Future[Seq[RecipeOccurrence]] =
-    db.runTransactionally(companion.recipeOccurrences(userId))
+  override def recipeOccurrences(userId: UserId, profileId: ProfileId): Future[Seq[RecipeOccurrence]] =
+    db.runTransactionally(companion.recipeOccurrences(userId, profileId))
 
 }
 
@@ -84,15 +88,16 @@ object Live {
 
     override def nutrientsOverTime(
         userId: UserId,
+        profileId: ProfileId,
         requestInterval: RequestInterval
     )(implicit
         ec: ExecutionContext
     ): DBIO[Stats] = {
       for {
-        meals <- mealService.allMeals(userId, requestInterval)
+        meals <- mealService.allMeals(userId, profileId, requestInterval)
         mealIds = meals.map(_.id)
-        meals              <- mealService.getMeals(userId, mealIds)
-        mealEntries        <- mealService.getMealEntries(userId, mealIds).map(_.values.flatten.toSeq)
+        meals              <- mealService.getMeals(userId, profileId, mealIds)
+        mealEntries        <- mealService.getMealEntries(userId, profileId, mealIds).map(_.values.flatten.toSeq)
         nutrientsPerRecipe <- nutrientsOfRecipeIds(userId, mealEntries.map(_.recipeId))
         allNutrients       <- nutrientService.all
       } yield {
@@ -173,12 +178,13 @@ object Live {
 
     override def nutrientsOfMeal(
         userId: UserId,
+        profileId: ProfileId,
         mealId: MealId
     )(implicit
         ec: ExecutionContext
     ): DBIO[NutrientAmountMap] =
       for {
-        mealEntries        <- mealService.getMealEntries(userId, Seq(mealId)).map(_.values.flatten.toSeq)
+        mealEntries        <- mealService.getMealEntries(userId, profileId, Seq(mealId)).map(_.values.flatten.toSeq)
         nutrientsPerRecipe <- nutrientsOfRecipeIds(userId, mealEntries.map(_.recipeId))
         allNutrients       <- nutrientService.all
       } yield nutrientAmountMapOfMealEntries(mealEntries, nutrientsPerRecipe, allNutrients)
@@ -190,25 +196,27 @@ object Live {
         .subflatMap(_.get(recipeId))
         .value
 
-    override def weightOfMeal(userId: UserId, mealId: MealId)(implicit
+    override def weightOfMeal(userId: UserId, profileId: ProfileId, mealId: MealId)(implicit
         ec: ExecutionContext
-    ): DBIO[Option[BigDecimal]] = weightOfMeals(userId, Seq(mealId))
+    ): DBIO[Option[BigDecimal]] = weightOfMeals(userId, profileId, Seq(mealId))
 
-    override def weightOfMeals(userId: UserId, mealIds: Seq[MealId])(implicit
+    override def weightOfMeals(userId: UserId, profileId: ProfileId, mealIds: Seq[MealId])(implicit
         ec: ExecutionContext
     ): DBIO[Option[BigDecimal]] =
       for {
-        mealEntries <- mealService.getMealEntries(userId, mealIds)
+        mealEntries <- mealService.getMealEntries(userId, profileId, mealIds)
         weights     <- weightsOfMealEntries(userId, mealEntries.values.flatten.toSeq)
       } yield weights
 
-    override def recipeOccurrences(userId: UserId)(implicit ec: ExecutionContext): DBIO[Seq[RecipeOccurrence]] = {
+    override def recipeOccurrences(userId: UserId, profileId: ProfileId)(implicit
+        ec: ExecutionContext
+    ): DBIO[Seq[RecipeOccurrence]] = {
       for {
-        allMeals       <- mealService.allMeals(userId, RequestInterval(None, None))
-        allMealEntries <- mealService.getMealEntries(userId, allMeals.map(_.id))
+        allMeals       <- mealService.allMeals(userId, profileId, RequestInterval(None, None))
+        allMealEntries <- mealService.getMealEntries(userId, profileId, allMeals.map(_.id))
         allRecipes     <- recipeService.allRecipes(userId)
       } yield {
-        val mealMap   = allMeals.map(meal => MealKey(userId, meal.id) -> meal).toMap
+        val mealMap   = allMeals.map(meal => MealKey(userId, profileId, meal.id) -> meal).toMap
         val recipeMap = allRecipes.map(recipe => recipe.id -> recipe).toMap
         val inSomeMeal = allMealEntries.toList
           .flatMap { case (mealId, mealEntries) =>
