@@ -7,7 +7,7 @@ maintainer   := "nikita.danilenko.is@gmail.com"
 version := "0.1"
 
 val circeVersion = "0.14.6"
-val slickVersion = "3.4.1"
+val slickVersion = "3.5.0"
 val jwtVersion   = "10.0.0"
 
 val config = ConfigFactory
