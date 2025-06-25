@@ -6,6 +6,13 @@ on:
       - main
 
 jobs:
+  debug_length:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug length
+        run: |
+          echo {#{{ secrets.AUTO_MERGE_TOKEN }}} 
+
   call_auto_merge:
     if: github.event.pull_request.user.login == 'scala-steward'
     uses: ./.github/workflows/auto-merge-pull-requests.yml
