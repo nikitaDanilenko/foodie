@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Debug length
         run: |
-          echo ${{ secrets.merge-token }} | but -c1 -c2 -c3
+          echo ${{ secrets.merge-token }} | cut -c1 -c2 -c3
       - name: Log in to GitHub CLI
         run: echo ${{ secrets.merge-token }} | gh auth login --with-token
       - name: Approve Pull Request
