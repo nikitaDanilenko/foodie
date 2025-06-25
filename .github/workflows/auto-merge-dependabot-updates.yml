@@ -9,7 +9,7 @@ jobs:
 
   # Dependabot mostly concerns GitHub Actions, so we only auto-merge non-major updates.
   fetch_metadata:
-    if: github.event_name == 'pull_request' && github.actor == 'dependabot' && github.event.action == 'opened'
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot'
     runs-on: ubuntu-latest
     outputs:
       update-type: ${{ steps.dependabot-metadata.outputs.update-type }}
