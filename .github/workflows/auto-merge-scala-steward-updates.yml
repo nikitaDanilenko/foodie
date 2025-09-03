@@ -1,7 +1,7 @@
 name: Auto-merge Scala Steward Pull Requests
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - main
 
@@ -10,4 +10,4 @@ jobs:
     if: github.event.pull_request.user.login == 'scala-steward'
     uses: ./.github/workflows/auto-merge-pull-requests.yml
     secrets:
-      merge-token: ${{ secrets.AUTO_MERGE_TOKEN }}
+      merge-token: ${{ secrets.GITHUB_TOKEN }}
