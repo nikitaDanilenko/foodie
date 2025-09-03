@@ -47,7 +47,7 @@ lazy val root = (project in file("."))
       "com.beachape"          %% "enumeratum-circe"         % "1.9.0",
       "org.playframework"     %% "play-mailer"              % "10.1.0",
       "org.playframework"     %% "play-mailer-guice"        % "10.1.0",
-      "com.lihaoyi"           %% "pprint"                   % "0.9.0",
+      "com.lihaoyi"           %% "pprint"                   % "0.9.3",
       "com.kubukoz"           %% "slick-effect"             % "0.6.1",
       "com.kubukoz"           %% "slick-effect-catsio"      % "0.6.1",
       // Transitive dependency. Override added for proper version.
