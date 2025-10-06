@@ -6,9 +6,9 @@ maintainer   := "nikita.danilenko.is@gmail.com"
 
 version := "0.1"
 
-val circeVersion = "0.14.14"
+val circeVersion = "0.14.15"
 val slickVersion = "3.6.1"
-val jwtVersion   = "11.0.2"
+val jwtVersion   = "11.0.3"
 
 val config = ConfigFactory
   .parseFile(new File("conf/application.conf"))
@@ -26,7 +26,7 @@ lazy val root = (project in file("."))
       "com.typesafe.slick"    %% "slick-hikaricp"           % slickVersion,
       "com.typesafe.slick"    %% "slick-codegen"            % slickVersion,
       "org.postgresql"         % "postgresql"               % "42.7.8",
-      "ch.qos.logback"         % "logback-classic"          % "1.5.18",
+      "ch.qos.logback"         % "logback-classic"          % "1.5.19",
       "net.logstash.logback"   % "logstash-logback-encoder" % "8.1",
       "io.circe"              %% "circe-core"               % circeVersion,
       "io.circe"              %% "circe-generic"            % circeVersion,
@@ -47,7 +47,7 @@ lazy val root = (project in file("."))
       "com.beachape"          %% "enumeratum-circe"         % "1.9.0",
       "org.playframework"     %% "play-mailer"              % "10.1.0",
       "org.playframework"     %% "play-mailer-guice"        % "10.1.0",
-      "com.lihaoyi"           %% "pprint"                   % "0.9.3",
+      "com.lihaoyi"           %% "pprint"                   % "0.9.4",
       "com.kubukoz"           %% "slick-effect"             % "0.6.1",
       "com.kubukoz"           %% "slick-effect-catsio"      % "0.6.1",
       // Transitive dependency. Override added for proper version.
