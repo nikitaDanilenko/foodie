@@ -62,7 +62,7 @@ object Bridge {
 
     // Simplified assumption: the encoder and the value do not contain spaces or parentheses.
     val encodeListMatch = """Encode.list \(List.map ([^)\s]*) ([^)\s]*)\)""".r
-    val updatedContent =
+    val updatedContent  =
       /* The bridge library puts a no longer existing function call here,
          which is why we manually replace it with the correct function.*/
       content
