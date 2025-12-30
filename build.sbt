@@ -19,14 +19,14 @@ lazy val root = (project in file("."))
   .enablePlugins(CodegenPlugin)
   .enablePlugins(JavaServerAppPackaging)
   .settings(
-    scalaVersion := "2.13.17",
+    scalaVersion := "2.13.18",
     libraryDependencies ++= Seq(
       guice,
       "com.typesafe.slick"    %% "slick"                    % slickVersion,
       "com.typesafe.slick"    %% "slick-hikaricp"           % slickVersion,
       "com.typesafe.slick"    %% "slick-codegen"            % slickVersion,
       "org.postgresql"         % "postgresql"               % "42.7.8",
-      "ch.qos.logback"         % "logback-classic"          % "1.5.21",
+      "ch.qos.logback"         % "logback-classic"          % "1.5.23",
       "net.logstash.logback"   % "logstash-logback-encoder" % "9.0",
       "io.circe"              %% "circe-core"               % circeVersion,
       "io.circe"              %% "circe-generic"            % circeVersion,
@@ -44,10 +44,10 @@ lazy val root = (project in file("."))
       "com.github.pureconfig" %% "pureconfig"               % "0.17.9",
       "org.typelevel"         %% "cats-effect"              % "3.6.3",
       "org.typelevel"         %% "cats-core"                % "2.13.0",
-      "com.beachape"          %% "enumeratum-circe"         % "1.9.0",
+      "com.beachape"          %% "enumeratum-circe"         % "1.9.1",
       "org.playframework"     %% "play-mailer"              % "10.1.0",
       "org.playframework"     %% "play-mailer-guice"        % "10.1.0",
-      "com.lihaoyi"           %% "pprint"                   % "0.9.4",
+      "com.lihaoyi"           %% "pprint"                   % "0.9.6",
       "com.kubukoz"           %% "slick-effect"             % "0.6.1",
       "com.kubukoz"           %% "slick-effect-catsio"      % "0.6.1",
       // Transitive dependency. Override added for proper version.
