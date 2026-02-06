@@ -44,7 +44,7 @@ lazy val root = (project in file("."))
       "com.github.pureconfig" %% "pureconfig"               % "0.17.10",
       "org.typelevel"         %% "cats-effect"              % "3.6.3",
       "org.typelevel"         %% "cats-core"                % "2.13.0",
-      "com.beachape"          %% "enumeratum-circe"         % "1.9.2",
+      "com.beachape"          %% "enumeratum-circe"         % "1.9.4",
       "org.playframework"     %% "play-mailer"              % "10.1.0",
       "org.playframework"     %% "play-mailer-guice"        % "10.1.0",
       "com.lihaoyi"           %% "pprint"                   % "0.9.6",
