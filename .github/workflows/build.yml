@@ -21,7 +21,11 @@ jobs:
           fetch-depth: 0
       - name: Determine version
         id: semantic-version
-        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 # v5.4.0
+        uses: paulhatch/semantic-version@f29500c9d60a99ed5168e39ee367e0976884c46e # v6.0.1
+        with:
+          # Since version 6.0.0, the action uses conventional commits.
+          major_pattern: "/(major)/i"
+          minor_pattern: "/(minor)/i"
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: back-end
         with:
