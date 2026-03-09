@@ -36,7 +36,7 @@ jobs:
           distribution: 'temurin'
           cache: 'sbt'
       - name: Set up SBT
-        uses: sbt/setup-sbt@1cad58d595b729a71ca2254cdf5b43dd6f42d4bb # v1.1.18
+        uses: sbt/setup-sbt@6bec67c98f542b9e17369bfca0ec822ac1363194 # v1.1.19
         # Workaround: A placeholder test initializes all migrations.
         # Then the database is populated with CNF data via the standard script.
         # After the initialization, the actual tests can be performed.
