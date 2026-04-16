@@ -1,0 +1,62 @@
+name: Update GitOps deployment
+
+on:
+  workflow_call:
+    inputs:
+      version-tag:
+        type: string
+        required: true
+      component:
+        type: string
+        required: true
+        description: "Either 'backend' or 'frontend'"
+
+jobs:
+  update-gitops:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        with:
+          client-id: ${{ secrets.GITOPS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.GITOPS_BOT_PRIVATE_KEY }}
+          owner: nikitaDanilenko
+          repositories: git-ops
+
+      - name: Check out GitOps repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: nikitaDanilenko/git-ops
+          token: ${{ steps.app-token.outputs.token }}
+          path: git-ops
+
+      - name: Update image tag
+        run: |
+          cd git-ops
+          # Update the appropriate component's image tag
+          if [ "${{ inputs.component }}" = "backend" ]; then
+            yq -i '.backend.image.tag = "${{ inputs.version-tag }}"' foodie/values.yaml || \
+              sed -i '/^backend:/,/^[a-z]/{s/tag: ".*"/tag: "${{ inputs.version-tag }}"/}' foodie/values.yaml
+          elif [ "${{ inputs.component }}" = "frontend" ]; then
+            yq -i '.frontend.image.tag = "${{ inputs.version-tag }}"' foodie/values.yaml || \
+              sed -i '/^frontend:/,/^[a-z]/{s/tag: ".*"/tag: "${{ inputs.version-tag }}"/}' foodie/values.yaml
+          fi
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          path: git-ops
+          branch: deploy/foodie-${{ inputs.component }}-${{ inputs.version-tag }}
+          delete-branch: true
+          title: "Deploy foodie ${{ inputs.component }} ${{ inputs.version-tag }}"
+          body: |
+            Automated deployment PR for foodie ${{ inputs.component }}.
+            
+            **Version:** `${{ inputs.version-tag }}`
+            **Triggered by:** [${{ github.event.head_commit.message }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          commit-message: "Update ${{ inputs.component }} to ${{ inputs.version-tag }}"
+          labels:
+            - deployment
+            - automated
