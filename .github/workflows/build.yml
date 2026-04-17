@@ -65,7 +65,7 @@ jobs:
     needs:
       - create_new_version
       - build_and_publish_back_end
-    uses: ./.github/workflows/_update-gitops.yml
+    uses: ./.github/workflows/update-gitops.yml
     with:
       version-tag: ${{ needs.create_new_version.outputs.version-tag }}
       component: backend
@@ -84,7 +84,7 @@ jobs:
     needs:
       - create_new_version
       - build_and_publish_front_end
-    uses: ./.github/workflows/_update-gitops.yml
+    uses: ./.github/workflows/update-gitops.yml
     with:
       version-tag: ${{ needs.create_new_version.outputs.version-tag }}
       component: frontend

@@ -57,6 +57,6 @@ jobs:
             **Version:** `${{ inputs.version-tag }}`
             **Triggered by:** [${{ github.event.head_commit.message }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
           commit-message: "Update ${{ inputs.component }} to ${{ inputs.version-tag }}"
-          labels:
-            - deployment
-            - automated
+          labels: |
+            deployment
+            automated
