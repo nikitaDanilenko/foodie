@@ -42,8 +42,7 @@ loadingSymbol =
 
 frontendPage : Configuration -> List String -> String
 frontendPage configuration pathSteps =
-    [ configuration.mainPageURL, "#" ]
-        ++ pathSteps
+    (configuration.mainPageURL :: pathSteps)
         |> flip Url.Builder.relative []
 
 
