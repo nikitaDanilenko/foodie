@@ -4,7 +4,6 @@ import Addresses.Frontend
 import Api.Auxiliary exposing (RecipeId)
 import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Html exposing (Attribute, Html, button, input, label, td, text, th, tr)
 import Html.Attributes exposing (disabled, value)
 import Html.Events exposing (onClick, onInput)
@@ -35,8 +34,8 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain =
     Pages.Util.ParentEditor.View.viewParentsWith
         { currentPage = Just ViewUtil.Recipes
         , matchesSearchText =
@@ -58,7 +57,6 @@ viewMain configuration =
         , setPagination = Page.ParentMsg << Pages.Util.ParentEditor.Page.SetPagination
         , styling = Style.ids.addRecipeView
         }
-        configuration
 
 
 tableHeader : Html msg
@@ -74,8 +72,8 @@ tableHeader =
         }
 
 
-viewRecipeLine : Configuration -> Recipe -> Bool -> List (Html Page.LogicMsg)
-viewRecipeLine configuration recipe showControls =
+viewRecipeLine : Recipe -> Bool -> List (Html Page.LogicMsg)
+viewRecipeLine recipe showControls =
     let
         rescalable =
             recipe.servingSize
@@ -97,7 +95,7 @@ viewRecipeLine configuration recipe showControls =
                 ]
             , td [ Style.classes.controls ]
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.ingredientEditor.address <| recipe.id
+                    { url = Links.frontendPage <| Addresses.Frontend.ingredientEditor.address <| recipe.id
                     , attributes = [ Style.classes.button.editor ]
                     , children = [ text "Ingredients" ]
                     }
@@ -109,7 +107,7 @@ viewRecipeLine configuration recipe showControls =
                 ]
             , td [ Style.classes.controls ]
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.statisticsRecipeSelect.address <| recipe.id
+                    { url = Links.frontendPage <| Addresses.Frontend.statisticsRecipeSelect.address <| recipe.id
                     , attributes = [ Style.classes.button.nutrients ]
                     , children = [ text "Nutrients" ]
                     }

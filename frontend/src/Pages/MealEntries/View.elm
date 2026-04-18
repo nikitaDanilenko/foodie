@@ -1,6 +1,5 @@
 module Pages.MealEntries.View exposing (view)
 
-import Configuration exposing (Configuration)
 import Html exposing (Attribute, Html, div, label, text)
 import Pages.MealEntries.Entries.View
 import Pages.MealEntries.Meal.View
@@ -18,21 +17,20 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Nothing
+        { currentPage = Nothing
         , showNavigation = True
         }
     <|
         div [ Style.ids.mealEntryEditor ]
             [ div []
-                [ Pages.MealEntries.Meal.View.viewMain main.profile configuration main.meal
+                [ Pages.MealEntries.Meal.View.viewMain main.profile main.meal
                     |> Html.map Page.MealMsg
                 ]
             , div [ Style.classes.elements ] [ label [] [ text "Dishes" ] ]
-            , Pages.MealEntries.Entries.View.viewMealEntries configuration main.entries |> Html.map Page.EntriesMsg
+            , Pages.MealEntries.Entries.View.viewMealEntries main.entries |> Html.map Page.EntriesMsg
             , div [ Style.classes.elements ] [ label [] [ text "Recipes" ] ]
-            , Pages.MealEntries.Entries.View.viewRecipes configuration main.entries |> Html.map Page.EntriesMsg
+            , Pages.MealEntries.Entries.View.viewRecipes main.entries |> Html.map Page.EntriesMsg
             ]

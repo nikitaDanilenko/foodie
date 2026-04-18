@@ -1,6 +1,5 @@
 module Pages.Recovery.Request.View exposing (view)
 
-import Configuration exposing (Configuration)
 import Html exposing (Html, button, div, input, label, table, tbody, td, text, tr)
 import Html.Attributes exposing (disabled, value)
 import Html.Events exposing (onClick, onInput)
@@ -22,11 +21,10 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Nothing
+        { currentPage = Nothing
         , showNavigation = False
         }
     <|
@@ -38,7 +36,7 @@ viewMain configuration main =
                 viewRequesting main
 
             Page.Requested ->
-                viewRequested configuration
+                viewRequested
 
 
 viewInitial : Page.Main -> Html Page.LogicMsg
@@ -71,14 +69,13 @@ viewRequesting main =
     div [ Style.classes.request ] (searchComponents main ++ remainder)
 
 
-viewRequested : Configuration -> Html Page.LogicMsg
-viewRequested configuration =
+viewRequested : Html Page.LogicMsg
+viewRequested =
     div [ Style.classes.confirm ]
         [ div [] [ label [] [ text "Requested user recovery. Please check your email" ] ]
         , div []
             [ Links.toLoginButton
-                { configuration = configuration
-                , buttonText = "Main page"
+                { buttonText = "Main page"
                 }
             ]
         ]

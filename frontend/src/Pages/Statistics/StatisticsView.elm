@@ -76,8 +76,7 @@ factorStyle factor =
 
 
 navigationBar :
-    { mainPageURL : String
-    , currentPage : Maybe StatisticsVariant.Page
+    { currentPage : Maybe StatisticsVariant.Page
     }
     -> Html msg
 navigationBar ps =
@@ -89,7 +88,6 @@ navigationBar ps =
                     { page = page
                     , nameOf = StatisticsVariant.nameOfPage
                     , addressSuffix = StatisticsVariant.addressSuffix
-                    , mainPageURL = ps.mainPageURL
                     , currentPage = ps.currentPage
                     }
         }
@@ -107,8 +105,7 @@ navigationPages =
 
 
 withNavigationBar :
-    { mainPageURL : String
-    , currentPage : Maybe StatisticsVariant.Page
+    { currentPage : Maybe StatisticsVariant.Page
     }
     -> Html msg
     -> Html msg

@@ -1,6 +1,5 @@
 module Pages.Statistics.Food.Select.View exposing (view)
 
-import Configuration exposing (Configuration)
 import Html exposing (Html, div, label, table, td, text, tr)
 import Pages.Statistics.Food.Select.Page as Page
 import Pages.Statistics.StatisticsView as StatisticsView
@@ -18,17 +17,15 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Nothing
+        { currentPage = Nothing
         , showNavigation = True
         }
     <|
         StatisticsView.withNavigationBar
-            { mainPageURL = configuration.mainPageURL
-            , currentPage = Nothing
+            { currentPage = Nothing
             }
         <|
             div [ Style.classes.partialStatistics ]

@@ -40,16 +40,14 @@ loadingSymbol =
     Loading.render Loading.Spinner Loading.defaultConfig Loading.On
 
 
-frontendPage : Configuration -> List String -> String
-frontendPage configuration pathSteps =
-    [ configuration.mainPageURL, "#" ]
-        ++ pathSteps
-        |> flip Url.Builder.relative []
+frontendPage : List String -> String
+frontendPage pathSteps =
+    Url.Builder.absolute pathSteps []
 
 
-loadFrontendPage : Configuration -> List String -> Cmd msg
-loadFrontendPage configuration =
-    frontendPage configuration >> Browser.Navigation.load
+loadFrontendPage : List String -> Cmd msg
+loadFrontendPage =
+    frontendPage >> Browser.Navigation.load
 
 
 backendPage : Configuration -> List String -> List Url.Builder.QueryParameter -> String
@@ -58,27 +56,24 @@ backendPage configuration pathSteps querySteps =
 
 
 toLoginButton :
-    { configuration : Configuration
-    , buttonText : String
+    { buttonText : String
     }
     -> Html msg
 toLoginButton params =
     toLoginButtonWith
-        { configuration = params.configuration
-        , buttonText = params.buttonText
+        { buttonText = params.buttonText
         , attributes = [ Style.classes.button.navigation ]
         }
 
 
 toLoginButtonWith :
-    { configuration : Configuration
-    , buttonText : String
+    { buttonText : String
     , attributes : List (Attribute msg)
     }
     -> Html msg
 toLoginButtonWith params =
     linkButton
-        { url = frontendPage params.configuration <| Addresses.Frontend.login.address ()
+        { url = frontendPage <| Addresses.Frontend.login.address ()
         , attributes = params.attributes
         , children = [ text <| params.buttonText ]
         }

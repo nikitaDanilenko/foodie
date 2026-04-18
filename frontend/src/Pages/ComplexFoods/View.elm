@@ -1,6 +1,5 @@
 module Pages.ComplexFoods.View exposing (..)
 
-import Configuration exposing (Configuration)
 import Html exposing (Attribute, Html, div, label, text)
 import Pages.ComplexFoods.Foods.View
 import Pages.ComplexFoods.Page as Page
@@ -17,17 +16,16 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Just ViewUtil.ComplexFoods
+        { currentPage = Just ViewUtil.ComplexFoods
         , showNavigation = True
         }
     <|
         div [ Style.ids.complexFoodEditor ]
             [ div [ Style.classes.elements ] [ label [] [ text "Complex foods" ] ]
-            , Pages.ComplexFoods.Foods.View.viewComplexFoods configuration main.foods |> Html.map Page.FoodsMsg
+            , Pages.ComplexFoods.Foods.View.viewComplexFoods main.foods |> Html.map Page.FoodsMsg
             , div [ Style.classes.elements ] [ label [] [ text "Recipes" ] ]
-            , Pages.ComplexFoods.Foods.View.viewRecipes configuration main.foods |> Html.map Page.FoodsMsg
+            , Pages.ComplexFoods.Foods.View.viewRecipes main.foods |> Html.map Page.FoodsMsg
             ]

@@ -3,7 +3,6 @@ module Pages.Statistics.Meal.Search.View exposing (view)
 import Addresses.StatisticsVariant as StatisticsVariant
 import Api.Types.Meal exposing (Meal)
 import Api.Types.Profile exposing (Profile)
-import Configuration exposing (Configuration)
 import Html exposing (Html, div, table, tbody, td, text, th, thead, tr)
 import Maybe.Extra
 import Monocle.Compose as Compose
@@ -29,17 +28,15 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Just Statistics
+        { currentPage = Just Statistics
         , showNavigation = True
         }
     <|
         StatisticsView.withNavigationBar
-            { mainPageURL = configuration.mainPageURL
-            , currentPage = Just StatisticsVariant.Meal
+            { currentPage = Just StatisticsVariant.Meal
             }
         <|
             let
@@ -82,7 +79,7 @@ viewMain configuration main =
                         , tbody []
                             (viewMeals
                                 |> Paginate.page
-                                |> List.map (viewMealLine configuration main.profile)
+                                |> List.map (viewMealLine main.profile)
                             )
                         ]
                     , div [ Style.classes.pagination ]
@@ -101,8 +98,8 @@ viewMain configuration main =
                 ]
 
 
-viewMealLine : Configuration -> Profile -> Meal -> Html Page.LogicMsg
-viewMealLine configuration profile meal =
+viewMealLine : Profile -> Meal -> Html Page.LogicMsg
+viewMealLine profile meal =
     tr [ Style.classes.editLine ]
         [ td [ Style.classes.editable ]
             [ text <| DateUtil.dateToPrettyString <| meal.date.date ]
@@ -113,7 +110,7 @@ viewMealLine configuration profile meal =
         , td [ Style.classes.editable ]
             [ text <| Maybe.withDefault "" <| meal.name ]
         , td [ Style.classes.controls ]
-            [ NavigationUtil.mealNutrientsLinkButton configuration profile.id meal.id ]
+            [ NavigationUtil.mealNutrientsLinkButton profile.id meal.id ]
         , td [ Style.classes.controls ]
-            [ NavigationUtil.mealEditorLinkButton configuration profile.id meal.id ]
+            [ NavigationUtil.mealEditorLinkButton profile.id meal.id ]
         ]

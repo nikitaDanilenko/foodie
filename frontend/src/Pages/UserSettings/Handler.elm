@@ -192,7 +192,7 @@ gotLogoutResponse model result =
                     [ Ports.doDeleteToken ()
                     , ()
                         |> Addresses.Frontend.login.address
-                        |> Links.frontendPage model.configuration
+                        |> Links.frontendPage
                         |> Browser.Navigation.load
                     ]
                 )

@@ -6,7 +6,6 @@ import Api.Types.Food exposing (Food)
 import Api.Types.Ingredient exposing (Ingredient)
 import Api.Types.Measure exposing (Measure)
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Dropdown exposing (Item, dropdown)
 import Html exposing (Attribute, Html, button, input, label, td, text, th)
 import Html.Attributes exposing (disabled, value)
@@ -33,8 +32,8 @@ import Util.MaybeUtil as MaybeUtil
 import Util.SearchUtil as SearchUtil
 
 
-viewIngredients : Configuration -> Page.Main -> Html Page.LogicMsg
-viewIngredients configuration main =
+viewIngredients : Page.Main -> Html Page.LogicMsg
+viewIngredients main =
     let
         unitDropdown foodId =
             main.choices
@@ -82,7 +81,7 @@ viewIngredients configuration main =
                         [ button [ Style.classes.button.delete, onClick <| Pages.Util.Choice.Page.RequestDelete <| ingredient.id ] [ text "Delete" ] ]
                     , td [ Style.classes.controls ]
                         [ Links.linkButton
-                            { url = Links.frontendPage configuration <| Addresses.Frontend.statisticsFoodSelect.address <| ingredient.foodId
+                            { url = Links.frontendPage <| Addresses.Frontend.statisticsFoodSelect.address <| ingredient.foodId
                             , attributes = [ Style.classes.button.nutrients ]
                             , children = [ text "Nutrients" ]
                             }
@@ -147,8 +146,8 @@ viewIngredients configuration main =
         main
 
 
-viewFoods : Configuration -> Page.Main -> Html Page.LogicMsg
-viewFoods configuration main =
+viewFoods : Page.Main -> Html Page.LogicMsg
+viewFoods main =
     let
         ( amount, unit ) =
             if DictListUtil.existsValue Editing.isUpdate main.choices then
@@ -267,7 +266,7 @@ viewFoods configuration main =
                     [ td [ Style.classes.controls ] [ button [ Style.classes.button.select, onClick <| Pages.Util.Choice.Page.SelectChoice <| food ] [ text "Select" ] ]
                     , td [ Style.classes.controls ]
                         [ Links.linkButton
-                            { url = Links.frontendPage configuration <| Addresses.Frontend.statisticsFoodSelect.address <| food.id
+                            { url = Links.frontendPage <| Addresses.Frontend.statisticsFoodSelect.address <| food.id
                             , attributes = [ Style.classes.button.nutrients ]
                             , children = [ text "Nutrients" ]
                             }

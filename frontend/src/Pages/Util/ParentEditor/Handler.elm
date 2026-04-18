@@ -125,7 +125,7 @@ updateLogic ps msg model =
                                 )
                         , parentId
                             |> ps.navigateToAddress
-                            |> Links.loadFrontendPage model.configuration
+                            |> Links.loadFrontendPage
                         )
                     )
 

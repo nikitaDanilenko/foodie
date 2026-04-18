@@ -607,7 +607,7 @@ plainRouteParser =
 
 parsePage : Url -> Maybe Route
 parsePage =
-    fragmentToPath >> Parser.parse plainRouteParser
+    Parser.parse plainRouteParser
 
 
 followRoute : Model -> ( Model, Cmd Msg )
@@ -812,11 +812,6 @@ followRoute model =
                             model.configuration
                         }
                         |> stepThrough steps.login model
-
-
-fragmentToPath : Url -> Url
-fragmentToPath url =
-    { url | path = Maybe.withDefault "" url.fragment, fragment = Nothing }
 
 
 route : Parser a b -> a -> Parser (b -> c) c

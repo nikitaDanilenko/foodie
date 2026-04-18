@@ -2,7 +2,6 @@ module Pages.Statistics.ComplexFood.Search.View exposing (view)
 
 import Addresses.StatisticsVariant as StatisticsVariant
 import Api.Types.ComplexFood exposing (ComplexFood)
-import Configuration exposing (Configuration)
 import Html exposing (Html, div, label, table, tbody, td, text, th, thead, tr)
 import Monocle.Compose as Compose
 import Pages.Statistics.ComplexFood.Search.Page as Page
@@ -26,17 +25,15 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Just Statistics
+        { currentPage = Just Statistics
         , showNavigation = True
         }
     <|
         StatisticsView.withNavigationBar
-            { mainPageURL = configuration.mainPageURL
-            , currentPage = Just StatisticsVariant.ComplexFood
+            { currentPage = Just StatisticsVariant.ComplexFood
             }
         <|
             let
@@ -75,7 +72,7 @@ viewMain configuration main =
                         , tbody []
                             (viewComplexFoods
                                 |> Paginate.page
-                                |> List.map (viewComplexFoodLine configuration)
+                                |> List.map viewComplexFoodLine
                             )
                         ]
                     , div [ Style.classes.pagination ]
@@ -94,13 +91,13 @@ viewMain configuration main =
                 ]
 
 
-viewComplexFoodLine : Configuration -> ComplexFood -> Html Page.LogicMsg
-viewComplexFoodLine configuration complexFood =
+viewComplexFoodLine : ComplexFood -> Html Page.LogicMsg
+viewComplexFoodLine complexFood =
     tr [ Style.classes.editing ]
         [ td [ Style.classes.editable ]
             [ label [] [ text complexFood.name ] ]
         , td [ Style.classes.controls ]
-            [ NavigationUtil.complexFoodNutrientLinkButton configuration complexFood.recipeId ]
+            [ NavigationUtil.complexFoodNutrientLinkButton complexFood.recipeId ]
         , td [ Style.classes.controls ]
-            [ NavigationUtil.recipeEditorLinkButton configuration complexFood.recipeId ]
+            [ NavigationUtil.recipeEditorLinkButton complexFood.recipeId ]
         ]

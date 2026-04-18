@@ -2,7 +2,6 @@ module Pages.MealEntries.Meal.View exposing (..)
 
 import Addresses.Frontend
 import Api.Types.Profile exposing (Profile)
-import Configuration exposing (Configuration)
 import Html exposing (Attribute, Html, button, td, text)
 import Html.Events exposing (onClick)
 import Pages.MealEntries.Meal.Page as Page
@@ -14,8 +13,8 @@ import Pages.Util.Parent.View
 import Pages.Util.Style as Style
 
 
-viewMain : Profile -> Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain profile configuration main =
+viewMain : Profile -> Page.Main -> Html Page.LogicMsg
+viewMain profile main =
     Pages.Util.Parent.View.viewMain
         { tableHeader = Pages.Meals.Editor.View.tableHeader
         , onView =
@@ -31,7 +30,7 @@ viewMain profile configuration main =
                             ]
                         , td [ Style.classes.controls ]
                             [ Links.linkButton
-                                { url = Links.frontendPage configuration <| Addresses.Frontend.statisticsMealSelect.address <| ( profile.id, main.parent.original.id )
+                                { url = Links.frontendPage <| Addresses.Frontend.statisticsMealSelect.address <| ( profile.id, main.parent.original.id )
                                 , attributes = [ Style.classes.button.nutrients ]
                                 , children = [ text "Nutrients" ]
                                 }

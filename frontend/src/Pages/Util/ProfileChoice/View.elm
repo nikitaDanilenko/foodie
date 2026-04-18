@@ -2,7 +2,6 @@ module Pages.Util.ProfileChoice.View exposing (viewWith)
 
 import Api.Auxiliary exposing (ProfileId)
 import Api.Types.Profile exposing (Profile)
-import Configuration exposing (Configuration)
 import Html exposing (Html, li, menu, text)
 import Pages.Util.Links as Links
 import Pages.Util.ProfileChoice.Page as Page
@@ -26,24 +25,23 @@ viewWith ps =
         }
 
 
-viewMainWith : Directions -> Configuration -> Page.Main -> Html Page.LogicMsg
-viewMainWith ps configuration main =
+viewMainWith : Directions -> Page.Main -> Html Page.LogicMsg
+viewMainWith ps main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Just ps.currentPage
+        { currentPage = Just ps.currentPage
         , showNavigation = True
         }
     <|
         ps.modifier <|
             menu []
-                (List.map (viewProfileButtonWith ps configuration) main.profiles)
+                (List.map (viewProfileButtonWith ps) main.profiles)
 
 
-viewProfileButtonWith : Directions -> Configuration -> Profile -> Html Page.LogicMsg
-viewProfileButtonWith ps configuration profile =
+viewProfileButtonWith : Directions -> Profile -> Html Page.LogicMsg
+viewProfileButtonWith ps profile =
     li []
         [ Links.linkButton
-            { url = Links.frontendPage configuration <| ps.address <| .id <| profile
+            { url = Links.frontendPage <| ps.address <| .id <| profile
             , attributes = [ Style.classes.button.overview ]
             , children = [ text profile.name ]
             }

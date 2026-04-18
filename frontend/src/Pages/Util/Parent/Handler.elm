@@ -126,7 +126,6 @@ updateLogic ps msg model =
                     (\_ ->
                         ( model
                         , Links.loadFrontendPage
-                            model.configuration
                             (() |> ps.navigateAfterDeletionAddress)
                         )
                     )
@@ -157,7 +156,6 @@ updateLogic ps msg model =
                     (\parent ->
                         ( model
                         , Links.loadFrontendPage
-                            model.configuration
                             (parent |> ps.idOf |> ps.navigateAfterDuplicationAddress)
                         )
                     )

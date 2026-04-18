@@ -2,7 +2,6 @@ module Pages.ComplexFoods.Foods.View exposing (..)
 
 import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Html exposing (Attribute, Html, button, input, label, td, text, th)
 import Html.Attributes exposing (disabled, value)
 import Html.Events exposing (onClick, onInput)
@@ -25,8 +24,8 @@ import Util.MaybeUtil as MaybeUtil
 import Util.SearchUtil as SearchUtil
 
 
-viewComplexFoods : Configuration -> Page.Main -> Html Page.LogicMsg
-viewComplexFoods configuration main =
+viewComplexFoods : Page.Main -> Html Page.LogicMsg
+viewComplexFoods main =
     Pages.Util.Choice.View.viewElements
         { nameOfChoice = .name
         , choiceIdOfElement = .recipeId
@@ -52,8 +51,8 @@ viewComplexFoods configuration main =
                 , controls =
                     [ td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick <| Pages.Util.Choice.Page.EnterEdit <| complexFood.recipeId ] [ text "Edit" ] ]
                     , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick <| Pages.Util.Choice.Page.RequestDelete <| complexFood.recipeId ] [ text "Delete" ] ]
-                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton configuration complexFood.recipeId ]
-                    , td [ Style.classes.controls ] [ NavigationUtil.recipeNutrientsLinkButton configuration complexFood.recipeId ]
+                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton complexFood.recipeId ]
+                    , td [ Style.classes.controls ] [ NavigationUtil.recipeNutrientsLinkButton complexFood.recipeId ]
                     ]
                 }
         , isValidInput =
@@ -105,8 +104,8 @@ viewComplexFoods configuration main =
         main
 
 
-viewRecipes : Configuration -> Page.Main -> Html Page.LogicMsg
-viewRecipes configuration main =
+viewRecipes : Page.Main -> Html Page.LogicMsg
+viewRecipes main =
     let
         anySelection =
             main.choices
@@ -232,8 +231,8 @@ viewRecipes configuration main =
                            ]
                 , controls =
                     [ td [ Style.classes.controls ] [ button buttonAttributes [ text <| buttonText ] ]
-                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton configuration recipe.id ]
-                    , td [ Style.classes.controls ] [ NavigationUtil.recipeNutrientsLinkButton configuration recipe.id ]
+                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton recipe.id ]
+                    , td [ Style.classes.controls ] [ NavigationUtil.recipeNutrientsLinkButton recipe.id ]
                     ]
                 }
         }

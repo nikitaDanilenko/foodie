@@ -4,7 +4,6 @@ import Addresses.Frontend
 import Api.Auxiliary exposing (ReferenceMapId)
 import Api.Types.ReferenceMap exposing (ReferenceMap)
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Html exposing (Attribute, Html, button, input, label, td, text, th, tr)
 import Html.Attributes exposing (value)
 import Html.Events exposing (onClick, onInput)
@@ -35,7 +34,7 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
+viewMain : Page.Main -> Html Page.LogicMsg
 viewMain =
     Pages.Util.ParentEditor.View.viewParentsWith
         { currentPage = Just ViewUtil.ReferenceMaps
@@ -65,15 +64,15 @@ tableHeader =
         }
 
 
-viewReferenceMapLine : Configuration -> ReferenceMap -> Bool -> List (Html Page.LogicMsg)
-viewReferenceMapLine configuration referenceMap showControls =
+viewReferenceMapLine : ReferenceMap -> Bool -> List (Html Page.LogicMsg)
+viewReferenceMapLine referenceMap showControls =
     referenceMapLineWith
         { controls =
             [ td [ Style.classes.controls ]
                 [ button [ Style.classes.button.edit, Pages.Util.ParentEditor.Page.EnterEdit referenceMap.id |> onClick ] [ text "Edit" ] ]
             , td [ Style.classes.controls ]
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.referenceEntries.address <| referenceMap.id
+                    { url = Links.frontendPage <| Addresses.Frontend.referenceEntries.address <| referenceMap.id
                     , attributes = [ Style.classes.button.editor ]
                     , children = [ text "Entries" ]
                     }

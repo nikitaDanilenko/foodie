@@ -3,7 +3,6 @@ module Pages.MealEntries.Entries.View exposing (..)
 import Api.Auxiliary exposing (RecipeId)
 import Api.Types.Recipe exposing (Recipe)
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Html exposing (Html, button, input, label, td, text, th)
 import Html.Attributes exposing (disabled, value)
 import Html.Events exposing (onClick, onInput)
@@ -27,8 +26,8 @@ import Util.MaybeUtil as MaybeUtil
 import Util.SearchUtil as SearchUtil
 
 
-viewMealEntries : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMealEntries configuration main =
+viewMealEntries : Page.Main -> Html Page.LogicMsg
+viewMealEntries main =
     Pages.Util.Choice.View.viewElements
         { nameOfChoice = .name
         , choiceIdOfElement = .recipeId
@@ -50,7 +49,7 @@ viewMealEntries configuration main =
                 , controls =
                     [ td [ Style.classes.controls ] [ button [ Style.classes.button.edit, onClick <| Pages.Util.Choice.Page.EnterEdit <| mealEntry.id ] [ text "Edit" ] ]
                     , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick <| Pages.Util.Choice.Page.RequestDelete <| mealEntry.id ] [ text "Delete" ] ]
-                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton configuration mealEntry.recipeId ]
+                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton mealEntry.recipeId ]
                     ]
                 }
         , isValidInput = .numberOfServings >> ValidatedInput.isValid
@@ -80,8 +79,8 @@ viewMealEntries configuration main =
         main
 
 
-viewRecipes : Configuration -> Page.Main -> Html Page.LogicMsg
-viewRecipes configuration main =
+viewRecipes : Page.Main -> Html Page.LogicMsg
+viewRecipes main =
     let
         numberOfServings =
             if DictListUtil.existsValue Editing.isUpdate main.choices then
@@ -171,7 +170,7 @@ viewRecipes configuration main =
                            ]
                 , controls =
                     [ td [ Style.classes.controls ] [ button [ Style.classes.button.select, onClick selectMsg ] [ text "Select" ] ]
-                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton configuration recipe.id ]
+                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton recipe.id ]
                     ]
                 }
         }
