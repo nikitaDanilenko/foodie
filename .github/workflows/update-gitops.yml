@@ -1,0 +1,89 @@
+name: Update GitOps deployment
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      component:
+        type: string
+        required: true
+        description: "Either 'backend' or 'frontend'"
+
+jobs:
+  update-gitops:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: ${{ github.workspace }}/source
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        with:
+          client-id: ${{ vars.GITOPS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.GITOPS_BOT_PRIVATE_KEY }}
+          owner: nikitaDanilenko
+          repositories: git-ops
+
+      - name: Check out GitOps repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: nikitaDanilenko/git-ops
+          token: ${{ steps.app-token.outputs.token }}
+          path: ${{ github.workspace }}/git-ops
+
+      - name: Copy deployment manifests and preserve tags
+        run: |
+          GITOPS_DIR="${{ github.workspace }}/git-ops/foodie"
+          SOURCE_DIR="${{ github.workspace }}/source/deployment"
+          
+          # Save existing tags if values.yaml exists
+          if [ -f "$GITOPS_DIR/values.yaml" ]; then
+            BACKEND_TAG=$(yq -r '.backend.image.tag' "$GITOPS_DIR/values.yaml")
+            FRONTEND_TAG=$(yq -r '.frontend.image.tag' "$GITOPS_DIR/values.yaml")
+          else
+            BACKEND_TAG="latest"
+            FRONTEND_TAG="latest"
+          fi
+          
+          # Remove existing and copy fresh from source
+          rm -rf "$GITOPS_DIR"
+          cp -r "$SOURCE_DIR" "$GITOPS_DIR"
+          
+          # Restore preserved tags
+          export BACKEND_TAG
+          export FRONTEND_TAG
+          yq -i '.backend.image.tag = env(BACKEND_TAG)' "$GITOPS_DIR/values.yaml"
+          yq -i '.frontend.image.tag = env(FRONTEND_TAG)' "$GITOPS_DIR/values.yaml"
+
+      - name: Update image tag
+        working-directory: ${{ github.workspace }}/git-ops
+        run: |
+          # Update only the changed component's image tag
+          yq -i '.${{ inputs.component }}.image.tag = "${{ inputs.version }}"' foodie/values.yaml
+
+      - name: Determine commit title
+        id: commit
+        run: echo "title=$(echo '${{ github.event.head_commit.message }}' | head -n 1)" >> $GITHUB_OUTPUT
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          path: ${{ github.workspace }}/git-ops
+          branch: deploy/foodie-${{ inputs.component }}-${{ inputs.version }}
+          delete-branch: true
+          title: "Deploy `foodie-${{ inputs.component }}:${{ inputs.version }}`"
+          body: |
+            Automated deployment PR for foodie ${{ inputs.component }}.
+            
+            **Version:** `${{ inputs.version }}`
+            **Triggered by:** [${{ steps.commit.outputs.title }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          commit-message: "Update foodie-${{ inputs.component }} to ${{ inputs.version }}"
+          labels: |
+            deployment
+            automated

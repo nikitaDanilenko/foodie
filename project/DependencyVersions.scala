@@ -4,7 +4,7 @@ object DependencyVersions {
 
   val Slick: String = "3.6.1"
 
-  val Jwt: String = "11.0.3"
+  val Jwt: String = "11.0.4"
 
   val Postgresql: String = "42.7.9"
 
@@ -26,15 +26,15 @@ object DependencyVersions {
 
   val Config: String = "1.4.6"
 
-  val Chimney: String = "1.8.2"
+  val Chimney: String = "1.9.0"
 
   val Pureconfig: String = "0.17.10"
 
-  val CatsEffect: String = "3.6.3"
+  val CatsEffect: String = "3.7.0"
 
   val CatsCore: String = "2.13.0"
 
-  val EnumeratumCirce: String = "1.9.2"
+  val EnumeratumCirce: String = "1.9.7"
 
   val PlayMailer: String = "10.1.0"
 
@@ -42,7 +42,7 @@ object DependencyVersions {
 
   val SlickEffect: String = "0.6.1"
 
-  val JacksonModuleScala: String = "2.21.1"
+  val JacksonModuleScala: String = "2.21.2"
 
   val Scalacheck: String = "1.19.0"
 

@@ -3,7 +3,6 @@ module Pages.Profiles.View exposing (..)
 import Api.Auxiliary exposing (ProfileId)
 import Api.Types.Profile exposing (Profile)
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Html exposing (Attribute, Html, button, input, td, text, th, tr)
 import Html.Attributes exposing (value)
 import Html.Events exposing (onClick, onInput)
@@ -32,14 +31,14 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
+viewMain : Page.Main -> Html Page.LogicMsg
 viewMain =
     Pages.Util.ParentEditor.View.viewParentsWith
         { currentPage = Just ViewUtil.Profiles
         , matchesSearchText = \string profile -> SearchUtil.search string profile.name
         , sort = List.sortBy (.original >> .name)
         , tableHeader = tableHeader
-        , viewLine = always viewProfileLine
+        , viewLine = viewProfileLine
         , updateLine = .id >> updateProfileLine
         , deleteLine = deleteProfileLine
         , create =

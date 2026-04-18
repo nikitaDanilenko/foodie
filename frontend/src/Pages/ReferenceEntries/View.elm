@@ -1,6 +1,5 @@
 module Pages.ReferenceEntries.View exposing (view)
 
-import Configuration exposing (Configuration)
 import Html exposing (Attribute, Html, div, label, text)
 import Pages.ReferenceEntries.Entries.View
 import Pages.ReferenceEntries.Map.View
@@ -18,11 +17,10 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Nothing
+        { currentPage = Nothing
         , showNavigation = True
         }
     <|

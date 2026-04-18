@@ -1,7 +1,6 @@
 module Pages.Ingredients.Recipe.View exposing (viewMain)
 
 import Addresses.Frontend
-import Configuration exposing (Configuration)
 import Html exposing (Attribute, Html, button, td, text)
 import Html.Attributes exposing (disabled)
 import Html.Events exposing (onClick)
@@ -16,8 +15,8 @@ import Pages.Util.Parent.View
 import Pages.Util.Style as Style
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     let
         rescalable =
             main.parent.original.servingSize
@@ -45,7 +44,7 @@ viewMain configuration main =
                             ]
                         , td [ Style.classes.controls ]
                             [ Links.linkButton
-                                { url = Links.frontendPage configuration <| Addresses.Frontend.statisticsRecipeSelect.address <| main.parent.original.id
+                                { url = Links.frontendPage <| Addresses.Frontend.statisticsRecipeSelect.address <| main.parent.original.id
                                 , attributes = [ Style.classes.button.nutrients ]
                                 , children = [ text "Nutrients" ]
                                 }

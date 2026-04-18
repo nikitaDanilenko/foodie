@@ -1,7 +1,6 @@
 module Pages.Registration.Request.View exposing (..)
 
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Html exposing (Html, button, div, input, label, table, tbody, td, text, tr)
 import Html.Attributes exposing (disabled)
 import Html.Events exposing (onClick, onInput)
@@ -26,11 +25,10 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Nothing
+        { currentPage = Nothing
         , showNavigation = False
         }
     <|
@@ -39,7 +37,7 @@ viewMain configuration main =
                 viewEditing main
 
             Page.Confirmed ->
-                viewConfirmed configuration
+                viewConfirmed
 
 
 viewEditing : Page.Main -> Html Page.LogicMsg
@@ -100,14 +98,13 @@ viewEditing main =
         ]
 
 
-viewConfirmed : Configuration -> Html Page.LogicMsg
-viewConfirmed configuration =
+viewConfirmed : Html Page.LogicMsg
+viewConfirmed =
     div [ Style.classes.confirm ]
         [ div [] [ label [] [ text "Registration requested. Please check your email to continue." ] ]
         , div []
             [ Links.toLoginButton
-                { configuration = configuration
-                , buttonText = "Main page"
+                { buttonText = "Main page"
                 }
             ]
         ]

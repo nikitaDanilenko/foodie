@@ -1,7 +1,6 @@
 module Pages.Statistics.ComplexFood.Select.View exposing (view)
 
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Html exposing (Html, div, label, table, td, text, tr)
 import Maybe.Extra
 import Pages.Statistics.ComplexFood.Select.Page as Page
@@ -20,17 +19,15 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Nothing
+        { currentPage = Nothing
         , showNavigation = True
         }
     <|
         StatisticsView.withNavigationBar
-            { mainPageURL = configuration.mainPageURL
-            , currentPage = Nothing
+            { currentPage = Nothing
             }
         <|
             let

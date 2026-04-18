@@ -1,7 +1,6 @@
 module Pages.Login.View exposing (..)
 
 import Addresses.Frontend
-import Configuration exposing (Configuration)
 import Html exposing (Html, button, div, input, label, text)
 import Html.Attributes exposing (autocomplete, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -21,11 +20,10 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration model =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain model =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Just ViewUtil.Login
+        { currentPage = Just ViewUtil.Login
         , showNavigation = False
         }
     <|
@@ -57,14 +55,14 @@ viewMain configuration model =
                 [ button [ onClick Page.Login, Style.classes.button.confirm ] [ text "Log In" ] ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.requestRegistration.address ()
+                    { url = Links.frontendPage <| Addresses.Frontend.requestRegistration.address ()
                     , attributes = [ Style.classes.button.navigation ]
                     , children = [ text "Create account" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.requestRecovery.address ()
+                    { url = Links.frontendPage <| Addresses.Frontend.requestRecovery.address ()
                     , attributes = [ Style.classes.button.navigation ]
                     , children = [ text "Recover account" ]
                     }

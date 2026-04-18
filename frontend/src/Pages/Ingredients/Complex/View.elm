@@ -3,7 +3,6 @@ module Pages.Ingredients.Complex.View exposing (viewComplexIngredients, viewFood
 import Api.Types.ComplexFood exposing (ComplexFood)
 import Api.Types.ScalingMode as ScalingMode exposing (ScalingMode)
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Dropdown exposing (dropdown)
 import Html exposing (Html, button, input, label, td, text, th)
 import Html.Attributes exposing (disabled, value)
@@ -27,8 +26,8 @@ import Util.MaybeUtil as MaybeUtil
 import Util.SearchUtil as SearchUtil
 
 
-viewComplexIngredients : Configuration -> Page.Main -> Html Page.LogicMsg
-viewComplexIngredients configuration main =
+viewComplexIngredients : Page.Main -> Html Page.LogicMsg
+viewComplexIngredients main =
     Pages.Util.Choice.View.viewElements
         { nameOfChoice = .name
         , choiceIdOfElement = .complexFoodId
@@ -59,8 +58,8 @@ viewComplexIngredients configuration main =
                 , controls =
                     [ td [ Style.classes.controls ] [ button [ Style.classes.button.edit, editMsg ] [ text "Edit" ] ]
                     , td [ Style.classes.controls ] [ button [ Style.classes.button.delete, onClick (Pages.Util.Choice.Page.RequestDelete complexIngredient.complexFoodId) ] [ text "Delete" ] ]
-                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton configuration complexIngredient.complexFoodId ]
-                    , td [ Style.classes.controls ] [ NavigationUtil.complexFoodNutrientLinkButton configuration complexIngredient.complexFoodId ]
+                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton complexIngredient.complexFoodId ]
+                    , td [ Style.classes.controls ] [ NavigationUtil.complexFoodNutrientLinkButton complexIngredient.complexFoodId ]
                     ]
                 }
         , isValidInput = .factor >> ValidatedInput.isValid
@@ -112,8 +111,8 @@ viewComplexIngredients configuration main =
         main
 
 
-viewFoods : Configuration -> Page.Main -> Html Page.LogicMsg
-viewFoods configuration main =
+viewFoods : Page.Main -> Html Page.LogicMsg
+viewFoods main =
     let
         ( factor, unit ) =
             if DictListUtil.existsValue Editing.isUpdate main.choices then
@@ -229,8 +228,8 @@ viewFoods configuration main =
                     ]
                 , controls =
                     [ td [ Style.classes.controls ] [ button selectStyles [ text <| selectName ] ]
-                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton configuration complexFood.recipeId ]
-                    , td [ Style.classes.controls ] [ NavigationUtil.recipeNutrientsLinkButton configuration complexFood.recipeId ]
+                    , td [ Style.classes.controls ] [ NavigationUtil.recipeEditorLinkButton complexFood.recipeId ]
+                    , td [ Style.classes.controls ] [ NavigationUtil.recipeNutrientsLinkButton complexFood.recipeId ]
                     ]
                 }
         }

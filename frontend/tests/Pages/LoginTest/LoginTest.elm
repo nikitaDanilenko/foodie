@@ -9,7 +9,6 @@ import Pages.Login.Page
 import Pages.Login.View
 import Pages.Util.EventUtil as EventUtil
 import Pages.Util.Links as Links
-import Pages.Util.Parameters as Parameters
 import Pages.Util.Style as Style
 import Test exposing (..)
 import Test.Html.Event as Event
@@ -32,7 +31,7 @@ mainModel =
 
 view : Html Pages.Login.Page.LogicMsg
 view =
-    Pages.Login.View.viewMain Parameters.configuration mainModel
+    Pages.Login.View.viewMain mainModel
 
 
 inputs : Test
@@ -89,7 +88,7 @@ registrationLink =
                 |> Query.has
                     [ attribute <|
                         Html.Attributes.href <|
-                            Links.frontendPage Parameters.configuration <|
+                            Links.frontendPage <|
                                 Addresses.Frontend.requestRegistration.address <|
                                     ()
                     ]
@@ -106,7 +105,7 @@ recoveryLink =
                 |> Query.has
                     [ attribute <|
                         Html.Attributes.href <|
-                            Links.frontendPage Parameters.configuration <|
+                            Links.frontendPage <|
                                 Addresses.Frontend.requestRecovery.address <|
                                     ()
                     ]

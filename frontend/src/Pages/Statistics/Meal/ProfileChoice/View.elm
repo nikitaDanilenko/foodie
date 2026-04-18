@@ -16,8 +16,7 @@ view model =
         , currentPage = ViewUtil.Statistics
         , modifier =
             StatisticsView.withNavigationBar
-                { mainPageURL = model.configuration.mainPageURL
-                , currentPage = Just StatisticsVariant.Meal
+                { currentPage = Just StatisticsVariant.Meal
                 }
         }
         model

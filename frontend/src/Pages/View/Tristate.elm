@@ -180,7 +180,7 @@ toError model error =
 
 view :
     { showLoginRedirect : Bool
-    , viewMain : Configuration -> main -> Html msg
+    , viewMain : main -> Html msg
     }
     -> Model main initial
     -> Html (Msg msg)
@@ -190,7 +190,7 @@ view ps t =
             div [] [ Links.loadingSymbol ]
 
         Main main ->
-            ps.viewMain t.configuration main |> Html.map Logic
+            ps.viewMain main |> Html.map Logic
 
         Error errorState ->
             let
@@ -204,22 +204,15 @@ view ps t =
                         ]
 
                 redirectRow =
-                    t.configuration
-                        |> Just
-                        |> Maybe.Extra.filter (always ps.showLoginRedirect)
-                        |> Maybe.Extra.unwrap []
-                            (\configuration ->
-                                [ tr []
-                                    [ td []
-                                        [ Links.toLoginButtonWith
-                                            { configuration = configuration
-                                            , buttonText = "Login"
-                                            , attributes = [ Style.classes.button.error ]
-                                            }
-                                        ]
-                                    ]
-                                ]
-                            )
+                    [ tr []
+                        [ td []
+                            [ Links.toLoginButtonWith
+                                { buttonText = "Login"
+                                , attributes = [ Style.classes.button.error ]
+                                }
+                            ]
+                        ]
+                    ]
 
                 reloadRow =
                     [ tr []

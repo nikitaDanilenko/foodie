@@ -1,6 +1,5 @@
 module Pages.Deletion.View exposing (view)
 
-import Configuration exposing (Configuration)
 import Html exposing (Html, button, div, label, table, tbody, td, text, tr)
 import Html.Events exposing (onClick)
 import Pages.Deletion.Page as Page
@@ -18,24 +17,23 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Nothing
+        { currentPage = Nothing
         , showNavigation = False
         }
     <|
         case main.mode of
             Page.Checking ->
-                viewChecking configuration main
+                viewChecking main
 
             Page.Confirmed ->
-                viewConfirmed configuration
+                viewConfirmed
 
 
-viewChecking : Configuration -> Page.Main -> Html Page.LogicMsg
-viewChecking configuration model =
+viewChecking : Page.Main -> Html Page.LogicMsg
+viewChecking model =
     div [ Style.classes.confirm ]
         [ label [ Style.classes.info ] [ text "Confirm deletion" ]
         , table []
@@ -59,21 +57,19 @@ viewChecking configuration model =
             ]
         , div []
             [ Links.toLoginButton
-                { configuration = configuration
-                , buttonText = "Back to main"
+                { buttonText = "Back to main"
                 }
             ]
         ]
 
 
-viewConfirmed : Configuration -> Html Page.LogicMsg
-viewConfirmed configuration =
+viewConfirmed : Html Page.LogicMsg
+viewConfirmed =
     div [ Style.classes.confirm ]
         [ div [] [ label [] [ text "User deletion successful." ] ]
         , div []
             [ Links.toLoginButton
-                { configuration = configuration
-                , buttonText = "Main page"
+                { buttonText = "Main page"
                 }
             ]
         ]

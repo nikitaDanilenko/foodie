@@ -1,7 +1,6 @@
 module Pages.Overview.View exposing (view)
 
 import Addresses.Frontend
-import Configuration exposing (Configuration)
 import Html exposing (Html, div, text)
 import Pages.Overview.Page as Page
 import Pages.Util.Links as Links
@@ -13,65 +12,64 @@ import Pages.View.Tristate as Tristate
 view : Page.Model -> Html Page.Msg
 view =
     Tristate.view
-        { viewMain = viewMain
+        { viewMain = always viewMain
         , showLoginRedirect = True
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration _ =
+viewMain : Html Page.LogicMsg
+viewMain =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Just ViewUtil.Overview
+        { currentPage = Just ViewUtil.Overview
         , showNavigation = False
         }
     <|
         div [ Style.ids.overviewMain ]
             [ div []
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.recipes.address <| ()
+                    { url = Links.frontendPage <| Addresses.Frontend.recipes.address <| ()
                     , attributes = [ Style.classes.button.overview ]
                     , children = [ text "Recipes" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.mealBranch.address <| ()
+                    { url = Links.frontendPage <| Addresses.Frontend.mealBranch.address <| ()
                     , attributes = [ Style.classes.button.overview ]
                     , children = [ text "Meals" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.complexFoods.address <| ()
+                    { url = Links.frontendPage <| Addresses.Frontend.complexFoods.address <| ()
                     , attributes = [ Style.classes.button.overview ]
                     , children = [ text "Complex foods" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.statisticsTime.address <| ()
+                    { url = Links.frontendPage <| Addresses.Frontend.statisticsTime.address <| ()
                     , attributes = [ Style.classes.button.overview ]
                     , children = [ text "Statistics" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.referenceMaps.address <| ()
+                    { url = Links.frontendPage <| Addresses.Frontend.referenceMaps.address <| ()
                     , attributes = [ Style.classes.button.overview ]
                     , children = [ text "Reference maps" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.profiles.address <| ()
+                    { url = Links.frontendPage <| Addresses.Frontend.profiles.address <| ()
                     , attributes = [ Style.classes.button.overview ]
                     , children = [ text "Profiles" ]
                     }
                 ]
             , div []
                 [ Links.linkButton
-                    { url = Links.frontendPage configuration <| Addresses.Frontend.userSettings.address <| ()
+                    { url = Links.frontendPage <| Addresses.Frontend.userSettings.address <| ()
                     , attributes = [ Style.classes.button.overview ]
                     , children = [ text "User settings" ]
                     }

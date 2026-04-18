@@ -2,7 +2,6 @@ module Pages.Statistics.Recipe.Search.View exposing (view)
 
 import Addresses.StatisticsVariant as StatisticsVariant
 import Api.Types.Recipe exposing (Recipe)
-import Configuration exposing (Configuration)
 import Html exposing (Html, div, label, table, tbody, td, text, th, thead, tr)
 import Monocle.Compose as Compose
 import Pages.Statistics.Recipe.Search.Page as Page
@@ -26,17 +25,15 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Just Statistics
+        { currentPage = Just Statistics
         , showNavigation = True
         }
     <|
         StatisticsView.withNavigationBar
-            { mainPageURL = configuration.mainPageURL
-            , currentPage = Just StatisticsVariant.Recipe
+            { currentPage = Just StatisticsVariant.Recipe
             }
         <|
             let
@@ -76,7 +73,7 @@ viewMain configuration main =
                         , tbody []
                             (viewRecipes
                                 |> Paginate.page
-                                |> List.map (viewRecipeLine configuration)
+                                |> List.map viewRecipeLine
                             )
                         ]
                     , div [ Style.classes.pagination ]
@@ -95,15 +92,15 @@ viewMain configuration main =
                 ]
 
 
-viewRecipeLine : Configuration -> Recipe -> Html Page.LogicMsg
-viewRecipeLine configuration recipe =
+viewRecipeLine : Recipe -> Html Page.LogicMsg
+viewRecipeLine recipe =
     tr [ Style.classes.editing ]
         [ td [ Style.classes.editable ]
             [ label [] [ text recipe.name ] ]
         , td [ Style.classes.editable ]
             [ label [] [ text <| Maybe.withDefault "" <| recipe.description ] ]
         , td [ Style.classes.controls ]
-            [ NavigationUtil.recipeNutrientsLinkButton configuration recipe.id ]
+            [ NavigationUtil.recipeNutrientsLinkButton recipe.id ]
         , td [ Style.classes.controls ]
-            [ NavigationUtil.recipeEditorLinkButton configuration recipe.id ]
+            [ NavigationUtil.recipeEditorLinkButton recipe.id ]
         ]

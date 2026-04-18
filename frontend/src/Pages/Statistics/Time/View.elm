@@ -5,7 +5,6 @@ import Api.Types.Date exposing (Date)
 import Api.Types.Meal exposing (Meal)
 import Api.Types.Profile exposing (Profile)
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Html exposing (Html, button, div, input, label, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (disabled, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -36,8 +35,8 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration main =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain main =
     let
         viewMeals =
             main.stats.meals
@@ -97,7 +96,7 @@ viewMain configuration main =
                                     , tbody []
                                         (viewMeals
                                             |> Paginate.page
-                                            |> List.map (mealLine configuration profile)
+                                            |> List.map (mealLine profile)
                                         )
                                     ]
                                 , div [ Style.classes.pagination ]
@@ -119,14 +118,12 @@ viewMain configuration main =
                     []
     in
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Just ViewUtil.Statistics
+        { currentPage = Just ViewUtil.Statistics
         , showNavigation = True
         }
     <|
         StatisticsView.withNavigationBar
-            { mainPageURL = configuration.mainPageURL
-            , currentPage = Just StatisticsVariant.Time
+            { currentPage = Just StatisticsVariant.Time
             }
         <|
             div [ Style.ids.statistics.time ]
@@ -180,17 +177,17 @@ viewMain configuration main =
                 )
 
 
-mealLine : Configuration -> Profile -> Meal -> Html Page.LogicMsg
-mealLine configuration profile meal =
+mealLine : Profile -> Meal -> Html Page.LogicMsg
+mealLine profile meal =
     tr [ Style.classes.editLine ]
         [ td [ Style.classes.editable, Style.classes.date ] [ text <| DateUtil.dateToPrettyString <| meal.date.date ]
         , td [ Style.classes.editable, Style.classes.time ] [ text <| Maybe.Extra.unwrap "" DateUtil.timeToString <| meal.date.time ]
         , td [ Style.classes.editable ] [ text <| profile.name ]
         , td [ Style.classes.editable ] [ text <| Maybe.withDefault "" <| meal.name ]
         , td [ Style.classes.controls ]
-            [ NavigationUtil.mealNutrientsLinkButton configuration profile.id meal.id ]
+            [ NavigationUtil.mealNutrientsLinkButton profile.id meal.id ]
         , td [ Style.classes.controls ]
-            [ NavigationUtil.mealEditorLinkButton configuration profile.id meal.id ]
+            [ NavigationUtil.mealEditorLinkButton profile.id meal.id ]
         ]
 
 

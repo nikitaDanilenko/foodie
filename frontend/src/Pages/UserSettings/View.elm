@@ -2,7 +2,6 @@ module Pages.UserSettings.View exposing (view)
 
 import Api.Types.Mode exposing (Mode(..))
 import Basics.Extra exposing (flip)
-import Configuration exposing (Configuration)
 import Html exposing (Html, button, div, input, label, table, tbody, td, text, tr)
 import Html.Attributes exposing (disabled, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -26,11 +25,10 @@ view =
         }
 
 
-viewMain : Configuration -> Page.Main -> Html Page.LogicMsg
-viewMain configuration model =
+viewMain : Page.Main -> Html Page.LogicMsg
+viewMain model =
     ViewUtil.viewMainWith
-        { configuration = configuration
-        , currentPage = Just UserSettings
+        { currentPage = Just UserSettings
         , showNavigation = True
         }
     <|
