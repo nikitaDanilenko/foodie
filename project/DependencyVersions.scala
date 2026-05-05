@@ -42,7 +42,7 @@ object DependencyVersions {
 
   val SlickEffect: String = "0.6.1"
 
-  val JacksonModuleScala: String = "2.21.2"
+  val JacksonModuleScala: String = "2.21.3"
 
   val Scalacheck: String = "1.19.0"
 
