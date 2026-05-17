@@ -1,4 +1,5 @@
 name: Auto-merge Pull Request
+
 description: Approves and merges a pull request using the GH_TOKEN environment variable
 
 runs:
