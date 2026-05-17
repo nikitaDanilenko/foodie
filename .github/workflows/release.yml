@@ -98,7 +98,7 @@ jobs:
       - build_and_publish_front_end
     # Always run, even if build jobs were skipped
     if: ${{ always() && needs.create_new_version.result == 'success' }}
-    uses: ./.github/workflows/update-gitops-manifests.yml
+    uses: ./.github/workflows/_update-gitops-manifests.yml
     with:
       back-end-version: ${{ needs.build_and_publish_back_end.result == 'success' && needs.create_new_version.outputs.version || '' }}
       front-end-version: ${{ needs.build_and_publish_front_end.result == 'success' && needs.create_new_version.outputs.version || '' }}
