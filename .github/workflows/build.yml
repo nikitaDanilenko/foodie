@@ -49,11 +49,11 @@ jobs:
             front-end-src:
               - 'frontend/**'
       - name: Publish new release
-        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git tag ${{ steps.semantic-version.outputs.version_tag }} ${{ github.sha }}
           git push origin ${{ steps.semantic-version.outputs.version_tag }}
-          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           gh release create ${{ steps.semantic-version.outputs.version_tag }} --generate-notes --verify-tag
 
   build_and_publish_back_end:
