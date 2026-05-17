@@ -59,22 +59,32 @@ jobs:
   build_and_publish_back_end:
     needs:
       - create_new_version
-    uses: ./.github/workflows/build-and-publish-back-end.yml
     # The output is a string, hence the string comparison.
     if: ${{ needs.create_new_version.outputs.back-end-paths-changed == 'true' }}
-    with:
-      version-tag: ${{ needs.create_new_version.outputs.version-tag }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/build-and-publish
+        with:
+          version-tag: ${{ needs.create_new_version.outputs.version-tag }}
+          image-name: nikitadanilenko/foodie
+          context: .
+          docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker-hub-token: ${{ secrets.DOCKER_HUB_TOKEN }}
 
   build_and_publish_front_end:
     needs:
       - create_new_version
-    uses: ./.github/workflows/build-and-publish-front-end.yml
     # The output is a string, hence the string comparison.
     if: ${{ needs.create_new_version.outputs.front-end-paths-changed == 'true' }}
-    with:
-      version-tag: ${{ needs.create_new_version.outputs.version-tag }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/build-and-publish
+        with:
+          version-tag: ${{ needs.create_new_version.outputs.version-tag }}
+          image-name: nikitadanilenko/foodie-frontend
+          context: frontend
+          docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker-hub-token: ${{ secrets.DOCKER_HUB_TOKEN }}
 
   update_gitops:
     needs:
