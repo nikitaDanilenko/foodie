@@ -1,16 +1,16 @@
 name: Auto-merge Scala Steward Pull Requests
 
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - main
 
 jobs:
   auto_merge:
-    if: github.event.pull_request.user.login == 'scala-steward'
+    if: github.event.pull_request.user.login == 'scala-steward-bot[bot]'
     runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: ./.github/actions/auto-merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
