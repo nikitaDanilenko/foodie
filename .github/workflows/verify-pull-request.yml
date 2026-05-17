@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - "main"
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -41,13 +40,13 @@ jobs:
     needs: changes
     # The output is a string, hence the string comparison.
     if: ${{ needs.changes.outputs.back-end-paths-changed == 'true' }}
-    uses: ./.github/workflows/scala-tests.yml
+    uses: ./.github/workflows/_scala-tests.yml
 
   front-end-test:
     needs: changes
     # The output is a string, hence the string comparison.
     if: ${{ needs.changes.outputs.front-end-paths-changed == 'true' }}
-    uses: ./.github/workflows/elm-tests.yml
+    uses: ./.github/workflows/_elm-tests.yml
 
   combine-tests:
     needs:
