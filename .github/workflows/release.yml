@@ -11,6 +11,8 @@ jobs:
   create_new_version:
     name: Create New Version
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       version-tag: ${{ steps.semantic-version.outputs.version_tag }}
       version: ${{ steps.semantic-version.outputs.version }}
