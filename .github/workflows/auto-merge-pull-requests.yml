@@ -7,7 +7,6 @@ on:
         description: 'GitHub token with permissions to approve and merge pull requests'
         required: true
 
-
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
