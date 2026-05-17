@@ -76,7 +76,9 @@ jobs:
 
       - name: Determine commit title
         id: commit
-        run: echo "title=$(echo '${{ github.event.head_commit.message }}' | head -n 1)" >> $GITHUB_OUTPUT
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: echo "title=$(echo "$COMMIT_MSG" | head -n 1)" >> $GITHUB_OUTPUT
 
       - name: Determine PR title
         id: pr-title
