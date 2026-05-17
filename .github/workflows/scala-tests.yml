@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:12
+        image: postgres:16-alpine
         env:
           POSTGRES_DB: foodie_test
           POSTGRES_PASSWORD: 2JoGcxcx8ibZrOdQ9y3zv9cJyB20xkvzwlaRC8Vz
