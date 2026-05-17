@@ -9,6 +9,7 @@ on:
 
 jobs:
   create_new_version:
+    name: Create New Version
     runs-on: ubuntu-latest
     outputs:
       version-tag: ${{ steps.semantic-version.outputs.version_tag }}
@@ -58,6 +59,7 @@ jobs:
           gh release create ${{ steps.semantic-version.outputs.version_tag }} --generate-notes --verify-tag
 
   build_and_publish_back_end:
+    name: Build and Publish Back End Image
     needs:
       - create_new_version
     # The output is a string, hence the string comparison.
@@ -73,6 +75,7 @@ jobs:
           docker-hub-token: ${{ secrets.DOCKER_HUB_TOKEN }}
 
   build_and_publish_front_end:
+    name: Build and Publish Front End Image
     needs:
       - create_new_version
     # The output is a string, hence the string comparison.
@@ -88,6 +91,7 @@ jobs:
           docker-hub-token: ${{ secrets.DOCKER_HUB_TOKEN }}
 
   update_gitops:
+    name: Update GitOps Manifests
     needs:
       - create_new_version
       - build_and_publish_back_end
