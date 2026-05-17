@@ -9,6 +9,10 @@ jobs:
 
   # Dependabot mostly concerns GitHub Actions, so we only auto-merge non-major updates.
   auto_merge:
+    name: Auto-merge Dependabot PRs
+    permissions:
+      contents: write
+      pull-requests: write
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     env:

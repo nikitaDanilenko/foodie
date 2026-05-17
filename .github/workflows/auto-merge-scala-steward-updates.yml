@@ -7,6 +7,10 @@ on:
 
 jobs:
   auto_merge:
+    name: Auto-merge Scala Steward PRs
+    permissions:
+      contents: write
+      pull-requests: write
     if: github.event.pull_request.user.login == 'scala-steward-bot[bot]'
     runs-on: ubuntu-latest
     steps:
