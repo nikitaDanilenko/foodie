@@ -6,8 +6,11 @@ on:
       - main
 
 jobs:
-  call_auto_merge:
+  auto_merge:
     if: github.event.pull_request.user.login == 'scala-steward'
-    uses: ./.github/workflows/auto-merge-pull-requests.yml
-    secrets:
-      merge-token: ${{ secrets.GITHUB_TOKEN }}
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: ./.github/actions/auto-merge
