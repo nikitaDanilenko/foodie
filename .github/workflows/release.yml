@@ -1,4 +1,4 @@
-name: Build and publish components
+name: Release new version (Image, GitHub, GitOps)
 
 on:
   push:
