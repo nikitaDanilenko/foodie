@@ -76,7 +76,6 @@ jobs:
     # The output is a string, hence the string comparison.
     if: ${{ needs.create_new_version.outputs.back-end-paths-changed == 'true' }}
     runs-on: ubuntu-latest
-    permissions: {}
     steps:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -97,7 +96,6 @@ jobs:
     # The output is a string, hence the string comparison.
     if: ${{ needs.create_new_version.outputs.front-end-paths-changed == 'true' }}
     runs-on: ubuntu-latest
-    permissions: {}
     steps:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
