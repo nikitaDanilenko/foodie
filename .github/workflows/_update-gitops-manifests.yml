@@ -14,14 +14,18 @@ on:
         default: ""
         description: "Front end version to set (empty = preserve existing)"
 
+permissions: {}
+
 jobs:
   update-gitops:
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - name: Check out source repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           path: ${{ github.workspace }}/source
+          persist-credentials: false
 
       - name: Generate GitHub App token
         id: app-token
@@ -31,6 +35,8 @@ jobs:
           private-key: ${{ secrets.GITOPS_BOT_PRIVATE_KEY }}
           owner: nikitaDanilenko
           repositories: git-ops
+          permission-contents: write
+          permission-pull-requests: write
 
       - name: Check out GitOps repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -38,12 +44,15 @@ jobs:
           repository: nikitaDanilenko/git-ops
           token: ${{ steps.app-token.outputs.token }}
           path: ${{ github.workspace }}/git-ops
+          persist-credentials: false
 
       - name: Copy deployment manifests and update tags
+        env:
+          GITOPS_DIR: ${{ github.workspace }}/git-ops/foodie
+          SOURCE_DIR: ${{ github.workspace }}/source/deployment
+          BACK_END_VERSION: ${{ inputs.back-end-version }}
+          FRONT_END_VERSION: ${{ inputs.front-end-version }}
         run: |
-          GITOPS_DIR="${{ github.workspace }}/git-ops/foodie"
-          SOURCE_DIR="${{ github.workspace }}/source/deployment"
-          
           # Save existing tags if values.yaml exists
           if [ -f "$GITOPS_DIR/values.yaml" ]; then
             BACKEND_TAG=$(yq -r '.backend.image.tag' "$GITOPS_DIR/values.yaml")
@@ -52,22 +61,22 @@ jobs:
             BACKEND_TAG="latest"
             FRONTEND_TAG="latest"
           fi
-          
+
           # Override with input versions if provided
-          if [ -n "${{ inputs.back-end-version }}" ]; then
-            BACKEND_TAG="${{ inputs.back-end-version }}"
+          if [ -n "$BACK_END_VERSION" ]; then
+            BACKEND_TAG="$BACK_END_VERSION"
           fi
-          if [ -n "${{ inputs.front-end-version }}" ]; then
-            FRONTEND_TAG="${{ inputs.front-end-version }}"
+          if [ -n "$FRONT_END_VERSION" ]; then
+            FRONTEND_TAG="$FRONT_END_VERSION"
           fi
-          
+
           # Remove existing and copy fresh from source
           rm -rf "$GITOPS_DIR"
           cp -r "$SOURCE_DIR" "$GITOPS_DIR"
-          
+
           # Remove local secret file if accidentally included
           rm -f "$GITOPS_DIR/secret.local.yaml"
-          
+
           # Set tags
           export BACKEND_TAG
           export FRONTEND_TAG
@@ -78,20 +87,23 @@ jobs:
         id: commit
         env:
           COMMIT_MSG: ${{ github.event.head_commit.message }}
-        run: echo "title=$(echo "$COMMIT_MSG" | head -n 1)" >> $GITHUB_OUTPUT
+        run: echo "title=$(echo "$COMMIT_MSG" | head -n 1)" >> "$GITHUB_OUTPUT"
 
       - name: Determine PR title
         id: pr-title
+        env:
+          BACK_END_VERSION: ${{ inputs.back-end-version }}
+          FRONT_END_VERSION: ${{ inputs.front-end-version }}
         run: |
           TITLE="Update foodie manifests"
-          if [ -n "${{ inputs.back-end-version }}" ] && [ -n "${{ inputs.front-end-version }}" ]; then
-            TITLE="Deploy foodie backend:${{ inputs.back-end-version }}, frontend:${{ inputs.front-end-version }}"
-          elif [ -n "${{ inputs.back-end-version }}" ]; then
-            TITLE="Deploy foodie-backend:${{ inputs.back-end-version }}"
-          elif [ -n "${{ inputs.front-end-version }}" ]; then
-            TITLE="Deploy foodie-frontend:${{ inputs.front-end-version }}"
+          if [ -n "$BACK_END_VERSION" ] && [ -n "$FRONT_END_VERSION" ]; then
+            TITLE="Deploy foodie backend:${BACK_END_VERSION}, frontend:${FRONT_END_VERSION}"
+          elif [ -n "$BACK_END_VERSION" ]; then
+            TITLE="Deploy foodie-backend:${BACK_END_VERSION}"
+          elif [ -n "$FRONT_END_VERSION" ]; then
+            TITLE="Deploy foodie-frontend:${FRONT_END_VERSION}"
           fi
-          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
@@ -103,7 +115,7 @@ jobs:
           title: ${{ steps.pr-title.outputs.title }}
           body: |
             Automated deployment PR for foodie.
-            
+
             **Back end version:** `${{ inputs.back-end-version || 'unchanged' }}`
             **Front end version:** `${{ inputs.front-end-version || 'unchanged' }}`
             **Triggered by:** [${{ steps.commit.outputs.title }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
@@ -111,4 +123,3 @@ jobs:
           labels: |
             deployment
             automated
-
