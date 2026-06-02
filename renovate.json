@@ -17,6 +17,10 @@
     {
       "matchUpdateTypes": ["major"],
       "automerge": false
+    },
+    {
+      "matchPackageNames": ["scala"],
+      "allowedVersions": "< 3.0.0"
     }
   ]
 }
