@@ -3,7 +3,7 @@ services:
   db:
     container_name: foodie-postgres
     restart: always
-    image: postgres:12.22-alpine
+    image: postgres:18.4-alpine
     env_file:
       - db.env
     # todo: Careful about the target folder. A wrong configuration
