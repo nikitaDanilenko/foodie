@@ -33,7 +33,7 @@ object Dependencies {
 
   private val PureconfigVersion = "0.17.10"
 
-  private val CatsEffectVersion = "3.7.0"
+  private val CatsEffectVersion = "3.7-4972921"
 
   private val CatsCoreVersion = "2.13.0"
 
