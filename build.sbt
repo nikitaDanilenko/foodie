@@ -13,7 +13,7 @@ lazy val root = (project in file("."))
   .enablePlugins(CodegenPlugin)
   .enablePlugins(JavaServerAppPackaging)
   .settings(
-    scalaVersion := "2.13.18",
+    scalaVersion := "3.8.4",
     libraryDependencies ++= guice +: Dependencies.all,
     slickCodegenDatabaseUrl      := config.getString("slick.dbs.default.db.url"),
     slickCodegenDatabaseUser     := config.getString("slick.dbs.default.db.user"),
