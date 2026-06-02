@@ -49,7 +49,7 @@ object Dependencies {
 
   private val ScalacheckVersion = "1.19.0"
 
-  private val ScalacheckShapelessVersion = "1.3.0"
+  private val ScalacheckShapelessVersion = "1.12.1"
 
   val Slick = "com.typesafe.slick" %% "slick" % SlickVersion
 
