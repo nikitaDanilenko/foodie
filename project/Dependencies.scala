@@ -11,7 +11,7 @@ object Dependencies {
 
   private val PostgresqlVersion = "42.7.9"
 
-  private val LogbackClassicVersion = "1.5.32"
+  private val LogbackClassicVersion = "1.5.34"
 
   private val LogstashLogbackEncoderVersion = "9.0"
 
