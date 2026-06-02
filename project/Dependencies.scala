@@ -2,54 +2,22 @@ import sbt._
 
 object Dependencies {
 
-  // Renovate's sbt manager resolves these shared version vals.
+  // Renovate's sbt manager can resolve variables, but not from a nested object.
+  // For this reason, we limit the sharing to only those versions that are used multiple times.
+  // All singleton occurrences are inlined directly.
   private val CirceVersion = "0.14.15"
 
   private val SlickVersion = "3.6.1"
 
   private val JwtVersion = "11.0.4"
 
-  private val PostgresqlVersion = "42.7.11"
-
-  private val LogbackClassicVersion = "1.5.34"
-
-  private val LogstashLogbackEncoderVersion = "9.0"
-
-  private val SpireVersion = "0.18.0"
-
-  private val FlywayPlayVersion = "9.1.0"
-
-  private val PlaySlickVersion = "6.2.0"
-
-  private val PlayCirceVersion = "3014.1"
-
-  private val BridgesVersion = "0.24.0"
-
-  private val BetterFilesVersion = "3.9.2"
-
-  private val ConfigVersion = "1.4.8"
-
-  private val ChimneyVersion = "1.10.0"
-
-  private val PureconfigVersion = "0.17.10"
-
-  private val CatsEffectVersion = "3.7-4972921"
-
   private val CatsCoreVersion = "2.13.0"
-
-  private val EnumeratumCirceVersion = "1.9.7"
 
   private val PlayMailerVersion = "10.1.0"
 
-  private val PprintVersion = "0.9.6"
-
   private val SlickEffectVersion = "0.6.1"
 
-  private val JacksonModuleScalaVersion = "2.21.4"
-
-  private val ScalacheckVersion = "1.19.0"
-
-  private val ScalacheckShapelessVersion = "1.12.1"
+  // Dependencies
 
   val Slick = "com.typesafe.slick" %% "slick" % SlickVersion
 
@@ -57,11 +25,11 @@ object Dependencies {
 
   val SlickCodegen = "com.typesafe.slick" %% "slick-codegen" % SlickVersion
 
-  val Postgresql = "org.postgresql" % "postgresql" % PostgresqlVersion
+  val Postgresql = "org.postgresql" % "postgresql" % "42.7.11"
 
-  val LogbackClassic = "ch.qos.logback" % "logback-classic" % LogbackClassicVersion
+  val LogbackClassic = "ch.qos.logback" % "logback-classic" % "1.5.34"
 
-  val LogstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % LogstashLogbackEncoderVersion
+  val LogstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "9.0"
 
   val CirceCore = "io.circe" %% "circe-core" % CirceVersion
 
@@ -69,52 +37,52 @@ object Dependencies {
 
   val CirceParser = "io.circe" %% "circe-parser" % CirceVersion
 
-  val Spire = "org.typelevel" %% "spire" % SpireVersion
+  val Spire = "org.typelevel" %% "spire" % "0.18.0"
 
-  val FlywayPlay = "org.flywaydb" %% "flyway-play" % FlywayPlayVersion
+  val FlywayPlay = "org.flywaydb" %% "flyway-play" % "9.1.0"
 
-  val PlaySlick = "org.playframework" %% "play-slick" % PlaySlickVersion
+  val PlaySlick = "org.playframework" %% "play-slick" % "6.2.0"
 
-  val PlayCirce = "com.dripower" %% "play-circe" % PlayCirceVersion
+  val PlayCirce = "com.dripower" %% "play-circe" % "3014.1"
 
-  val Bridges = "com.davegurnell" %% "bridges" % BridgesVersion
+  val Bridges = "com.davegurnell" %% "bridges" % "0.24.0"
 
-  val BetterFiles = "com.github.pathikrit" %% "better-files" % BetterFilesVersion
+  val BetterFiles = "com.github.pathikrit" %% "better-files" % "3.9.2"
 
-  val Config = "com.typesafe" % "config" % ConfigVersion
+  val Config = "com.typesafe" % "config" % "1.4.8"
 
-  val Chimney = "io.scalaland" %% "chimney" % ChimneyVersion
+  val Chimney = "io.scalaland" %% "chimney" % "1.10.0"
 
   val JwtCore = "com.github.jwt-scala" %% "jwt-core" % JwtVersion
 
   val JwtCirce = "com.github.jwt-scala" %% "jwt-circe" % JwtVersion
 
-  val Pureconfig = "com.github.pureconfig" %% "pureconfig" % PureconfigVersion
+  val Pureconfig = "com.github.pureconfig" %% "pureconfig" % "0.17.10"
 
-  val CatsEffect = "org.typelevel" %% "cats-effect" % CatsEffectVersion
+  val CatsEffect = "org.typelevel" %% "cats-effect" % "3.7-4972921"
 
   val CatsCore = "org.typelevel" %% "cats-core" % CatsCoreVersion
 
-  val EnumeratumCirce = "com.beachape" %% "enumeratum-circe" % EnumeratumCirceVersion
+  val EnumeratumCirce = "com.beachape" %% "enumeratum-circe" % "1.9.7"
 
   val PlayMailer = "org.playframework" %% "play-mailer" % PlayMailerVersion
 
   val PlayMailerGuice = "org.playframework" %% "play-mailer-guice" % PlayMailerVersion
 
-  val Pprint = "com.lihaoyi" %% "pprint" % PprintVersion
+  val Pprint = "com.lihaoyi" %% "pprint" % "0.9.6"
 
   val SlickEffect = "com.kubukoz" %% "slick-effect" % SlickEffectVersion
 
   val SlickEffectCatsio = "com.kubukoz" %% "slick-effect-catsio" % SlickEffectVersion
 
   // Transitive dependency. Override added for proper version.
-  val JacksonModuleScala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % JacksonModuleScalaVersion
+  val JacksonModuleScala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.21.4"
 
-  val Scalacheck = "org.scalacheck" %% "scalacheck" % ScalacheckVersion % Test
+  val Scalacheck = "org.scalacheck" %% "scalacheck" % "1.19.0" % Test
 
   val CatsLaws = "org.typelevel" %% "cats-laws" % CatsCoreVersion % Test
 
-  val ScalacheckShapeless = "com.github.alexarchambault" %% "scalacheck-shapeless_1.15" % ScalacheckShapelessVersion % Test
+  val ScalacheckShapeless = "com.github.alexarchambault" %% "scalacheck-shapeless_1.15" % "1.12.1" % Test
 
   val all: Seq[ModuleID] = Seq(
     Slick,
