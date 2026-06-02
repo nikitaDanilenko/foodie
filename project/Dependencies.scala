@@ -9,7 +9,7 @@ object Dependencies {
 
   private val JwtVersion = "11.0.4"
 
-  private val PostgresqlVersion = "42.7.9"
+  private val PostgresqlVersion = "42.7.11"
 
   private val LogbackClassicVersion = "1.5.34"
 
