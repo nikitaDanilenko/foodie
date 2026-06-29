@@ -49,7 +49,7 @@ object Dependencies {
 
   val BetterFiles = "com.github.pathikrit" %% "better-files" % "3.9.2"
 
-  val Config = "com.typesafe" % "config" % "1.4.8"
+  val Config = "com.typesafe" % "config" % "1.4.9"
 
   val Chimney = "io.scalaland" %% "chimney" % "1.10.0"
 
