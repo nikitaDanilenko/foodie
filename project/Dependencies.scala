@@ -63,7 +63,7 @@ object Dependencies {
 
   val CatsCore = "org.typelevel" %% "cats-core" % CatsCoreVersion
 
-  val EnumeratumCirce = "com.beachape" %% "enumeratum-circe" % "1.9.7"
+  val EnumeratumCirce = "com.beachape" %% "enumeratum-circe" % "1.9.8"
 
   val PlayMailer = "org.playframework" %% "play-mailer" % PlayMailerVersion
 
