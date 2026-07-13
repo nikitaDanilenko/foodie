@@ -25,6 +25,10 @@
       "allowedVersions": "< 3.0.0"
     },
     {
+      "matchPackageNames": ["com.github.alexarchambault:scalacheck-shapeless_1.15"],
+      "allowedVersions": "<1.4.0"
+    },
+    {
       "matchDatasources": ["docker"],
       "matchPackageNames": ["postgres"],
       "matchUpdateTypes": ["major"],
