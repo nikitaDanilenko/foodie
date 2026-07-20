@@ -27,7 +27,7 @@ object Dependencies {
 
   val Postgresql = "org.postgresql" % "postgresql" % "42.7.11"
 
-  val LogbackClassic = "ch.qos.logback" % "logback-classic" % "1.5.34"
+  val LogbackClassic = "ch.qos.logback" % "logback-classic" % "1.5.38"
 
   val LogstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "9.0"
 
