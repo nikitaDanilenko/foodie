@@ -25,7 +25,7 @@ object Dependencies {
 
   val SlickCodegen = "com.typesafe.slick" %% "slick-codegen" % SlickVersion
 
-  val Postgresql = "org.postgresql" % "postgresql" % "42.7.11"
+  val Postgresql = "org.postgresql" % "postgresql" % "42.7.13"
 
   val LogbackClassic = "ch.qos.logback" % "logback-classic" % "1.5.38"
 
