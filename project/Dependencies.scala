@@ -51,7 +51,7 @@ object Dependencies {
 
   val Config = "com.typesafe" % "config" % "1.4.9"
 
-  val Chimney = "io.scalaland" %% "chimney" % "1.10.0"
+  val Chimney = "io.scalaland" %% "chimney" % "1.11.0"
 
   val JwtCore = "com.github.jwt-scala" %% "jwt-core" % JwtVersion
 
