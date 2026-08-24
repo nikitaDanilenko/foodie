@@ -59,7 +59,7 @@ object Dependencies {
 
   val Pureconfig = "com.github.pureconfig" %% "pureconfig" % "0.17.10"
 
-  val CatsEffect = "org.typelevel" %% "cats-effect" % "3.7-4972921"
+  val CatsEffect = "org.typelevel" %% "cats-effect" % "3.7.1"
 
   val CatsCore = "org.typelevel" %% "cats-core" % CatsCoreVersion
 
