@@ -78,7 +78,7 @@ object Dependencies {
   // Transitive dependency. Override added for proper version.
   val JacksonModuleScala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.22.2"
 
-  val Scalacheck = "org.scalacheck" %% "scalacheck" % "1.19.0" % Test
+  val Scalacheck = "org.scalacheck" %% "scalacheck" % "1.20.0" % Test
 
   val CatsLaws = "org.typelevel" %% "cats-laws" % CatsCoreVersion % Test
 
