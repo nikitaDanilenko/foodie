@@ -1,28 +1,13 @@
-import com.typesafe.config.ConfigFactory
-
 name         := """foodie"""
 organization := "io.danilenko"
 maintainer   := "nikita.danilenko.is@gmail.com"
 
-val config = ConfigFactory
-  .parseFile(new File("conf/application.conf"))
-  .resolve()
-
 lazy val root = (project in file("."))
   .enablePlugins(PlayScala)
-  .enablePlugins(CodegenPlugin)
   .enablePlugins(JavaServerAppPackaging)
   .settings(
     scalaVersion := "2.13.18",
-    libraryDependencies ++= guice +: Dependencies.all,
-    slickCodegenDatabaseUrl      := config.getString("slick.dbs.default.db.url"),
-    slickCodegenDatabaseUser     := config.getString("slick.dbs.default.db.user"),
-    slickCodegenDatabasePassword := config.getString("slick.dbs.default.db.password"),
-    slickCodegenDriver           := slick.jdbc.PostgresProfile,
-    slickCodegenJdbcDriver       := "org.postgresql.Driver",
-    slickCodegenOutputPackage    := "db.generated",
-    slickCodegenExcludedTables   := Seq("flyway_schema_history"),
-    slickCodegenOutputDir        := baseDirectory.value / "app"
+    libraryDependencies ++= guice +: Dependencies.all
   )
 
 scalacOptions ++= Seq(
@@ -33,7 +18,12 @@ lazy val elmGenerate = Command.command("elmGenerate") { state =>
   "runMain elm.Bridge" :: state
 }
 
-commands += elmGenerate
+// Replacement for the former sbt-slick-codegen plugin, which has no sbt 2 build.
+lazy val slickCodegen = Command.command("slickCodegen") { state =>
+  "runMain db.codegen.Codegen" :: state
+}
+
+commands ++= Seq(elmGenerate, slickCodegen)
 
 Docker / maintainer    := "nikita.danilenko.is@gmail.com"
 Docker / packageName   := "foodie"
