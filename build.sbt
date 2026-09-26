@@ -7,7 +7,12 @@ lazy val root = (project in file("."))
   .enablePlugins(JavaServerAppPackaging)
   .settings(
     scalaVersion := "2.13.18",
-    libraryDependencies ++= guice +: Dependencies.all
+    libraryDependencies ++= guice +: Dependencies.all,
+    // play-slick 7.0.0-M1 still pins Slick 3.5.2, which Slick's own pvp scheme deems incompatible with 3.6.x.
+    libraryDependencySchemes ++= Seq(
+      "com.typesafe.slick" %% "slick"          % VersionScheme.EarlySemVer,
+      "com.typesafe.slick" %% "slick-hikaricp" % VersionScheme.EarlySemVer
+    )
   )
 
 scalacOptions ++= Seq(
