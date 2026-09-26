@@ -2,11 +2,9 @@ package db.generated
 
 // AUTO-GENERATED Slick data model
 /** Stand-alone Slick data model for immediate use */
-object Tables
-    extends {
-      val profile = slick.jdbc.PostgresProfile
-    }
-    with Tables
+object Tables extends Tables {
+  val profile: slick.jdbc.JdbcProfile = slick.jdbc.PostgresProfile
+}
 
 /** Slick data model trait for extension, choice of backend or usage in the cake pattern. (Make sure to initialize this
   * late.)
@@ -15,7 +13,8 @@ trait Tables {
   val profile: slick.jdbc.JdbcProfile
   import profile.api._
   import slick.model.ForeignKeyAction
-  // NOTE: GetResult mappers for plain SQL are only generated for tables where Slick knows how to map the types of all columns.
+  // NOTE: GetResult mappers for plain SQL are only generated for
+  // tables where Slick knows how to map the types of all columns.
   import slick.jdbc.{ GetResult => GR }
 
   /** DDL for all tables. Call .create to execute. */
@@ -45,9 +44,6 @@ trait Tables {
     YieldName.schema
   ).reduceLeft(_ ++ _)
 
-  @deprecated("Use .schema instead of .ddl", "3.0")
-  def ddl = schema
-
   /** Entity class storing rows of table ComplexFood
     * @param recipeId
     *   Database column recipe_id SqlType(uuid)
@@ -72,18 +68,18 @@ trait Tables {
       e2: GR[Option[scala.math.BigDecimal]]
   ): GR[ComplexFoodRow] = GR { prs =>
     import prs._
-    ComplexFoodRow.tupled(
+    (ComplexFoodRow.apply _).tupled(
       (<<[java.util.UUID], <<[scala.math.BigDecimal], <<?[scala.math.BigDecimal], <<[java.util.UUID])
     )
   }
 
   /** Table description of table complex_food. Objects of this class serve as prototypes for rows in queries. */
   class ComplexFood(_tableTag: Tag) extends profile.api.Table[ComplexFoodRow](_tableTag, "complex_food") {
-    def * = (recipeId, amountGrams, amountMilliLitres, userId) <> (ComplexFoodRow.tupled, ComplexFoodRow.unapply)
+    def * = ((recipeId, amountGrams, amountMilliLitres, userId)).mapTo[ComplexFoodRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(recipeId), Rep.Some(amountGrams), amountMilliLitres, Rep.Some(userId))).shaped.<>(
-      { r => import r._; _1.map(_ => ComplexFoodRow.tupled((_1.get, _2.get, _3, _4.get))) },
+      { r => import r._; _1.map(_ => (ComplexFoodRow.apply _).tupled((_1.get, _2.get, _3, _4.get))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -149,7 +145,7 @@ trait Tables {
       e2: GR[String]
   ): GR[ComplexIngredientRow] = GR { prs =>
     import prs._
-    ComplexIngredientRow.tupled(
+    (ComplexIngredientRow.apply _).tupled(
       (<<[java.util.UUID], <<[java.util.UUID], <<[scala.math.BigDecimal], <<[String], <<[java.util.UUID])
     )
   }
@@ -157,20 +153,15 @@ trait Tables {
   /** Table description of table complex_ingredient. Objects of this class serve as prototypes for rows in queries. */
   class ComplexIngredient(_tableTag: Tag)
       extends profile.api.Table[ComplexIngredientRow](_tableTag, "complex_ingredient") {
-
-    def * = (
-      recipeId,
-      complexFoodId,
-      factor,
-      scalingMode,
-      userId
-    ) <> (ComplexIngredientRow.tupled, ComplexIngredientRow.unapply)
+    def * = ((recipeId, complexFoodId, factor, scalingMode, userId)).mapTo[ComplexIngredientRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? =
       ((Rep.Some(recipeId), Rep.Some(complexFoodId), Rep.Some(factor), Rep.Some(scalingMode), Rep.Some(userId))).shaped
         .<>(
-          { r => import r._; _1.map(_ => ComplexIngredientRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get))) },
+          { r =>
+            import r._; _1.map(_ => (ComplexIngredientRow.apply _).tupled((_1.get, _2.get, _3.get, _4.get, _5.get)))
+          },
           (_: Any) => throw new Exception("Inserting into ? projection not supported.")
         )
 
@@ -242,25 +233,19 @@ trait Tables {
       e2: GR[java.sql.Date]
   ): GR[ConversionFactorRow] = GR { prs =>
     import prs._
-    ConversionFactorRow.tupled((<<[Int], <<[Int], <<[scala.math.BigDecimal], <<[java.sql.Date]))
+    (ConversionFactorRow.apply _).tupled((<<[Int], <<[Int], <<[scala.math.BigDecimal], <<[java.sql.Date]))
   }
 
   /** Table description of table conversion_factor. Objects of this class serve as prototypes for rows in queries. */
   class ConversionFactor(_tableTag: Tag)
       extends profile.api.Table[ConversionFactorRow](_tableTag, Some("cnf"), "conversion_factor") {
-
-    def * = (
-      foodId,
-      measureId,
-      conversionFactorValue,
-      convFactorDateOfEntry
-    ) <> (ConversionFactorRow.tupled, ConversionFactorRow.unapply)
+    def * = ((foodId, measureId, conversionFactorValue, convFactorDateOfEntry)).mapTo[ConversionFactorRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? =
       ((Rep.Some(foodId), Rep.Some(measureId), Rep.Some(conversionFactorValue), Rep.Some(convFactorDateOfEntry))).shaped
         .<>(
-          { r => import r._; _1.map(_ => ConversionFactorRow.tupled((_1.get, _2.get, _3.get, _4.get))) },
+          { r => import r._; _1.map(_ => (ConversionFactorRow.apply _).tupled((_1.get, _2.get, _3.get, _4.get))) },
           (_: Any) => throw new Exception("Inserting into ? projection not supported.")
         )
 
@@ -303,16 +288,16 @@ trait Tables {
   /** GetResult implicit for fetching FoodGroupRow objects using plain SQL queries */
   implicit def GetResultFoodGroupRow(implicit e0: GR[Int], e1: GR[Option[String]]): GR[FoodGroupRow] = GR { prs =>
     import prs._
-    FoodGroupRow.tupled((<<[Int], <<?[String], <<?[String], <<?[String]))
+    (FoodGroupRow.apply _).tupled((<<[Int], <<?[String], <<?[String], <<?[String]))
   }
 
   /** Table description of table food_group. Objects of this class serve as prototypes for rows in queries. */
   class FoodGroup(_tableTag: Tag) extends profile.api.Table[FoodGroupRow](_tableTag, Some("cnf"), "food_group") {
-    def * = (foodGroupId, foodGroupCode, foodGroupName, foodGroupNameF) <> (FoodGroupRow.tupled, FoodGroupRow.unapply)
+    def * = ((foodGroupId, foodGroupCode, foodGroupName, foodGroupNameF)).mapTo[FoodGroupRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(foodGroupId), foodGroupCode, foodGroupName, foodGroupNameF)).shaped.<>(
-      { r => import r._; _1.map(_ => FoodGroupRow.tupled((_1.get, _2, _3, _4))) },
+      { r => import r._; _1.map(_ => (FoodGroupRow.apply _).tupled((_1.get, _2, _3, _4))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -377,7 +362,7 @@ trait Tables {
       e5: GR[Option[String]]
   ): GR[FoodNameRow] = GR { prs =>
     import prs._
-    FoodNameRow.tupled(
+    (FoodNameRow.apply _).tupled(
       (
         <<[Int],
         <<[Int],
@@ -397,17 +382,19 @@ trait Tables {
   class FoodName(_tableTag: Tag) extends profile.api.Table[FoodNameRow](_tableTag, Some("cnf"), "food_name") {
 
     def * = (
-      foodId,
-      foodCode,
-      foodGroupId,
-      foodSourceId,
-      foodDescription,
-      foodDescriptionF,
-      foodDateOfEntry,
-      foodDateOfPublication,
-      countryCode,
-      scientificName
-    ) <> (FoodNameRow.tupled, FoodNameRow.unapply)
+      (
+        foodId,
+        foodCode,
+        foodGroupId,
+        foodSourceId,
+        foodDescription,
+        foodDescriptionF,
+        foodDateOfEntry,
+        foodDateOfPublication,
+        countryCode,
+        scientificName
+      )
+    ).mapTo[FoodNameRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = (
@@ -426,7 +413,7 @@ trait Tables {
     ).shaped.<>(
       { r =>
         import r._;
-        _1.map(_ => FoodNameRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get, _8, _9, _10)))
+        _1.map(_ => (FoodNameRow.apply _).tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get, _8, _9, _10)))
       },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
@@ -499,23 +486,17 @@ trait Tables {
   /** GetResult implicit for fetching FoodSourceRow objects using plain SQL queries */
   implicit def GetResultFoodSourceRow(implicit e0: GR[Int], e1: GR[Option[String]]): GR[FoodSourceRow] = GR { prs =>
     import prs._
-    FoodSourceRow.tupled((<<[Int], <<[Int], <<?[String], <<?[String]))
+    (FoodSourceRow.apply _).tupled((<<[Int], <<[Int], <<?[String], <<?[String]))
   }
 
   /** Table description of table food_source. Objects of this class serve as prototypes for rows in queries. */
   class FoodSource(_tableTag: Tag) extends profile.api.Table[FoodSourceRow](_tableTag, Some("cnf"), "food_source") {
-
-    def * = (
-      foodSourceId,
-      foodSourceCode,
-      foodSourceDescription,
-      foodSourceDescriptionF
-    ) <> (FoodSourceRow.tupled, FoodSourceRow.unapply)
+    def * = ((foodSourceId, foodSourceCode, foodSourceDescription, foodSourceDescriptionF)).mapTo[FoodSourceRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? =
       ((Rep.Some(foodSourceId), Rep.Some(foodSourceCode), foodSourceDescription, foodSourceDescriptionF)).shaped.<>(
-        { r => import r._; _1.map(_ => FoodSourceRow.tupled((_1.get, _2.get, _3, _4))) },
+        { r => import r._; _1.map(_ => (FoodSourceRow.apply _).tupled((_1.get, _2.get, _3, _4))) },
         (_: Any) => throw new Exception("Inserting into ? projection not supported.")
       )
 
@@ -568,19 +549,19 @@ trait Tables {
       e3: GR[Option[String]]
   ): GR[MealRow] = GR { prs =>
     import prs._
-    MealRow.tupled(
+    (MealRow.apply _).tupled(
       (<<[java.util.UUID], <<[java.util.UUID], <<[java.sql.Date], <<?[java.sql.Time], <<?[String], <<[java.util.UUID])
     )
   }
 
   /** Table description of table meal. Objects of this class serve as prototypes for rows in queries. */
   class Meal(_tableTag: Tag) extends profile.api.Table[MealRow](_tableTag, "meal") {
-    def * = (id, userId, consumedOnDate, consumedOnTime, name, profileId) <> (MealRow.tupled, MealRow.unapply)
+    def * = ((id, userId, consumedOnDate, consumedOnTime, name, profileId)).mapTo[MealRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? =
       ((Rep.Some(id), Rep.Some(userId), Rep.Some(consumedOnDate), consumedOnTime, name, Rep.Some(profileId))).shaped.<>(
-        { r => import r._; _1.map(_ => MealRow.tupled((_1.get, _2.get, _3.get, _4, _5, _6.get))) },
+        { r => import r._; _1.map(_ => (MealRow.apply _).tupled((_1.get, _2.get, _3.get, _4, _5, _6.get))) },
         (_: Any) => throw new Exception("Inserting into ? projection not supported.")
       )
 
@@ -651,7 +632,7 @@ trait Tables {
   implicit def GetResultMealEntryRow(implicit e0: GR[java.util.UUID], e1: GR[scala.math.BigDecimal]): GR[MealEntryRow] =
     GR { prs =>
       import prs._
-      MealEntryRow.tupled(
+      (MealEntryRow.apply _).tupled(
         (
           <<[java.util.UUID],
           <<[java.util.UUID],
@@ -665,7 +646,7 @@ trait Tables {
 
   /** Table description of table meal_entry. Objects of this class serve as prototypes for rows in queries. */
   class MealEntry(_tableTag: Tag) extends profile.api.Table[MealEntryRow](_tableTag, "meal_entry") {
-    def * = (id, mealId, recipeId, numberOfServings, userId, profileId) <> (MealEntryRow.tupled, MealEntryRow.unapply)
+    def * = ((id, mealId, recipeId, numberOfServings, userId, profileId)).mapTo[MealEntryRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = (
@@ -678,7 +659,7 @@ trait Tables {
         Rep.Some(profileId)
       )
     ).shaped.<>(
-      { r => import r._; _1.map(_ => MealEntryRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get))) },
+      { r => import r._; _1.map(_ => (MealEntryRow.apply _).tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -749,16 +730,16 @@ trait Tables {
   /** GetResult implicit for fetching MeasureNameRow objects using plain SQL queries */
   implicit def GetResultMeasureNameRow(implicit e0: GR[Int], e1: GR[String]): GR[MeasureNameRow] = GR { prs =>
     import prs._
-    MeasureNameRow.tupled((<<[Int], <<[String], <<[String]))
+    (MeasureNameRow.apply _).tupled((<<[Int], <<[String], <<[String]))
   }
 
   /** Table description of table measure_name. Objects of this class serve as prototypes for rows in queries. */
   class MeasureName(_tableTag: Tag) extends profile.api.Table[MeasureNameRow](_tableTag, Some("cnf"), "measure_name") {
-    def * = (measureId, measureDescription, measureDescriptionF) <> (MeasureNameRow.tupled, MeasureNameRow.unapply)
+    def * = ((measureId, measureDescription, measureDescriptionF)).mapTo[MeasureNameRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(measureId), Rep.Some(measureDescription), Rep.Some(measureDescriptionF))).shaped.<>(
-      { r => import r._; _1.map(_ => MeasureNameRow.tupled((_1.get, _2.get, _3.get))) },
+      { r => import r._; _1.map(_ => (MeasureNameRow.apply _).tupled((_1.get, _2.get, _3.get))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -810,7 +791,7 @@ trait Tables {
       e4: GR[Option[java.sql.Date]]
   ): GR[NutrientAmountRow] = GR { prs =>
     import prs._
-    NutrientAmountRow.tupled(
+    (NutrientAmountRow.apply _).tupled(
       (<<[Int], <<[Int], <<[scala.math.BigDecimal], <<?[scala.math.BigDecimal], <<?[Int], <<[Int], <<?[java.sql.Date])
     )
   }
@@ -819,15 +800,9 @@ trait Tables {
   class NutrientAmount(_tableTag: Tag)
       extends profile.api.Table[NutrientAmountRow](_tableTag, Some("cnf"), "nutrient_amount") {
 
-    def * = (
-      foodId,
-      nutrientId,
-      nutrientValue,
-      standardError,
-      numberOfObservation,
-      nutrientSourceId,
-      nutrientDateOfEntry
-    ) <> (NutrientAmountRow.tupled, NutrientAmountRow.unapply)
+    def * =
+      ((foodId, nutrientId, nutrientValue, standardError, numberOfObservation, nutrientSourceId, nutrientDateOfEntry))
+        .mapTo[NutrientAmountRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = (
@@ -841,7 +816,9 @@ trait Tables {
         nutrientDateOfEntry
       )
     ).shaped.<>(
-      { r => import r._; _1.map(_ => NutrientAmountRow.tupled((_1.get, _2.get, _3.get, _4, _5, _6.get, _7))) },
+      { r =>
+        import r._; _1.map(_ => (NutrientAmountRow.apply _).tupled((_1.get, _2.get, _3.get, _4, _5, _6.get, _7)))
+      },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -919,7 +896,9 @@ trait Tables {
       e2: GR[Option[String]]
   ): GR[NutrientNameRow] = GR { prs =>
     import prs._
-    NutrientNameRow.tupled((<<[Int], <<[Int], <<[String], <<[String], <<[String], <<[String], <<?[String], <<[Int]))
+    (NutrientNameRow.apply _).tupled(
+      (<<[Int], <<[Int], <<[String], <<[String], <<[String], <<[String], <<?[String], <<[Int])
+    )
   }
 
   /** Table description of table nutrient_name. Objects of this class serve as prototypes for rows in queries. */
@@ -927,15 +906,17 @@ trait Tables {
       extends profile.api.Table[NutrientNameRow](_tableTag, Some("cnf"), "nutrient_name") {
 
     def * = (
-      nutrientNameId,
-      nutrientCode,
-      nutrientSymbol,
-      nutrientUnit,
-      nutrientName,
-      nutrientNameF,
-      tagname,
-      nutrientDecimals
-    ) <> (NutrientNameRow.tupled, NutrientNameRow.unapply)
+      (
+        nutrientNameId,
+        nutrientCode,
+        nutrientSymbol,
+        nutrientUnit,
+        nutrientName,
+        nutrientNameF,
+        tagname,
+        nutrientDecimals
+      )
+    ).mapTo[NutrientNameRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = (
@@ -951,7 +932,8 @@ trait Tables {
       )
     ).shaped.<>(
       { r =>
-        import r._; _1.map(_ => NutrientNameRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7, _8.get)))
+        import r._;
+        _1.map(_ => (NutrientNameRow.apply _).tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7, _8.get)))
       },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
@@ -1005,19 +987,15 @@ trait Tables {
   implicit def GetResultNutrientSourceRow(implicit e0: GR[Int], e1: GR[Option[String]]): GR[NutrientSourceRow] = GR {
     prs =>
       import prs._
-      NutrientSourceRow.tupled((<<[Int], <<[Int], <<?[String], <<?[String]))
+      (NutrientSourceRow.apply _).tupled((<<[Int], <<[Int], <<?[String], <<?[String]))
   }
 
   /** Table description of table nutrient_source. Objects of this class serve as prototypes for rows in queries. */
   class NutrientSource(_tableTag: Tag)
       extends profile.api.Table[NutrientSourceRow](_tableTag, Some("cnf"), "nutrient_source") {
 
-    def * = (
-      nutrientSourceId,
-      nutrientSourceCode,
-      nutrientSourceDescription,
-      nutrientSourceDescriptionF
-    ) <> (NutrientSourceRow.tupled, NutrientSourceRow.unapply)
+    def * = ((nutrientSourceId, nutrientSourceCode, nutrientSourceDescription, nutrientSourceDescriptionF))
+      .mapTo[NutrientSourceRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = (
@@ -1028,7 +1006,7 @@ trait Tables {
         nutrientSourceDescriptionF
       )
     ).shaped.<>(
-      { r => import r._; _1.map(_ => NutrientSourceRow.tupled((_1.get, _2.get, _3, _4))) },
+      { r => import r._; _1.map(_ => (NutrientSourceRow.apply _).tupled((_1.get, _2.get, _3, _4))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -1064,16 +1042,16 @@ trait Tables {
   /** GetResult implicit for fetching ProfileRow objects using plain SQL queries */
   implicit def GetResultProfileRow(implicit e0: GR[java.util.UUID], e1: GR[String]): GR[ProfileRow] = GR { prs =>
     import prs._
-    ProfileRow.tupled((<<[java.util.UUID], <<[java.util.UUID], <<[String]))
+    (ProfileRow.apply _).tupled((<<[java.util.UUID], <<[java.util.UUID], <<[String]))
   }
 
   /** Table description of table profile. Objects of this class serve as prototypes for rows in queries. */
   class Profile(_tableTag: Tag) extends profile.api.Table[ProfileRow](_tableTag, "profile") {
-    def * = (id, userId, name) <> (ProfileRow.tupled, ProfileRow.unapply)
+    def * = ((id, userId, name)).mapTo[ProfileRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(id), Rep.Some(userId), Rep.Some(name))).shaped.<>(
-      { r => import r._; _1.map(_ => ProfileRow.tupled((_1.get, _2.get, _3.get))) },
+      { r => import r._; _1.map(_ => (ProfileRow.apply _).tupled((_1.get, _2.get, _3.get))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -1134,20 +1112,20 @@ trait Tables {
       e3: GR[scala.math.BigDecimal]
   ): GR[RecipeRow] = GR { prs =>
     import prs._
-    RecipeRow.tupled(
+    (RecipeRow.apply _).tupled(
       (<<[java.util.UUID], <<[java.util.UUID], <<[String], <<?[String], <<[scala.math.BigDecimal], <<?[String])
     )
   }
 
   /** Table description of table recipe. Objects of this class serve as prototypes for rows in queries. */
   class Recipe(_tableTag: Tag) extends profile.api.Table[RecipeRow](_tableTag, "recipe") {
-    def * = (id, userId, name, description, numberOfServings, servingSize) <> (RecipeRow.tupled, RecipeRow.unapply)
+    def * = ((id, userId, name, description, numberOfServings, servingSize)).mapTo[RecipeRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? =
       ((Rep.Some(id), Rep.Some(userId), Rep.Some(name), description, Rep.Some(numberOfServings), servingSize)).shaped
         .<>(
-          { r => import r._; _1.map(_ => RecipeRow.tupled((_1.get, _2.get, _3.get, _4, _5.get, _6))) },
+          { r => import r._; _1.map(_ => (RecipeRow.apply _).tupled((_1.get, _2.get, _3.get, _4, _5.get, _6))) },
           (_: Any) => throw new Exception("Inserting into ? projection not supported.")
         )
 
@@ -1215,7 +1193,7 @@ trait Tables {
       e3: GR[scala.math.BigDecimal]
   ): GR[RecipeIngredientRow] = GR { prs =>
     import prs._
-    RecipeIngredientRow.tupled(
+    (RecipeIngredientRow.apply _).tupled(
       (<<[java.util.UUID], <<[java.util.UUID], <<[Int], <<?[Int], <<[scala.math.BigDecimal], <<[java.util.UUID])
     )
   }
@@ -1223,15 +1201,15 @@ trait Tables {
   /** Table description of table recipe_ingredient. Objects of this class serve as prototypes for rows in queries. */
   class RecipeIngredient(_tableTag: Tag)
       extends profile.api.Table[RecipeIngredientRow](_tableTag, "recipe_ingredient") {
-
-    def * =
-      (id, recipeId, foodNameId, measureId, factor, userId) <> (RecipeIngredientRow.tupled, RecipeIngredientRow.unapply)
+    def * = ((id, recipeId, foodNameId, measureId, factor, userId)).mapTo[RecipeIngredientRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? =
       ((Rep.Some(id), Rep.Some(recipeId), Rep.Some(foodNameId), measureId, Rep.Some(factor), Rep.Some(userId))).shaped
         .<>(
-          { r => import r._; _1.map(_ => RecipeIngredientRow.tupled((_1.get, _2.get, _3.get, _4, _5.get, _6.get))) },
+          { r =>
+            import r._; _1.map(_ => (RecipeIngredientRow.apply _).tupled((_1.get, _2.get, _3.get, _4, _5.get, _6.get)))
+          },
           (_: Any) => throw new Exception("Inserting into ? projection not supported.")
         )
 
@@ -1321,16 +1299,16 @@ trait Tables {
       e2: GR[scala.math.BigDecimal]
   ): GR[ReferenceEntryRow] = GR { prs =>
     import prs._
-    ReferenceEntryRow.tupled((<<[java.util.UUID], <<[Int], <<[scala.math.BigDecimal], <<[java.util.UUID]))
+    (ReferenceEntryRow.apply _).tupled((<<[java.util.UUID], <<[Int], <<[scala.math.BigDecimal], <<[java.util.UUID]))
   }
 
   /** Table description of table reference_entry. Objects of this class serve as prototypes for rows in queries. */
   class ReferenceEntry(_tableTag: Tag) extends profile.api.Table[ReferenceEntryRow](_tableTag, "reference_entry") {
-    def * = (referenceMapId, nutrientCode, amount, userId) <> (ReferenceEntryRow.tupled, ReferenceEntryRow.unapply)
+    def * = ((referenceMapId, nutrientCode, amount, userId)).mapTo[ReferenceEntryRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(referenceMapId), Rep.Some(nutrientCode), Rep.Some(amount), Rep.Some(userId))).shaped.<>(
-      { r => import r._; _1.map(_ => ReferenceEntryRow.tupled((_1.get, _2.get, _3.get, _4.get))) },
+      { r => import r._; _1.map(_ => (ReferenceEntryRow.apply _).tupled((_1.get, _2.get, _3.get, _4.get))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -1389,16 +1367,16 @@ trait Tables {
   implicit def GetResultReferenceMapRow(implicit e0: GR[java.util.UUID], e1: GR[String]): GR[ReferenceMapRow] = GR {
     prs =>
       import prs._
-      ReferenceMapRow.tupled((<<[java.util.UUID], <<[String], <<[java.util.UUID]))
+      (ReferenceMapRow.apply _).tupled((<<[java.util.UUID], <<[String], <<[java.util.UUID]))
   }
 
   /** Table description of table reference_map. Objects of this class serve as prototypes for rows in queries. */
   class ReferenceMap(_tableTag: Tag) extends profile.api.Table[ReferenceMapRow](_tableTag, "reference_map") {
-    def * = (id, name, userId) <> (ReferenceMapRow.tupled, ReferenceMapRow.unapply)
+    def * = ((id, name, userId)).mapTo[ReferenceMapRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(id), Rep.Some(name), Rep.Some(userId))).shaped.<>(
-      { r => import r._; _1.map(_ => ReferenceMapRow.tupled((_1.get, _2.get, _3.get))) },
+      { r => import r._; _1.map(_ => (ReferenceMapRow.apply _).tupled((_1.get, _2.get, _3.get))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -1441,17 +1419,17 @@ trait Tables {
   /** GetResult implicit for fetching RefuseAmountRow objects using plain SQL queries */
   implicit def GetResultRefuseAmountRow(implicit e0: GR[Int], e1: GR[java.sql.Date]): GR[RefuseAmountRow] = GR { prs =>
     import prs._
-    RefuseAmountRow.tupled((<<[Int], <<[Int], <<[Int], <<[java.sql.Date]))
+    (RefuseAmountRow.apply _).tupled((<<[Int], <<[Int], <<[Int], <<[java.sql.Date]))
   }
 
   /** Table description of table refuse_amount. Objects of this class serve as prototypes for rows in queries. */
   class RefuseAmount(_tableTag: Tag)
       extends profile.api.Table[RefuseAmountRow](_tableTag, Some("cnf"), "refuse_amount") {
-    def * = (foodId, refuseId, refuseAmount, refuseDateOfEntry) <> (RefuseAmountRow.tupled, RefuseAmountRow.unapply)
+    def * = ((foodId, refuseId, refuseAmount, refuseDateOfEntry)).mapTo[RefuseAmountRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(foodId), Rep.Some(refuseId), Rep.Some(refuseAmount), Rep.Some(refuseDateOfEntry))).shaped.<>(
-      { r => import r._; _1.map(_ => RefuseAmountRow.tupled((_1.get, _2.get, _3.get, _4.get))) },
+      { r => import r._; _1.map(_ => (RefuseAmountRow.apply _).tupled((_1.get, _2.get, _3.get, _4.get))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -1495,16 +1473,16 @@ trait Tables {
   /** GetResult implicit for fetching RefuseNameRow objects using plain SQL queries */
   implicit def GetResultRefuseNameRow(implicit e0: GR[Int], e1: GR[String]): GR[RefuseNameRow] = GR { prs =>
     import prs._
-    RefuseNameRow.tupled((<<[Int], <<[String], <<[String]))
+    (RefuseNameRow.apply _).tupled((<<[Int], <<[String], <<[String]))
   }
 
   /** Table description of table refuse_name. Objects of this class serve as prototypes for rows in queries. */
   class RefuseName(_tableTag: Tag) extends profile.api.Table[RefuseNameRow](_tableTag, Some("cnf"), "refuse_name") {
-    def * = (refuseId, refuseDescription, refuseDescriptionF) <> (RefuseNameRow.tupled, RefuseNameRow.unapply)
+    def * = ((refuseId, refuseDescription, refuseDescriptionF)).mapTo[RefuseNameRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(refuseId), Rep.Some(refuseDescription), Rep.Some(refuseDescriptionF))).shaped.<>(
-      { r => import r._; _1.map(_ => RefuseNameRow.tupled((_1.get, _2.get, _3.get))) },
+      { r => import r._; _1.map(_ => (RefuseNameRow.apply _).tupled((_1.get, _2.get, _3.get))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -1534,16 +1512,16 @@ trait Tables {
   /** GetResult implicit for fetching SessionRow objects using plain SQL queries */
   implicit def GetResultSessionRow(implicit e0: GR[java.util.UUID], e1: GR[java.sql.Date]): GR[SessionRow] = GR { prs =>
     import prs._
-    SessionRow.tupled((<<[java.util.UUID], <<[java.util.UUID], <<[java.sql.Date]))
+    (SessionRow.apply _).tupled((<<[java.util.UUID], <<[java.util.UUID], <<[java.sql.Date]))
   }
 
   /** Table description of table session. Objects of this class serve as prototypes for rows in queries. */
   class Session(_tableTag: Tag) extends profile.api.Table[SessionRow](_tableTag, "session") {
-    def * = (id, userId, createdAt) <> (SessionRow.tupled, SessionRow.unapply)
+    def * = ((id, userId, createdAt)).mapTo[SessionRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(id), Rep.Some(userId), Rep.Some(createdAt))).shaped.<>(
-      { r => import r._; _1.map(_ => SessionRow.tupled((_1.get, _2.get, _3.get))) },
+      { r => import r._; _1.map(_ => (SessionRow.apply _).tupled((_1.get, _2.get, _3.get))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -1595,17 +1573,17 @@ trait Tables {
   implicit def GetResultUserRow(implicit e0: GR[java.util.UUID], e1: GR[String], e2: GR[Option[String]]): GR[UserRow] =
     GR { prs =>
       import prs._
-      UserRow.tupled((<<[java.util.UUID], <<[String], <<?[String], <<[String], <<[String], <<[String]))
+      (UserRow.apply _).tupled((<<[java.util.UUID], <<[String], <<?[String], <<[String], <<[String], <<[String]))
     }
 
   /** Table description of table user. Objects of this class serve as prototypes for rows in queries. */
   class User(_tableTag: Tag) extends profile.api.Table[UserRow](_tableTag, "user") {
-    def * = (id, nickname, displayName, email, salt, hash) <> (UserRow.tupled, UserRow.unapply)
+    def * = ((id, nickname, displayName, email, salt, hash)).mapTo[UserRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? =
       ((Rep.Some(id), Rep.Some(nickname), displayName, Rep.Some(email), Rep.Some(salt), Rep.Some(hash))).shaped.<>(
-        { r => import r._; _1.map(_ => UserRow.tupled((_1.get, _2.get, _3, _4.get, _5.get, _6.get))) },
+        { r => import r._; _1.map(_ => (UserRow.apply _).tupled((_1.get, _2.get, _3, _4.get, _5.get, _6.get))) },
         (_: Any) => throw new Exception("Inserting into ? projection not supported.")
       )
 
@@ -1649,16 +1627,16 @@ trait Tables {
   /** GetResult implicit for fetching YieldAmountRow objects using plain SQL queries */
   implicit def GetResultYieldAmountRow(implicit e0: GR[Int], e1: GR[java.sql.Date]): GR[YieldAmountRow] = GR { prs =>
     import prs._
-    YieldAmountRow.tupled((<<[Int], <<[Int], <<[Int], <<[java.sql.Date]))
+    (YieldAmountRow.apply _).tupled((<<[Int], <<[Int], <<[Int], <<[java.sql.Date]))
   }
 
   /** Table description of table yield_amount. Objects of this class serve as prototypes for rows in queries. */
   class YieldAmount(_tableTag: Tag) extends profile.api.Table[YieldAmountRow](_tableTag, Some("cnf"), "yield_amount") {
-    def * = (foodId, yieldId, yieldAmount, yieldDateOfEntry) <> (YieldAmountRow.tupled, YieldAmountRow.unapply)
+    def * = ((foodId, yieldId, yieldAmount, yieldDateOfEntry)).mapTo[YieldAmountRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(foodId), Rep.Some(yieldId), Rep.Some(yieldAmount), Rep.Some(yieldDateOfEntry))).shaped.<>(
-      { r => import r._; _1.map(_ => YieldAmountRow.tupled((_1.get, _2.get, _3.get, _4.get))) },
+      { r => import r._; _1.map(_ => (YieldAmountRow.apply _).tupled((_1.get, _2.get, _3.get, _4.get))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -1702,16 +1680,16 @@ trait Tables {
   /** GetResult implicit for fetching YieldNameRow objects using plain SQL queries */
   implicit def GetResultYieldNameRow(implicit e0: GR[Int], e1: GR[String]): GR[YieldNameRow] = GR { prs =>
     import prs._
-    YieldNameRow.tupled((<<[Int], <<[String], <<[String]))
+    (YieldNameRow.apply _).tupled((<<[Int], <<[String], <<[String]))
   }
 
   /** Table description of table yield_name. Objects of this class serve as prototypes for rows in queries. */
   class YieldName(_tableTag: Tag) extends profile.api.Table[YieldNameRow](_tableTag, Some("cnf"), "yield_name") {
-    def * = (yieldId, yieldDescription, yieldDescriptionF) <> (YieldNameRow.tupled, YieldNameRow.unapply)
+    def * = ((yieldId, yieldDescription, yieldDescriptionF)).mapTo[YieldNameRow]
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(yieldId), Rep.Some(yieldDescription), Rep.Some(yieldDescriptionF))).shaped.<>(
-      { r => import r._; _1.map(_ => YieldNameRow.tupled((_1.get, _2.get, _3.get))) },
+      { r => import r._; _1.map(_ => (YieldNameRow.apply _).tupled((_1.get, _2.get, _3.get))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
