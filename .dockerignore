@@ -1,4 +1,4 @@
-.env
+.env.properties
 .git
 .gitignore
 .github/
