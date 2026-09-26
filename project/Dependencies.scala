@@ -13,7 +13,7 @@ object Dependencies {
 
   private val CatsCoreVersion = "2.13.0"
 
-  private val PlayMailerVersion = "10.1.0"
+  private val PlayMailerVersion = "11.0.0-M1"
 
   private val SlickEffectVersion = "0.6.1"
 
@@ -41,7 +41,7 @@ object Dependencies {
 
   val FlywayPlay = "org.flywaydb" %% "flyway-play" % "9.1.0"
 
-  val PlaySlick = "org.playframework" %% "play-slick" % "6.2.0"
+  val PlaySlick = "org.playframework" %% "play-slick" % "7.0.0-M1"
 
   val PlayCirce = "com.dripower" %% "play-circe" % "3014.1"
 

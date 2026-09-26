@@ -1,28 +1,18 @@
-import com.typesafe.config.ConfigFactory
-
 name         := """foodie"""
 organization := "io.danilenko"
 maintainer   := "nikita.danilenko.is@gmail.com"
 
-val config = ConfigFactory
-  .parseFile(new File("conf/application.conf"))
-  .resolve()
-
 lazy val root = (project in file("."))
   .enablePlugins(PlayScala)
-  .enablePlugins(CodegenPlugin)
   .enablePlugins(JavaServerAppPackaging)
   .settings(
     scalaVersion := "2.13.18",
     libraryDependencies ++= guice +: Dependencies.all,
-    slickCodegenDatabaseUrl      := config.getString("slick.dbs.default.db.url"),
-    slickCodegenDatabaseUser     := config.getString("slick.dbs.default.db.user"),
-    slickCodegenDatabasePassword := config.getString("slick.dbs.default.db.password"),
-    slickCodegenDriver           := slick.jdbc.PostgresProfile,
-    slickCodegenJdbcDriver       := "org.postgresql.Driver",
-    slickCodegenOutputPackage    := "db.generated",
-    slickCodegenExcludedTables   := Seq("flyway_schema_history"),
-    slickCodegenOutputDir        := baseDirectory.value / "app"
+    // play-slick 7.0.0-M1 still pins Slick 3.5.2, which Slick's own pvp scheme deems incompatible with 3.6.x.
+    libraryDependencySchemes ++= Seq(
+      "com.typesafe.slick" %% "slick"          % VersionScheme.EarlySemVer,
+      "com.typesafe.slick" %% "slick-hikaricp" % VersionScheme.EarlySemVer
+    )
   )
 
 scalacOptions ++= Seq(
@@ -33,7 +23,12 @@ lazy val elmGenerate = Command.command("elmGenerate") { state =>
   "runMain elm.Bridge" :: state
 }
 
-commands += elmGenerate
+// Replacement for the former sbt-slick-codegen plugin, which has no sbt 2 build.
+lazy val slickCodegen = Command.command("slickCodegen") { state =>
+  "runMain db.codegen.Codegen" :: state
+}
+
+commands ++= Seq(elmGenerate, slickCodegen)
 
 Docker / maintainer    := "nikita.danilenko.is@gmail.com"
 Docker / packageName   := "foodie"
