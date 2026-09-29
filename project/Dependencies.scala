@@ -86,8 +86,6 @@ object Dependencies {
 
   val CatsLaws = "org.typelevel" %% "cats-laws" % CatsCoreVersion % Test
 
-  val ScalacheckShapeless = "com.github.alexarchambault" %% "scalacheck-shapeless_1.15" % "1.3.0" % Test
-
   val all: Seq[ModuleID] = Seq(
     Slick,
     SlickHikaricp,
@@ -121,7 +119,6 @@ object Dependencies {
     JacksonModuleScala,
     Scalacheck,
     CatsLaws,
-    ScalacheckShapeless
   )
 
 }
