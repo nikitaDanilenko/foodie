@@ -16,7 +16,9 @@ import scala.concurrent.{ Await, ExecutionContext, Future }
 @Singleton
 class GeneralTableConstants @Inject() (
     override protected val dbConfigProvider: DatabaseConfigProvider,
-    constantsConfiguration: ConstantsConfiguration
+    constantsConfiguration: ConstantsConfiguration,
+    // Unused, but the dependency makes Guice apply all migrations before any table is read.
+    migrations: modules.Migrations
 )(implicit executionContext: ExecutionContext)
     extends HasDatabaseConfigProvider[PostgresProfile] {
 
