@@ -2,16 +2,21 @@ package modules
 
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.output.MigrateResult
-import play.api.{ Configuration, Environment }
+import play.api.{ Configuration, Environment, Logger }
 
 import javax.inject.{ Inject, Singleton }
 
 @Singleton
 class Migrations @Inject() (configuration: Configuration, environment: Environment) {
 
+  private val logger = Logger(getClass)
+
   locally {
-    val result = migrate()
-    println(s"Migration result: $result")
+    val result  = migrate()
+    val message = Option(result.targetSchemaVersion).fold("Database schema is up to date")(version =>
+      s"Applied ${result.migrationsExecuted} migration(s), schema version is now $version"
+    )
+    logger.info(message)
   }
 
   private def migrate(): MigrateResult = {
