@@ -15,6 +15,8 @@ object Dependencies {
 
   private val PlayMailerVersion = "10.1.0"
 
+  private val FlywayVersion = "11.9.2"
+
   private val SlickEffectVersion = "0.6.1"
 
   // Dependencies
@@ -39,7 +41,9 @@ object Dependencies {
 
   val Spire = "org.typelevel" %% "spire" % "0.18.0"
 
-  val FlywayPlay = "org.flywaydb" %% "flyway-play" % "9.1.0"
+  val FlywayCore = "org.flywaydb" % "flyway-core" % FlywayVersion
+
+  val FlywayPostgresql = "org.flywaydb" % "flyway-database-postgresql" % FlywayVersion
 
   val PlaySlick = "org.playframework" %% "play-slick" % "6.2.0"
 
@@ -95,7 +99,8 @@ object Dependencies {
     CirceGeneric,
     CirceParser,
     Spire,
-    FlywayPlay,
+    FlywayCore,
+    FlywayPostgresql,
     PlaySlick,
     PlayCirce,
     Bridges,
