@@ -15,6 +15,7 @@
 
     <logger name="play" level="INFO"/>
     <logger name="application" level="DEBUG"/>
+    <logger name="modules" level="INFO"/>
 
     <root level="WARN">
         <appender-ref ref="ASYNCSTDOUT"/>
