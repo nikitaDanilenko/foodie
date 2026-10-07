@@ -2,7 +2,7 @@ package services.complex.food
 
 import cats.data.{ EitherT, NonEmptyList }
 import config.TestConfiguration
-import db._
+import db.{ UserId, _ }
 import errors.ErrorContext
 import org.scalacheck.Prop.AnyOperators
 import org.scalacheck.{ Gen, Prop, Properties, Test }
@@ -52,7 +52,7 @@ object ComplexFoodServiceProperties extends Properties("Complex food service") {
   )
 
   private val setupBaseGen: Gen[SetupBase] = for {
-    userId        <- GenUtils.taggedId[UserTag]
+    userId        <- GenUtils.taggedId(UserId)
     recipes       <- Gen.nonEmptyListOf(services.recipe.Gens.recipeGen)
     recipesSubset <- GenUtils.nonEmptySubset(NonEmptyList.fromListUnsafe(recipes))
     complexFoods  <- recipesSubset.traverse(Gens.complexFood(_, VolumeAmountOption.OptionalVolume))
@@ -150,7 +150,7 @@ object ComplexFoodServiceProperties extends Properties("Complex food service") {
   }
 
   private def creationSetupGenWith(volumeAmountOption: VolumeAmountOption): Gen[CreationSetup] = for {
-    userId              <- GenUtils.taggedId[UserTag]
+    userId              <- GenUtils.taggedId(UserId)
     recipe              <- services.recipe.Gens.recipeGen
     complexFoodCreation <- Gens.complexFoodCreation(recipe.id, volumeAmountOption)
   } yield CreationSetup(
@@ -348,7 +348,7 @@ object ComplexFoodServiceProperties extends Properties("Complex food service") {
 
   property("Fetch all (wrong user)") = Prop.forAll(
     fetchAllSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val complexFoodService = complexFoodServiceWith(
       recipeContents = ContentsUtil.Recipe.from(setup.userId, setup.recipes),
@@ -367,7 +367,7 @@ object ComplexFoodServiceProperties extends Properties("Complex food service") {
 
   property("Fetch single (wrong user)") = Prop.forAll(
     fetchSingleSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val complexFoodService = complexFoodServiceWith(
       recipeContents = ContentsUtil.Recipe.from(setup.userId, setup.recipes),
@@ -383,7 +383,7 @@ object ComplexFoodServiceProperties extends Properties("Complex food service") {
 
   property("Creation (wrong user)") = Prop.forAll(
     creationSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val complexFoodService = complexFoodServiceWith(
       recipeContents = ContentsUtil.Recipe.from(setup.userId, Seq(setup.recipe)),
@@ -399,7 +399,7 @@ object ComplexFoodServiceProperties extends Properties("Complex food service") {
 
   property("Update (wrong user)") = Prop.forAll(
     updateSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val userId             = setup.creationSetup.userId
     val complexFood        = CreationSetup.complexFoodOf(setup.creationSetup)
@@ -428,7 +428,7 @@ object ComplexFoodServiceProperties extends Properties("Complex food service") {
 
   property("Delete (wrong user)") = Prop.forAll(
     creationSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val complexFood        = CreationSetup.complexFoodOf(setup)
     val complexFoodService = complexFoodServiceWith(

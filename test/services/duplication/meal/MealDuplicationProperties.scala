@@ -2,7 +2,7 @@ package services.duplication.meal
 
 import cats.data.{ EitherT, NonEmptyList }
 import cats.instances.future._
-import db._
+import db.{ ProfileId, UserId, _ }
 import db.daos.meal.MealKey
 import errors.ServerError
 import org.scalacheck.Prop.AnyOperators
@@ -61,8 +61,8 @@ object MealDuplicationProperties extends Properties("Meal duplication") {
   )
 
   private val duplicationSetupGen: Gen[DuplicationSetup] = for {
-    userId    <- GenUtils.taggedId[UserTag]
-    profileId <- GenUtils.taggedId[ProfileTag]
+    userId    <- GenUtils.taggedId(UserId)
+    profileId <- GenUtils.taggedId(ProfileId)
     recipes   <- Gen.nonEmptyListOf(services.recipe.Gens.recipeGen)
     fullMeal  <- services.meal.Gens.fullMealGen(NonEmptyList.fromListUnsafe(recipes.map(_.id)))
   } yield DuplicationSetup(
@@ -143,7 +143,7 @@ object MealDuplicationProperties extends Properties("Meal duplication") {
   // Todo: Add tests for other mismatches
   property("Duplication fails for wrong user id") = Prop.forAll(
     duplicationSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val services = servicesWith(
       userId = setup.userId,

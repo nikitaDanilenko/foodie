@@ -2,7 +2,7 @@ package services.recipe
 
 import cats.data.EitherT
 import config.TestConfiguration
-import db._
+import db.{ UserId, _ }
 import errors.{ ErrorContext, ServerError }
 import org.scalacheck.Prop.AnyOperators
 import org.scalacheck.{ Gen, Prop, Properties, Test }
@@ -36,7 +36,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
     )
 
   property("Creation") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     Gens.recipeCreationGen :| "recipe"
   ) { (userId, recipeCreation) =>
     val recipeService = recipeServiceWith(
@@ -61,7 +61,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   }
 
   property("Read single") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     Gens.recipeGen :| "recipe"
   ) { (userId, recipe) =>
     val recipeService = recipeServiceWith(
@@ -79,7 +79,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   }
 
   property("Read all") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     Gen.listOf(Gens.recipeGen) :| "recipes"
   ) { (userId, recipes) =>
     val recipeService = recipeServiceWith(
@@ -103,7 +103,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
 
   private val updateSetupGen: Gen[UpdateSetup] =
     for {
-      userId       <- GenUtils.taggedId[UserTag]
+      userId       <- GenUtils.taggedId(UserId)
       recipe       <- Gens.recipeGen
       recipeUpdate <- Gens.recipeUpdateGen
     } yield UpdateSetup(
@@ -139,7 +139,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   }
 
   property("Delete") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     Gens.recipeGen :| "recipe"
   ) { (userId, recipe) =>
     val recipeService = recipeServiceWith(
@@ -158,7 +158,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   }
 
   property("Add ingredient") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     Gens.fullRecipeGen() :| "full recipe",
     Gens.ingredientGen :| "ingredient"
   ) { (userId, fullRecipe, ingredient) =>
@@ -181,7 +181,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   }
 
   property("Read ingredients") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     Gens.fullRecipeGen() :| "full recipe"
   ) { (userId, fullRecipe) =>
     val recipeService = recipeServiceWith(
@@ -206,7 +206,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
 
   private val ingredientUpdateSetupGen: Gen[IngredientUpdateSetup] =
     for {
-      userId           <- GenUtils.taggedId[UserTag]
+      userId           <- GenUtils.taggedId(UserId)
       fullRecipe       <- Gens.fullRecipeGen()
       ingredient       <- Gen.oneOf(fullRecipe.ingredients)
       ingredientUpdate <- Gens.ingredientUpdateGen(ingredient.foodId)
@@ -264,7 +264,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
 
   private val deleteIngredientSetupGen: Gen[DeleteIngredientSetup] =
     for {
-      userId       <- GenUtils.taggedId[UserTag]
+      userId       <- GenUtils.taggedId(UserId)
       fullRecipe   <- Gens.fullRecipeGen()
       ingredientId <- Gen.oneOf(fullRecipe.ingredients).map(_.id)
     } yield DeleteIngredientSetup(
@@ -300,8 +300,8 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   }
 
   property("Creation (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.recipeCreationGen :| "recipe creation"
   ) { case (userId1, userId2, recipeCreation) =>
     val recipeService = recipeServiceWith(
@@ -318,8 +318,8 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   }
 
   property("Read single (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.recipeGen :| "recipe"
   ) { case (userId1, userId2, recipe) =>
     val recipeService = recipeServiceWith(
@@ -336,8 +336,8 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   }
 
   property("Read all (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gen.listOf(Gens.recipeGen) :| "recipes"
   ) { case (userId1, userId2, recipes) =>
     val recipeService = recipeServiceWith(
@@ -356,7 +356,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   // TODO: Add other mismatches as well.
   property("Update (wrong user)") = Prop.forAll(
     updateSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val recipeService = recipeServiceWith(
       recipeContents = ContentsUtil.Recipe.from(setup.userId, Seq(setup.recipe)),
@@ -372,8 +372,8 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   }
 
   property("Delete (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.recipeGen :| "recipe"
   ) { case (userId1, userId2, recipe) =>
     val recipeService = recipeServiceWith(
@@ -389,8 +389,8 @@ object RecipeServiceProperties extends Properties("Recipe service") {
 
   // TODO: There should be another property test for the other mismatch (userId/recipeId)
   property("Add ingredient (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.fullRecipeGen() :| "full recipe",
     Gens.ingredientGen :| "ingredient"
   ) { case (userId1, userId2, fullRecipe, ingredient) =>
@@ -413,8 +413,8 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   }
 
   property("Read ingredients (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.fullRecipeGen() :| "full recipe"
   ) { case (userId1, userId2, fullRecipe) =>
     val recipeService = recipeServiceWith(
@@ -433,7 +433,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   // TODO: There should be properties for other userId/recipeId mismatches as well
   property("Update ingredient (wrong user)") = Prop.forAll(
     ingredientUpdateSetupGen :| "ingredient update setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val recipeService = recipeServiceWith(
       recipeContents = ContentsUtil.Recipe.from(setup.userId, Seq(setup.fullRecipe.recipe)),
@@ -460,7 +460,7 @@ object RecipeServiceProperties extends Properties("Recipe service") {
   // TODO: There should be properties for other userId/recipeId mismatches as well
   property("Delete ingredient (wrong user)") = Prop.forAll(
     deleteIngredientSetupGen :| "wrong delete ingredient setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val recipeService = recipeServiceWith(
       recipeContents = ContentsUtil.Recipe.from(setup.userId, Seq(setup.fullRecipe.recipe)),

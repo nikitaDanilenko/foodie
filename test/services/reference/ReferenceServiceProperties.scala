@@ -2,7 +2,7 @@ package services.reference
 
 import cats.data.EitherT
 import config.TestConfiguration
-import db._
+import db.{ UserId, _ }
 import errors.{ ErrorContext, ServerError }
 import org.scalacheck.Prop.AnyOperators
 import org.scalacheck.{ Gen, Prop, Properties, Test }
@@ -36,7 +36,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
     )
 
   property("Creation") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     Gens.referenceMapCreationGen :| "reference map"
   ) { (userId, referenceMapCreation) =>
     val referenceMapService = referenceMapServiceWith(
@@ -61,7 +61,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
   }
 
   property("Read single") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     Gens.referenceMapGen :| "reference map"
   ) { (userId, referenceMap) =>
     val referenceMapService = referenceMapServiceWith(
@@ -79,7 +79,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
   }
 
   property("Read all") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     Gen.listOf(Gens.referenceMapGen) :| "reference maps"
   ) { (userId, referenceMaps) =>
     val referenceMapService = referenceMapServiceWith(
@@ -103,7 +103,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
 
   private val updateSetupGen: Gen[UpdateSetup] =
     for {
-      userId             <- GenUtils.taggedId[UserTag]
+      userId             <- GenUtils.taggedId(UserId)
       referenceMap       <- Gens.referenceMapGen
       referenceMapUpdate <- Gens.referenceMapUpdateGen
     } yield UpdateSetup(
@@ -144,7 +144,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
   }
 
   property("Delete") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     Gens.referenceMapGen :| "referenceMap"
   ) { (userId, referenceMap) =>
     val referenceMapService = referenceMapServiceWith(
@@ -180,7 +180,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
   )
 
   property("Add reference entry") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     addReferenceEntrySetupGen :| "setup"
   ) { (userId, setup) =>
     val referenceMapService = referenceMapServiceWith(
@@ -216,7 +216,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
   }
 
   property("Read reference entries") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
+    GenUtils.taggedId(UserId) :| "userId",
     Gens.fullReferenceMapGen :| "full reference map"
   ) { (userId, fullReferenceMap) =>
     val referenceMapService = referenceMapServiceWith(
@@ -241,7 +241,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
 
   private val referenceMapEntryUpdateSetupGen: Gen[ReferenceEntryUpdateSetup] =
     for {
-      userId                  <- GenUtils.taggedId[UserTag]
+      userId                  <- GenUtils.taggedId(UserId)
       fullReferenceMap        <- Gens.fullReferenceMapGen
       referenceMapEntry       <- Gen.oneOf(fullReferenceMap.referenceEntries)
       referenceMapEntryUpdate <- Gens.referenceEntryUpdateGen
@@ -302,7 +302,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
 
   private val deleteReferenceEntrySetupGen: Gen[DeleteReferenceEntrySetup] =
     for {
-      userId           <- GenUtils.taggedId[UserTag]
+      userId           <- GenUtils.taggedId(UserId)
       fullReferenceMap <- Gens.fullReferenceMapGen
       nutrientCode     <- Gen.oneOf(fullReferenceMap.referenceEntries).map(_.nutrientCode)
     } yield DeleteReferenceEntrySetup(
@@ -345,8 +345,8 @@ object ReferenceServiceProperties extends Properties("Reference service properti
   }
 
   property("Creation (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.referenceMapCreationGen :| "reference map creation"
   ) { case (userId1, userId2, referenceMapCreation) =>
     val referenceMapService = referenceMapServiceWith(
@@ -364,8 +364,8 @@ object ReferenceServiceProperties extends Properties("Reference service properti
   }
 
   property("Read single (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.referenceMapGen :| "reference map"
   ) { case (userId1, userId2, referenceMap) =>
     val referenceMapService = referenceMapServiceWith(
@@ -382,8 +382,8 @@ object ReferenceServiceProperties extends Properties("Reference service properti
   }
 
   property("Read all (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gen.listOf(Gens.referenceMapGen) :| "reference maps"
   ) { case (userId1, userId2, referenceMaps) =>
     val referenceMapService = referenceMapServiceWith(
@@ -402,7 +402,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
   // TODO: Add tests for other mismatches
   property("Update (wrong user)") = Prop.forAll(
     updateSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val referenceMapService = referenceMapServiceWith(
       referenceMapContents = ContentsUtil.ReferenceMap.from(setup.userId, Seq(setup.referenceMap)),
@@ -419,8 +419,8 @@ object ReferenceServiceProperties extends Properties("Reference service properti
 
   // TODO: Add tests for other mismatches
   property("Delete (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.referenceMapGen :| "reference map"
   ) { case (userId1, userId2, referenceMap) =>
     val referenceMapService = referenceMapServiceWith(
@@ -436,8 +436,8 @@ object ReferenceServiceProperties extends Properties("Reference service properti
 
   // TODO: Add tests for other mismatches
   property("Add reference entry (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.fullReferenceMapGen :| "full reference map",
     Gens.referenceEntryGen :| "reference entry"
   ) { case (userId1, userId2, fullReferenceMap, referenceMapEntry) =>
@@ -467,8 +467,8 @@ object ReferenceServiceProperties extends Properties("Reference service properti
 
   // TODO: Add tests for other mismatches
   property("Read reference entries (wrong user)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.fullReferenceMapGen :| "full reference map"
   ) { case (userId1, userId2, fullReferenceMap) =>
     val referenceMapService = referenceMapServiceWith(
@@ -487,7 +487,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
   // TODO: Add tests for other mismatches
   property("Update reference entry (wrong user)") = Prop.forAll(
     referenceMapEntryUpdateSetupGen :| "reference entry update setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val referenceMapService = referenceMapServiceWith(
       referenceMapContents = ContentsUtil.ReferenceMap.from(setup.userId, Seq(setup.fullReferenceMap.referenceMap)),
@@ -518,7 +518,7 @@ object ReferenceServiceProperties extends Properties("Reference service properti
   // TODO: Add tests for other mismatches
   property("Delete reference entry (wrong user)") = Prop.forAll(
     deleteReferenceEntrySetupGen :| "wrong delete reference entry setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val referenceMapService = referenceMapServiceWith(
       referenceMapContents = ContentsUtil.ReferenceMap.from(setup.userId, Seq(setup.fullReferenceMap.referenceMap)),

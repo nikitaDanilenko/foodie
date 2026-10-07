@@ -1,8 +1,9 @@
 package services.stats
 
+import db.UserId
 import cats.data.EitherT
 import config.TestConfiguration
-import db.UserTag
+
 import errors.ErrorContext
 import org.scalacheck.Prop._
 import org.scalacheck.{ Prop, Properties, Test }
@@ -15,7 +16,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object RecipeStatsProperties extends Properties("Recipe stats") {
 
   property("Per serving stats") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "UserId",
+    GenUtils.taggedId(UserId) :| "UserId",
     recipe.Gens.fullRecipeGen() :| "Full recipe"
   ) { (userId, fullRecipe) =>
     val statsService = ServiceFunctions.statsServiceWith(
