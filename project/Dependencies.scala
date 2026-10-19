@@ -15,7 +15,7 @@ object Dependencies {
 
   private val PlayMailerVersion = "10.1.0"
 
-  private val FlywayVersion = "11.9.2"
+  private val FlywayVersion = "13.10.3"
 
   private val SlickEffectVersion = "0.6.1"
 
