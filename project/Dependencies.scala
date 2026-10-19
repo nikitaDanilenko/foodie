@@ -61,7 +61,7 @@ object Dependencies {
 
   val JwtCirce = "com.github.jwt-scala" %% "jwt-circe" % JwtVersion
 
-  val Pureconfig = "com.github.pureconfig" %% "pureconfig" % "0.17.10"
+  val Pureconfig = "com.github.pureconfig" %% "pureconfig" % "0.17.11"
 
   val CatsEffect = "org.typelevel" %% "cats-effect" % "3.7.1"
 
