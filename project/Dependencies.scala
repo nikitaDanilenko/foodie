@@ -80,7 +80,7 @@ object Dependencies {
   val SlickEffectCatsio = "com.kubukoz" %% "slick-effect-catsio" % SlickEffectVersion
 
   // Transitive dependency. Override added for proper version.
-  val JacksonModuleScala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.22.2"
+  val JacksonModuleScala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.22.4"
 
   val Scalacheck = "org.scalacheck" %% "scalacheck" % "1.20.0" % Test
 
