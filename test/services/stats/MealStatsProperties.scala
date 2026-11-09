@@ -5,7 +5,7 @@ import cats.data.{ EitherT, NonEmptyList }
 import cats.instances.list._
 import cats.syntax.traverse._
 import config.TestConfiguration
-import db._
+import db.{ ProfileId, UserId, _ }
 import errors.ServerError
 import io.scalaland.chimney.dsl.TransformerOps
 import org.scalacheck.Prop.AnyOperators
@@ -36,7 +36,7 @@ object MealStatsProperties extends Properties("Meal stats") {
   private val maxNumberOfRecipesPerMeal = Natural(10)
 
   private val setupUserIdAndRecipesGen = for {
-    userId      <- GenUtils.taggedId[UserTag]
+    userId      <- GenUtils.taggedId(UserId)
     fullRecipes <- GenUtils.nonEmptyListOfAtMost(maxNumberOfRecipesPerMeal, recipe.Gens.fullRecipeGen())
   } yield SetupUserIdAndRecipes(
     userId = userId,
@@ -74,7 +74,7 @@ object MealStatsProperties extends Properties("Meal stats") {
   private val perMealSetupGen: Gen[PerMealSetup] =
     for {
       userAndRecipeSetup <- setupUserIdAndRecipesGen
-      profileId          <- GenUtils.taggedId[ProfileTag]
+      profileId          <- GenUtils.taggedId(ProfileId)
       fullMeal           <- meal.Gens.fullMealGen(userAndRecipeSetup.fullRecipes.map(_.recipe.id))
     } yield PerMealSetup(
       userAndRecipes = userAndRecipeSetup,
@@ -149,7 +149,7 @@ object MealStatsProperties extends Properties("Meal stats") {
     for {
       dateInterval       <- dateIntervalGen(earliest, latest)
       userAndRecipeSetup <- setupUserIdAndRecipesGen
-      profileId          <- GenUtils.taggedId[ProfileTag]
+      profileId          <- GenUtils.taggedId(ProfileId)
       fullMeals          <-
         Gen.nonEmptyListOf(meal.Gens.fullMealGen(userAndRecipeSetup.fullRecipes.map(_.recipe.id), earliest, latest))
     } yield OverTimeSetup(
@@ -227,10 +227,10 @@ object MealStatsProperties extends Properties("Meal stats") {
 
   private val restrictedOverTimeSetupGen: Gen[RestrictedOverTimeSetup] =
     for {
-      userId1      <- GenUtils.taggedId[UserTag]
-      profileId1   <- GenUtils.taggedId[ProfileTag]
-      userId2      <- GenUtils.taggedId[UserTag]
-      profileId2   <- GenUtils.taggedId[ProfileTag]
+      userId1      <- GenUtils.taggedId(UserId)
+      profileId1   <- GenUtils.taggedId(ProfileId)
+      userId2      <- GenUtils.taggedId(UserId)
+      profileId2   <- GenUtils.taggedId(ProfileId)
       meals1       <- Gen.nonEmptyListOf(Gens.mealGen())
       meals2       <- Gen.nonEmptyListOf(Gens.mealGen())
       dateInterval <- dateIntervalGen(-10000, 10000)

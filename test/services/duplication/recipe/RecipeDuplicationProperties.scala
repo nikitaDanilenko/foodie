@@ -2,7 +2,7 @@ package services.duplication.recipe
 
 import cats.data.EitherT
 import cats.syntax.traverse._
-import db._
+import db.{ UserId, _ }
 import errors.ServerError
 import org.scalacheck.Prop.AnyOperators
 import org.scalacheck.{ Gen, Prop, Properties }
@@ -90,7 +90,7 @@ object RecipeDuplicationProperties extends Properties("Recipe duplication") {
   )
 
   private val duplicationSetupGen: Gen[DuplicationSetup] = for {
-    userId                <- GenUtils.taggedId[UserTag]
+    userId                <- GenUtils.taggedId(UserId)
     recipe                <- services.recipe.Gens.recipeGen
     referencedRecipes     <- Gen.nonEmptyListOf(services.recipe.Gens.recipeGen)
     subsetForComplexFoods <- GenUtils.subset(referencedRecipes)
@@ -181,7 +181,7 @@ object RecipeDuplicationProperties extends Properties("Recipe duplication") {
 
   property("Duplication fails for wrong user id") = Prop.forAll(
     duplicationSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val services = servicesWith(
       userId = setup.userId,

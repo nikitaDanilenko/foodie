@@ -195,7 +195,7 @@ class UserController @Inject() (
         )
         recoveryJwt = createJwt(
           UserOperation(
-            userId = user.id,
+            userId = user.id.transformInto[UUID],
             operation = UserOperation.Operation.Recovery
           )
         )
@@ -254,7 +254,7 @@ class UserController @Inject() (
                 userIdentifier = UserIdentifier.of(request.user),
                 jwt = createJwt(
                   UserOperation(
-                    userId = request.user.id,
+                    userId = request.user.id.transformInto[UUID],
                     operation = UserOperation.Operation.Deletion
                   )
                 )

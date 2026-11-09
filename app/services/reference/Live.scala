@@ -151,7 +151,7 @@ object Live {
       } yield referenceEntries.flatMap { case (referenceMapId, referenceEntries) =>
         referenceEntries
           .traverse(referenceEntry =>
-            nutrientNameByCode(referenceEntry.nutrientCode)
+            nutrientNameByCode(referenceEntry.nutrientCode.transformInto[Int])
               .map(_ -> referenceEntry.amount)
           )
           .map(referenceValues => referenceMapId -> referenceValues.toMap)

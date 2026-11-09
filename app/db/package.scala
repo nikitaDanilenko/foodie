@@ -1,56 +1,45 @@
-import shapeless.tag.@@
+import utils.IdType
 
 import java.util.UUID
 
 package object db {
-  sealed trait MealTag
 
-  type MealId = UUID @@ MealTag
+  object MealId extends IdType[UUID]
+  type MealId = MealId.Type
 
-  sealed trait MealEntryTag
+  object MealEntryId extends IdType[UUID]
+  type MealEntryId = MealEntryId.Type
 
-  type MealEntryId = UUID @@ MealEntryTag
+  object NutrientId extends IdType[Int]
+  type NutrientId = NutrientId.Type
 
-  sealed trait NutrientTag
+  object NutrientCode extends IdType[Int]
+  type NutrientCode = NutrientCode.Type
 
-  type NutrientId = Int @@ NutrientTag
+  object RecipeId extends IdType[UUID]
+  type RecipeId = RecipeId.Type
 
-  sealed trait NutrientCodeTag
+  object IngredientId extends IdType[UUID]
+  type IngredientId = IngredientId.Type
 
-  type NutrientCode = Int @@ NutrientCodeTag
-
-  sealed trait RecipeTag
-
-  type RecipeId = UUID @@ RecipeTag
-
-  sealed trait IngredientTag
-
-  type IngredientId = UUID @@ IngredientTag
-
-  sealed trait FoodTag
-
-  type FoodId = Int @@ FoodTag
+  object FoodId extends IdType[Int]
+  type FoodId = FoodId.Type
 
   type ComplexFoodId = RecipeId
 
-  sealed trait MeasureTag
+  object MeasureId extends IdType[Int]
+  type MeasureId = MeasureId.Type
 
-  type MeasureId = Int @@ MeasureTag
+  object UserId extends IdType[UUID]
+  type UserId = UserId.Type
 
-  sealed trait UserTag
+  object ProfileId extends IdType[UUID]
+  type ProfileId = ProfileId.Type
 
-  type UserId = UUID @@ UserTag
+  object SessionId extends IdType[UUID]
+  type SessionId = SessionId.Type
 
-  sealed trait ProfileTag
-
-  type ProfileId = UUID @@ ProfileTag
-
-  sealed trait SessionTag
-
-  type SessionId = UUID @@ SessionTag
-
-  sealed trait ReferenceMapTag
-
-  type ReferenceMapId = UUID @@ ReferenceMapTag
+  object ReferenceMapId extends IdType[UUID]
+  type ReferenceMapId = ReferenceMapId.Type
 
 }

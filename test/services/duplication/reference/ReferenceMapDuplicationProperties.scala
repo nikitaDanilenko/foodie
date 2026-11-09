@@ -1,7 +1,7 @@
 package services.duplication.reference
 
 import cats.data.EitherT
-import db.{ DAOTestInstance, UserId, UserTag }
+import db.{ DAOTestInstance, UserId }
 import errors.ServerError
 import org.scalacheck.Prop.AnyOperators
 import org.scalacheck.{ Gen, Prop, Properties }
@@ -57,7 +57,7 @@ object ReferenceMapDuplicationProperties extends Properties("Reference map dupli
   )
 
   private val duplicationSetupGen: Gen[DuplicationSetup] = for {
-    userId           <- GenUtils.taggedId[UserTag]
+    userId           <- GenUtils.taggedId(UserId)
     fullReferenceMap <- services.reference.Gens.fullReferenceMapGen
   } yield DuplicationSetup(
     userId = userId,
@@ -113,7 +113,7 @@ object ReferenceMapDuplicationProperties extends Properties("Reference map dupli
 
   property("Duplication fails for wrong user id") = Prop.forAll(
     duplicationSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val services = servicesWith(
       userId = setup.userId,

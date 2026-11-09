@@ -1,7 +1,7 @@
 package services.stats
 
 import cats.data.NonEmptyList
-import db.{ ProfileId, ProfileTag, UserId, UserTag }
+import db.{ ProfileId, UserId }
 import org.scalacheck.Prop.AnyOperators
 import org.scalacheck.{ Gen, Prop, Properties }
 import services.meal.FullMeal
@@ -22,7 +22,7 @@ object RecipeOccurrenceProperties extends Properties("Recipe occurrence") {
   private val maxNumberOfRecipesPerMeal = Natural(10)
 
   private val userIdAndRecipesGen = for {
-    userId  <- GenUtils.taggedId[UserTag]
+    userId  <- GenUtils.taggedId(UserId)
     recipes <- GenUtils.nonEmptyListOfAtMost(maxNumberOfRecipesPerMeal, recipe.Gens.recipeGen)
   } yield UserIdAndRecipes(
     userId = userId,
@@ -38,7 +38,7 @@ object RecipeOccurrenceProperties extends Properties("Recipe occurrence") {
   private val mealsSetupGen: Gen[MealsSetup] =
     for {
       userAndRecipe <- userIdAndRecipesGen
-      profileId     <- GenUtils.taggedId[ProfileTag]
+      profileId     <- GenUtils.taggedId(ProfileId)
       fullMeals     <- Gen.nonEmptyListOf(meal.Gens.fullMealGen(userAndRecipe.recipes.map(_.id)))
     } yield MealsSetup(
       userAndRecipes = userAndRecipe,

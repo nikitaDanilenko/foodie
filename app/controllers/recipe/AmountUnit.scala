@@ -16,7 +16,7 @@ object AmountUnit {
 
   implicit val fromInternal: Transformer[services.recipe.AmountUnit, AmountUnit] = amountUnit =>
     AmountUnit(
-      measureId = amountUnit.measureId.getOrElse(services.recipe.AmountUnit.hundredGrams),
+      measureId = amountUnit.measureId.getOrElse(services.recipe.AmountUnit.hundredGrams).transformInto[Int],
       factor = amountUnit.factor
     )
 

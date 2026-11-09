@@ -2,7 +2,7 @@ package services.meal
 
 import cats.data.{ EitherT, NonEmptyList }
 import config.TestConfiguration
-import db._
+import db.{ ProfileId, RecipeId, UserId, _ }
 import errors.{ ErrorContext, ServerError }
 import org.scalacheck.Prop.AnyOperators
 import org.scalacheck.{ Gen, Prop, Properties, Test }
@@ -15,7 +15,7 @@ import scala.concurrent.Future
 object MealServiceProperties extends Properties("Meal service") {
 
   private val recipeIdsGen: Gen[NonEmptyList[RecipeId]] =
-    Gen.nonEmptyListOf(GenUtils.taggedId[RecipeTag]).map(NonEmptyList.fromListUnsafe)
+    Gen.nonEmptyListOf(GenUtils.taggedId(RecipeId)).map(NonEmptyList.fromListUnsafe)
 
   private def mealServiceWith(
       mealContents: Seq[(UserId, ProfileId, Meal)],
@@ -30,8 +30,8 @@ object MealServiceProperties extends Properties("Meal service") {
     )
 
   property("Creation") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
-    GenUtils.taggedId[ProfileTag] :| "profileId",
+    GenUtils.taggedId(UserId) :| "userId",
+    GenUtils.taggedId(ProfileId) :| "profileId",
     Gens.mealCreationGen() :| "meal creation"
   ) { (userId, profileId, mealCreation) =>
     val mealService = mealServiceWith(
@@ -56,8 +56,8 @@ object MealServiceProperties extends Properties("Meal service") {
   }
 
   property("Read single") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
-    GenUtils.taggedId[ProfileTag] :| "profileId",
+    GenUtils.taggedId(UserId) :| "userId",
+    GenUtils.taggedId(ProfileId) :| "profileId",
     Gens.mealGen() :| "meal creation"
   ) { (userId, profileId, meal) =>
     val mealService = mealServiceWith(
@@ -75,8 +75,8 @@ object MealServiceProperties extends Properties("Meal service") {
   }
 
   property("Read all") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
-    GenUtils.taggedId[ProfileTag] :| "profileId",
+    GenUtils.taggedId(UserId) :| "userId",
+    GenUtils.taggedId(ProfileId) :| "profileId",
     Gen.listOf(Gens.mealGen()) :| "meal creations"
   ) { (userId, profileId, meals) =>
     val mealService = mealServiceWith(
@@ -101,8 +101,8 @@ object MealServiceProperties extends Properties("Meal service") {
 
   private val updateSetupGen: Gen[UpdateSetup] =
     for {
-      userId     <- GenUtils.taggedId[UserTag]
-      profileId  <- GenUtils.taggedId[ProfileTag]
+      userId     <- GenUtils.taggedId(UserId)
+      profileId  <- GenUtils.taggedId(ProfileId)
       meal       <- Gens.mealGen()
       mealUpdate <- Gens.mealUpdateGen()
     } yield UpdateSetup(
@@ -137,8 +137,8 @@ object MealServiceProperties extends Properties("Meal service") {
   }
 
   property("Delete") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId",
-    GenUtils.taggedId[ProfileTag] :| "profileId",
+    GenUtils.taggedId(UserId) :| "userId",
+    GenUtils.taggedId(ProfileId) :| "profileId",
     Gens.mealGen() :| "meal creation"
   ) { (userId, profileId, meal) =>
     val mealService = mealServiceWith(
@@ -164,8 +164,8 @@ object MealServiceProperties extends Properties("Meal service") {
   )
 
   private val addMealEntrySetupGen: Gen[AddMealEntrySetup] = for {
-    userId    <- GenUtils.taggedId[UserTag]
-    profileId <- GenUtils.taggedId[ProfileTag]
+    userId    <- GenUtils.taggedId(UserId)
+    profileId <- GenUtils.taggedId(ProfileId)
     recipeIds <- recipeIdsGen
     fullMeal  <- Gens.fullMealGen(recipeIds)
     mealEntry <- Gens.mealEntryGen(recipeIds)
@@ -208,8 +208,8 @@ object MealServiceProperties extends Properties("Meal service") {
   )
 
   private val readMealEntriesSetupGen: Gen[ReadMealEntriesSetup] = for {
-    userId    <- GenUtils.taggedId[UserTag]
-    profileId <- GenUtils.taggedId[ProfileTag]
+    userId    <- GenUtils.taggedId(UserId)
+    profileId <- GenUtils.taggedId(ProfileId)
     recipeIds <- recipeIdsGen
     fullMeal  <- Gens.fullMealGen(recipeIds)
   } yield ReadMealEntriesSetup(
@@ -243,8 +243,8 @@ object MealServiceProperties extends Properties("Meal service") {
   )
 
   private val updateMealEntrySetupGen: Gen[UpdateMealEntrySetup] = for {
-    userId          <- GenUtils.taggedId[UserTag]
-    profileId       <- GenUtils.taggedId[ProfileTag]
+    userId          <- GenUtils.taggedId(UserId)
+    profileId       <- GenUtils.taggedId(ProfileId)
     recipeIds       <- recipeIdsGen
     fullMeal        <- Gens.fullMealGen(recipeIds)
     mealEntry       <- Gen.oneOf(fullMeal.mealEntries)
@@ -304,8 +304,8 @@ object MealServiceProperties extends Properties("Meal service") {
 
   private val deleteMealEntrySetupGen: Gen[DeleteMealEntrySetup] =
     for {
-      userId      <- GenUtils.taggedId[UserTag]
-      profileId   <- GenUtils.taggedId[ProfileTag]
+      userId      <- GenUtils.taggedId(UserId)
+      profileId   <- GenUtils.taggedId(ProfileId)
       recipeIds   <- recipeIdsGen
       fullMeal    <- Gens.fullMealGen(recipeIds)
       mealEntryId <- Gen.oneOf(fullMeal.mealEntries).map(_.id)
@@ -343,9 +343,9 @@ object MealServiceProperties extends Properties("Meal service") {
 
   // Todo: Add tests for other mismatches
   property("Creation (wrong userId)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[ProfileTag] :| "profileId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(ProfileId) :| "profileId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.mealCreationGen() :| "meal creation"
   ) { case (userId1, profileId1, userId2, mealCreation) =>
     val mealService = mealServiceWith(
@@ -364,9 +364,9 @@ object MealServiceProperties extends Properties("Meal service") {
 
   // Todo: Add tests for other mismatches
   property("Read single (wrong userId)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[ProfileTag] :| "profileId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(ProfileId) :| "profileId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.mealGen() :| "meal"
   ) { case (userId1, profileId1, userId2, meal) =>
     val mealService = mealServiceWith(
@@ -384,9 +384,9 @@ object MealServiceProperties extends Properties("Meal service") {
 
   // Todo: Add tests for other mismatches
   property("Read all (wrong userId)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[ProfileTag] :| "profileId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(ProfileId) :| "profileId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gen.listOf(Gens.mealGen()) :| "meals"
   ) { case (userId1, profileId1, userId2, meals) =>
     val mealService = mealServiceWith(
@@ -412,9 +412,9 @@ object MealServiceProperties extends Properties("Meal service") {
 
   private val wrongUpdateSetupGen: Gen[WrongUpdateSetup] =
     for {
-      userId1    <- GenUtils.taggedId[UserTag]
-      profileId1 <- GenUtils.taggedId[ProfileTag]
-      userId2    <- GenUtils.taggedId[UserTag]
+      userId1    <- GenUtils.taggedId(UserId)
+      profileId1 <- GenUtils.taggedId(ProfileId)
+      userId2    <- GenUtils.taggedId(UserId)
       meal       <- Gens.mealGen()
       mealUpdate <- Gens.mealUpdateGen()
     } yield WrongUpdateSetup(
@@ -444,9 +444,9 @@ object MealServiceProperties extends Properties("Meal service") {
 
   // Todo: Add tests for other mismatches
   property("Delete (wrong userId)") = Prop.forAll(
-    GenUtils.taggedId[UserTag] :| "userId1",
-    GenUtils.taggedId[ProfileTag] :| "profileId1",
-    GenUtils.taggedId[UserTag] :| "userId2",
+    GenUtils.taggedId(UserId) :| "userId1",
+    GenUtils.taggedId(ProfileId) :| "profileId1",
+    GenUtils.taggedId(UserId) :| "userId2",
     Gens.mealGen() :| "meal"
   ) { case (userId1, profileId1, userId2, meal) =>
     val mealService = mealServiceWith(
@@ -463,7 +463,7 @@ object MealServiceProperties extends Properties("Meal service") {
   // TODO: Add tests for other mismatches
   property("Add meal entry (wrong userId)") = Prop.forAll(
     addMealEntrySetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val mealService = mealServiceWith(
       mealContents = ContentsUtil.Meal.from(setup.userId, setup.profileId, Seq(setup.fullMeal.meal)),
@@ -487,7 +487,7 @@ object MealServiceProperties extends Properties("Meal service") {
   // TODO: Add tests for other mismatches
   property("Read meal entries (wrong userId)") = Prop.forAll(
     readMealEntriesSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val mealService = mealServiceWith(
       mealContents = ContentsUtil.Meal.from(setup.userId, setup.profileId, Seq(setup.fullMeal.meal)),
@@ -505,7 +505,7 @@ object MealServiceProperties extends Properties("Meal service") {
   // TODO: Add tests for other mismatches
   property("Update meal entry (wrong userId)") = Prop.forAll(
     updateMealEntrySetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val mealService = mealServiceWith(
       mealContents = ContentsUtil.Meal.from(setup.userId, setup.profileId, Seq(setup.fullMeal.meal)),
@@ -537,7 +537,7 @@ object MealServiceProperties extends Properties("Meal service") {
   // TODO: There should be properties for the case of a mealId mismatch, and a userId-mealId mismatch as well.
   property("Delete mealEntry (wrong userId)") = Prop.forAll(
     deleteMealEntrySetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val mealService = mealServiceWith(
       mealContents = ContentsUtil.Meal.from(setup.userId, setup.profileId, Seq(setup.fullMeal.meal)),

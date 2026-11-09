@@ -9,8 +9,8 @@ import security.Hash
 import services.nutrient.Nutrient
 import services.recipe._
 import services.user.User
-import shapeless.tag.@@
 import spire.math.Natural
+import utils.IdType
 import utils.TransformerUtils.Implicits._
 import utils.date.{ Date, SimpleDate, Time }
 
@@ -133,8 +133,8 @@ object GenUtils {
 
   val smallBigDecimalGen: Gen[BigDecimal] = Gen.choose(BigDecimal(0.001), BigDecimal(1000))
 
-  def taggedId[Tag]: Gen[UUID @@ Tag] =
-    Gen.uuid.map(_.transformInto[UUID @@ Tag])
+  def taggedId(idType: IdType[UUID]): Gen[idType.Type] =
+    Gen.uuid.map(idType.apply)
 
   def shuffle[A](as: Seq[A]): Gen[Seq[A]] =
     Gen

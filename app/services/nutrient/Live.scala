@@ -52,7 +52,7 @@ object Live {
     ): Option[BigDecimal] = generalTableConstants.allConversionFactors
       .get((foodId, measureId))
       .orElse {
-        val specialized = hundredGrams(foodId)
+        val specialized = hundredGrams(foodId.transformInto[Int])
         Option.when(measureId.transformInto[Int] == specialized.measureId)(specialized.conversionFactorValue)
       }
 
@@ -131,7 +131,7 @@ object Live {
     private def hundredGrams(foodId: Int): Tables.ConversionFactorRow =
       Tables.ConversionFactorRow(
         foodId = foodId,
-        measureId = AmountUnit.hundredGrams,
+        measureId = AmountUnit.hundredGrams.transformInto[Int],
         conversionFactorValue = BigDecimal(1),
         convFactorDateOfEntry = java.sql.Date.valueOf("2022-11-01")
       )

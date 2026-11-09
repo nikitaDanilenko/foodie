@@ -3,7 +3,7 @@ package services.rescale
 import cats.data.EitherT
 import cats.syntax.contravariantSemigroupal._
 import cats.syntax.traverse._
-import db.{ DAOTestInstance, UserId, UserTag }
+import db.{ DAOTestInstance, UserId }
 import errors.ErrorContext
 import org.scalacheck.Prop.AnyOperators
 import org.scalacheck.{ Arbitrary, Gen, Prop, Properties }
@@ -113,7 +113,7 @@ object RescaleProperties extends Properties("Rescale properties") {
   )
 
   private val rescaleSetupGen: Gen[RescaleSetup] = for {
-    userId                <- GenUtils.taggedId[UserTag]
+    userId                <- GenUtils.taggedId(UserId)
     recipe                <- services.recipe.Gens.recipeGen
     referencedRecipes     <- Gen.nonEmptyListOf(services.recipe.Gens.recipeGen)
     subsetForComplexFoods <- GenUtils.subset(referencedRecipes)
@@ -161,7 +161,7 @@ object RescaleProperties extends Properties("Rescale properties") {
 
   property("Rescaling fails for wrong user id") = Prop.forAll(
     rescaleSetupGen :| "setup",
-    GenUtils.taggedId[UserTag] :| "userId2"
+    GenUtils.taggedId(UserId) :| "userId2"
   ) { (setup, userId2) =>
     val services = servicesWith(
       userId = setup.userId,
