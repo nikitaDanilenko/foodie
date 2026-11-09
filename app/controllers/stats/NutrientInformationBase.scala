@@ -16,7 +16,7 @@ object NutrientInformationBase {
 
   implicit val fromDomain: Transformer[services.nutrient.Nutrient, NutrientInformationBase] = nutrient =>
     NutrientInformationBase(
-      nutrientCode = nutrient.code,
+      nutrientCode = nutrient.code.transformInto[Int],
       name = nutrient.name,
       symbol = nutrient.symbol,
       unit = nutrient.unit.transformInto[NutrientUnit]

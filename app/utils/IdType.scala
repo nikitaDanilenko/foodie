@@ -24,6 +24,9 @@ abstract class IdType[Underlying] {
 
   implicit val toUnderlying: Transformer[Type, Underlying] = value
 
+  implicit def ordering(implicit underlyingOrdering: Ordering[Underlying]): Ordering[Type] =
+    Ordering.by(value)
+
 }
 
 object IdType {
